@@ -39,7 +39,7 @@ export class ShelfRenderer extends LibraryRenderer {
 			renderDesk(room, this.host, config, notes, {
 				libraryId: this.options.libraryId,
 				root: this.containerEl,
-				emptyText: "Nothing in progress. Drag a book onto the desk to start it.",
+				emptyText: "Nothing in progress. Drag one onto the desk to start it.",
 				droppable: true,
 			});
 		}

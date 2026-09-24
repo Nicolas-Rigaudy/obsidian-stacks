@@ -73,6 +73,16 @@ describe("parseNote (book config)", () => {
 		assert.deepEqual(n?.progress, { current: 0, total: null });
 	});
 
+	test("category is recorded; progress only for the listed categories", () => {
+		const reading = { ...BOOK_CONFIG, folder: "20 Personal/Hobbies/Reading", categoryValues: ["book", "bd"], progress: { ...BOOK_CONFIG.progress!, categories: ["book"] } };
+		const book = parseNote("20 Personal/Hobbies/Reading/Books/X.md", "X", { category: "book", pages_read: 10 }, reading);
+		const bd = parseNote("20 Personal/Hobbies/Reading/BDs/Y.md", "Y", { category: "bd" }, reading);
+		assert.equal(book?.category, "book");
+		assert.deepEqual(book?.progress, { current: 10, total: null });
+		assert.equal(bd?.category, "bd");
+		assert.equal(bd?.progress, null);
+	});
+
 	test("omnibus range; an invalid range is dropped", () => {
 		const ok = parseNote(path("O"), "O", { category: "book", series: "S", position: 4, position_end: 6 }, BOOK_CONFIG);
 		assert.deepEqual(ok?.series, { name: "S", position: 4, positionEnd: 6 });

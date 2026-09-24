@@ -100,9 +100,12 @@ export class StacksSettingTab extends PluginSettingTab {
 				}),
 			);
 
+		this.renderFilters(el, config);
+
 		el.createEl("h4", { text: "Fields" });
 		this.text(el, "Title", "Falls back to the file name.", config.titleField, (v) => (config.titleField = v));
-		this.text(el, "Creator", "Shown on cards after the series, e.g. author. Empty = none.", config.creatorField, (v) => (config.creatorField = v));
+		this.text(el, "Creator", "Shown on cards after the series, e.g. author or platform. Empty = none.", config.creatorField, (v) => (config.creatorField = v));
+		this.text(el, "Creator label", "Column name in the list, e.g. Author, Platform.", config.creatorLabel, (v) => (config.creatorLabel = v));
 		this.text(el, "Cover", "Image URL or vault path.", config.coverField, (v) => (config.coverField = v));
 		this.text(el, "Rating", "", config.ratingField, (v) => (config.ratingField = v));
 		this.text(el, "Started date", "Stamped when moved to an active status. Empty = don't track.", config.startedField, (v) => (config.startedField = v));
@@ -171,6 +174,40 @@ export class StacksSettingTab extends PluginSettingTab {
 		);
 	}
 
+	private renderFilters(el: HTMLElement, config: MediaTypeConfig): void {
+		new Setting(el)
+			.setName("Filter chips")
+			.setDesc("Category values offered as chips in the toolbar (All / Films / Series...). Two or more to show them.")
+			.addButton((b) =>
+				b.setButtonText("Add chip").onClick(async () => {
+					config.categoryFilters.push({ value: "", label: "" });
+					await this.saveAndRedraw();
+				}),
+			);
+		config.categoryFilters.forEach((f, i) => {
+			new Setting(el)
+				.setClass("stacks-status-row")
+				.addText((t) =>
+					t.setPlaceholder("category value").setValue(f.value).onChange((v) => {
+						f.value = v.trim();
+						this.saveSoon();
+					}),
+				)
+				.addText((t) =>
+					t.setPlaceholder("label").setValue(f.label).onChange((v) => {
+						f.label = v;
+						this.saveSoon();
+					}),
+				)
+				.addExtraButton((b) =>
+					b.setIcon("trash").setTooltip("Remove").onClick(async () => {
+						config.categoryFilters.splice(i, 1);
+						await this.saveAndRedraw();
+					}),
+				);
+		});
+	}
+
 	private renderProgress(el: HTMLElement, config: MediaTypeConfig): void {
 		el.createEl("h4", { text: "Progress" });
 		this.groupToggle(el, "Track progress", "Adds +N buttons and a progress bar.", config.progress !== null, (on) => {
@@ -181,6 +218,15 @@ export class StacksSettingTab extends PluginSettingTab {
 		this.text(el, "Current field", "", p.currentField, (v) => (p.currentField = v));
 		this.text(el, "Total field", "", p.totalField, (v) => (p.totalField = v));
 		this.text(el, "Unit label", "e.g. pages, tomes.", p.unitLabel, (v) => (p.unitLabel = v));
+		new Setting(el)
+			.setName("Only for categories")
+			.setDesc("Comma-separated. Only notes of these categories get page controls (e.g. book, not bd). Empty = all.")
+			.addText((t) =>
+				t.setValue(p.categories.join(", ")).onChange((v) => {
+					p.categories = splitList(v);
+					this.saveSoon();
+				}),
+			);
 		new Setting(el)
 			.setName("Quick increments")
 			.setDesc("Comma-separated, e.g. 10, 25.")

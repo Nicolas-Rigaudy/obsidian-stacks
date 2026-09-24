@@ -27,6 +27,7 @@ describe("mergeSettings", () => {
 	test("nested groups merge field by field", () => {
 		const s = mergeSettings({ mediaTypes: { book: { progress: { quickIncrements: [5, 50], unitLabel: "p." } } } });
 		assert.deepEqual(s.mediaTypes.book.progress, {
+			categories: [],
 			currentField: "pages_read",
 			totalField: "pages_total",
 			unitLabel: "p.",
@@ -59,6 +60,28 @@ describe("mergeSettings", () => {
 		]);
 	});
 
+	test("filter chips and progress categories merge; bad chips dropped", () => {
+		const s = mergeSettings({
+			mediaTypes: {
+				book: {
+					categoryFilters: [{ value: "book", label: "Books" }, { value: "bd" }, { label: "no value" }],
+					progress: { categories: ["book", 3] },
+				},
+			},
+		});
+		assert.deepEqual(s.mediaTypes.book.categoryFilters, [{ value: "book", label: "Books" }, { value: "bd", label: "bd" }]);
+		assert.deepEqual(s.mediaTypes.book.progress!.categories, ["book"]);
+	});
+
+	test("defaults ship Games and Watching with the agreed statuses", () => {
+		const s = mergeSettings(null);
+		const bucket = (id: string, v: string) => s.mediaTypes[id].statuses.find((x) => x.value === v)?.bucket;
+		assert.equal(bucket("game", "played"), "other"); // played but not finished: not done
+		assert.equal(bucket("game", "finished"), "done");
+		assert.equal(bucket("watching", "watched"), "done");
+		assert.deepEqual(s.mediaTypes.watching.categoryFilters.map((f) => f.value), ["movie", "series", "anime"]);
+	});
+
 	test("wrong-typed values are ignored", () => {
 		const s = mergeSettings({ mediaTypes: { book: { folder: 42, enabled: "yes", categoryValues: "book" } } });
 		assert.equal(s.mediaTypes.book.folder, BOOK_CONFIG.folder);
@@ -68,7 +91,7 @@ describe("mergeSettings", () => {
 
 	test("libraries the user added are kept, filled out from the blank template", () => {
 		const s = mergeSettings({ mediaTypes: { comics: { label: "Comics", folder: "Reading/BDs" } } });
-		assert.deepEqual(Object.keys(s.mediaTypes), ["book", "comics"]);
+		assert.deepEqual(Object.keys(s.mediaTypes), ["book", "game", "watching", "comics"]);
 		assert.equal(s.mediaTypes.comics.label, "Comics");
 		assert.equal(s.mediaTypes.comics.folder, "Reading/BDs");
 		assert.equal(s.mediaTypes.comics.statusField, "status");

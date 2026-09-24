@@ -137,11 +137,13 @@ describe("sortNotes", () => {
 
 describe("parseBlockParams", () => {
 	test("defaults to the shelf", () => {
-		assert.deepEqual(parseBlockParams(""), { view: "shelf", library: null, statuses: null, errors: [] });
+		assert.deepEqual(parseBlockParams(""), { view: "shelf", library: null, statuses: null, filter: null, errors: [] });
 	});
 	test("options and aliases", () => {
 		const p = parseBlockParams("view: kanban\nlibrary: book\nstatus: backlog, reading\n");
-		assert.deepEqual(p, { view: "board", library: "book", statuses: ["backlog", "reading"], errors: [] });
+		assert.deepEqual(p, { view: "board", library: "book", statuses: ["backlog", "reading"], filter: null, errors: [] });
+		assert.equal(parseBlockParams("library: watching\nfilter: anime").filter, "anime");
+		assert.equal(parseBlockParams("category: movie").filter, "movie");
 		assert.equal(parseBlockParams("view: Up Next").view, "upnext");
 		assert.equal(parseBlockParams("view: gallery").view, "shelf");
 	});

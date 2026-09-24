@@ -2,7 +2,7 @@ import { firstStatusOf, rankCandidates } from "../../logic/upNext.ts";
 import type { MediaTypeConfig } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
 import { renderDesk } from "../desk.ts";
-import { LibraryRenderer, makeInteractive, renderBook } from "../shared.ts";
+import { inCategory, LibraryRenderer, makeInteractive, renderBook } from "../shared.ts";
 
 const UP_NEXT_SHOWN = 6;
 
@@ -16,7 +16,7 @@ export class UpNextRenderer extends LibraryRenderer {
 		// Up next always looks at the whole library: eligibility depends on every volume.
 		const notes = this.host.index.get(this.options.libraryId);
 		const page = el.createDiv({ cls: "stacks-upnext" });
-		renderDesk(page, this.host, config, notes, {
+		renderDesk(page, this.host, config, inCategory(notes, this.options.category), {
 			libraryId: this.options.libraryId,
 			root: this.containerEl,
 			emptyText: "Nothing in progress. Start one from up next.",
@@ -26,7 +26,9 @@ export class UpNextRenderer extends LibraryRenderer {
 	}
 
 	private nextShelf(page: HTMLElement, config: MediaTypeConfig, notes: readonly MediaNote[]): void {
-		const { eligible, heldBack } = rankCandidates(notes, config);
+		const ranked = rankCandidates(notes, config);
+		const eligible = inCategory(ranked.eligible, this.options.category);
+		const heldBack = inCategory(ranked.heldBack, this.options.category);
 		const section = page.createDiv({ cls: "stacks-section" });
 		const bookcase = section.createDiv({ cls: "stacks-bookcase is-single" });
 		const plaque = bookcase.createDiv({ cls: "stacks-plaque" });

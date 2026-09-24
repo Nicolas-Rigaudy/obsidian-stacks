@@ -4,6 +4,8 @@
 export interface MediaNote {
 	path: string;
 	title: string;
+	/** The note's category value (e.g. "anime"), for filter chips. */
+	category: string | null;
 	status: string | null;
 	cover: string | null;
 	rating: number | null;

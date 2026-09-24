@@ -23,8 +23,14 @@ export interface RenderOptions {
 	libraryId: string;
 	/** Only these statuses (shelf bookcases, board columns, list rows). Null = all. */
 	statuses: string[] | null;
+	/** Only this category (a filter chip). Null = all. */
+	category: string | null;
 	/** Inside a note (code block) rather than its own tab. */
 	embedded: boolean;
+}
+
+export function inCategory<T extends MediaNote>(notes: readonly T[], category: string | null): readonly T[] {
+	return category === null ? notes : notes.filter((n) => n.category === category);
 }
 
 export function defaultLibraryId(settings: StacksSettings): string | null {
@@ -66,7 +72,7 @@ export abstract class LibraryRenderer extends MarkdownRenderChild {
 			el.createDiv({ cls: "stacks-empty", text: `Library "${this.options.libraryId}" isn't set up or is disabled. See Settings → Stacks.` });
 			return;
 		}
-		let notes = this.host.index.get(this.options.libraryId);
+		let notes = inCategory(this.host.index.get(this.options.libraryId), this.options.category);
 		const only = this.options.statuses;
 		if (only) notes = notes.filter((n) => n.status !== null && only.includes(n.status));
 		this.render(el, config, notes);

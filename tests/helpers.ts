@@ -9,6 +9,7 @@ export function note(
 	return {
 		path: `Books/${title}.md`,
 		title,
+		category: "book",
 		status,
 		cover: null,
 		rating: null,

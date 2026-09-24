@@ -25,6 +25,8 @@ export class StacksView extends ItemView {
 	private readonly host: StacksHost;
 	private readonly kind: ViewKind;
 	private libraryId: string | null = null;
+	/** Active filter chip (a category value), or null for All. */
+	private filter: string | null = null;
 	private renderer: LibraryRenderer | null = null;
 
 	constructor(leaf: WorkspaceLeaf, host: StacksHost, kind: ViewKind) {
@@ -47,12 +49,14 @@ export class StacksView extends ItemView {
 	}
 
 	getState(): Record<string, unknown> {
-		return { ...super.getState(), library: this.libraryId };
+		return { ...super.getState(), library: this.libraryId, filter: this.filter };
 	}
 
 	async setState(state: unknown, result: ViewStateResult): Promise<void> {
-		if (typeof state === "object" && state !== null && typeof (state as { library?: unknown }).library === "string") {
-			this.libraryId = (state as { library: string }).library;
+		if (typeof state === "object" && state !== null) {
+			const st = state as { library?: unknown; filter?: unknown };
+			if (typeof st.library === "string") this.libraryId = st.library;
+			this.filter = typeof st.filter === "string" ? st.filter : null;
 		}
 		await super.setState(state, result);
 		this.mount();
@@ -87,8 +91,10 @@ export class StacksView extends ItemView {
 			emptyState(body, "No library is enabled. Turn one on in Settings → Stacks.");
 			return;
 		}
+		const filters = this.host.settings.mediaTypes[id].categoryFilters;
+		const category = filters.length >= 2 && filters.some((f) => f.value === this.filter) ? this.filter : null;
 		this.renderer = this.addChild(
-			createRenderer(this.kind, this.host, body.createDiv(), { libraryId: id, statuses: null, embedded: false }),
+			createRenderer(this.kind, this.host, body.createDiv(), { libraryId: id, statuses: null, category, embedded: false }),
 		);
 	}
 
@@ -106,6 +112,22 @@ export class StacksView extends ItemView {
 			});
 		}
 
+		const filters = id ? this.host.settings.mediaTypes[id].categoryFilters : [];
+		if (filters.length >= 2) {
+			const chips = bar.createDiv({ cls: "stacks-chips", attr: { role: "radiogroup", "aria-label": "Filter" } });
+			const active = filters.some((f) => f.value === this.filter) ? this.filter : null;
+			for (const f of [{ value: null, label: "All" }, ...filters]) {
+				const chip = chips.createEl("button", { cls: "stacks-chip", text: f.label, attr: { role: "radio", "aria-checked": String(f.value === active) } });
+				chip.toggleClass("is-active", f.value === active);
+				chip.addEventListener("click", () => {
+					if (f.value === active) return;
+					this.filter = f.value;
+					this.app.workspace.requestSaveLayout();
+					this.mount();
+				});
+			}
+		}
+
 		const tabs = bar.createDiv({ cls: "stacks-tabs", attr: { role: "tablist" } });
 		for (const kind of VIEW_KINDS) {
 			const tab = tabs.createEl("button", { cls: "stacks-tab", attr: { role: "tab", "aria-selected": String(kind === this.kind) } });
@@ -114,7 +136,7 @@ export class StacksView extends ItemView {
 			tab.createSpan({ text: VIEW_LABELS[kind] });
 			tab.addEventListener("click", () => {
 				if (kind === this.kind) return;
-				void this.leaf.setViewState({ type: VIEW_TYPES[kind], active: true, state: { library: id } });
+				void this.leaf.setViewState({ type: VIEW_TYPES[kind], active: true, state: { library: id, filter: this.filter } });
 			});
 		}
 	}

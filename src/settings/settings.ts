@@ -24,6 +24,7 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 	folder: "20 Personal/Hobbies/Reading/Books",
 	categoryField: "category",
 	categoryValues: ["book"],
+	categoryFilters: [],
 	statusField: "status",
 	statuses: [
 		{ value: "wishlist", label: "Wishlist", bucket: "other" },
@@ -33,11 +34,13 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 	],
 	titleField: "title",
 	creatorField: "author",
+	creatorLabel: "Author",
 	coverField: "cover",
 	ratingField: "rating",
 	startedField: "started",
 	finishedField: "finished",
 	progress: {
+		categories: [],
 		currentField: "pages_read",
 		totalField: "pages_total",
 		unitLabel: "pages",
@@ -56,12 +59,74 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 	},
 };
 
+// Video games (106 notes, checked 2026-09-24). "played" = played but not
+// finished (no ending, or might return): not done, per the user.
+export const GAME_CONFIG: MediaTypeConfig = {
+	enabled: true,
+	label: "Games",
+	folder: "20 Personal/Hobbies/Video Games/Games",
+	categoryField: "category",
+	categoryValues: ["game"],
+	categoryFilters: [],
+	statusField: "status",
+	statuses: [
+		{ value: "backlog", label: "Backlog", bucket: "backlog" },
+		{ value: "playing", label: "Playing", bucket: "active" },
+		{ value: "played", label: "Played", bucket: "other" },
+		{ value: "finished", label: "Finished", bucket: "done" },
+		{ value: "dropped", label: "Dropped", bucket: "other" },
+	],
+	titleField: "title",
+	creatorField: "platform",
+	creatorLabel: "Platform",
+	coverField: "cover",
+	ratingField: "rating",
+	startedField: "started",
+	finishedField: "finished",
+	progress: null,
+	series: null,
+	logSection: null,
+};
+
+// Films, series and anime in one library with filter chips (19 notes in Media/,
+// checked 2026-09-24; Media.md, the hub, has no category and is left out).
+export const WATCHING_CONFIG: MediaTypeConfig = {
+	enabled: true,
+	label: "Watching",
+	folder: "20 Personal/Hobbies/Media",
+	categoryField: "category",
+	categoryValues: ["movie", "series", "anime"],
+	categoryFilters: [
+		{ value: "movie", label: "Films" },
+		{ value: "series", label: "Series" },
+		{ value: "anime", label: "Anime" },
+	],
+	statusField: "status",
+	statuses: [
+		{ value: "backlog", label: "Backlog", bucket: "backlog" },
+		{ value: "watching", label: "Watching", bucket: "active" },
+		{ value: "watched", label: "Watched", bucket: "done" },
+		{ value: "dropped", label: "Dropped", bucket: "other" },
+	],
+	titleField: "title",
+	creatorField: "network",
+	creatorLabel: "Network",
+	coverField: "cover",
+	ratingField: "rating",
+	startedField: "",
+	finishedField: "finished",
+	progress: null,
+	series: null,
+	logSection: null,
+};
+
 export const DEFAULT_SETTINGS: StacksSettings = {
-	mediaTypes: { book: BOOK_CONFIG },
+	mediaTypes: { book: BOOK_CONFIG, game: GAME_CONFIG, watching: WATCHING_CONFIG },
 };
 
 // Starting values when a user switches an optional group on for a library.
 export const DEFAULT_PROGRESS: ProgressConfig = {
+	categories: [],
 	currentField: "progress",
 	totalField: "progress_total",
 	unitLabel: "",
@@ -87,6 +152,7 @@ export function blankMediaTypeConfig(label: string): MediaTypeConfig {
 		folder: "",
 		categoryField: "category",
 		categoryValues: [],
+		categoryFilters: [],
 		statusField: "status",
 		statuses: [
 			{ value: "backlog", label: "Backlog", bucket: "backlog" },
@@ -95,6 +161,7 @@ export function blankMediaTypeConfig(label: string): MediaTypeConfig {
 		],
 		titleField: "title",
 		creatorField: "",
+		creatorLabel: "",
 		coverField: "cover",
 		ratingField: "rating",
 		startedField: "",
@@ -143,12 +210,20 @@ function mergeConfig(base: MediaTypeConfig, over: unknown): MediaTypeConfig {
 	if (typeof over.enabled === "boolean") out.enabled = over.enabled;
 	if (Array.isArray(over.categoryValues)) out.categoryValues = over.categoryValues.filter(isString);
 	if (Array.isArray(over.statuses)) out.statuses = over.statuses.flatMap(parseStatus);
+	if (Array.isArray(over.categoryFilters)) {
+		out.categoryFilters = over.categoryFilters.flatMap((f) =>
+			isRecord(f) && isString(f.value) ? [{ value: f.value, label: isString(f.label) ? f.label : f.value }] : [],
+		);
+	}
 
 	out.progress = mergeGroup(base.progress, over.progress, DEFAULT_PROGRESS);
-	if (out.progress && isRecord(over.progress) && Array.isArray(over.progress.quickIncrements)) {
-		out.progress.quickIncrements = over.progress.quickIncrements.filter(
-			(n): n is number => typeof n === "number" && Number.isFinite(n),
-		);
+	if (out.progress && isRecord(over.progress)) {
+		if (Array.isArray(over.progress.quickIncrements)) {
+			out.progress.quickIncrements = over.progress.quickIncrements.filter(
+				(n): n is number => typeof n === "number" && Number.isFinite(n),
+			);
+		}
+		if (Array.isArray(over.progress.categories)) out.progress.categories = over.progress.categories.filter(isString);
 	}
 	out.series = mergeGroup(base.series, over.series, DEFAULT_SERIES);
 	out.logSection = mergeGroup(base.logSection, over.logSection, DEFAULT_LOG_SECTION);

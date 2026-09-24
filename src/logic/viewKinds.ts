@@ -31,6 +31,8 @@ export interface BlockParams {
 	library: string | null;
 	/** Null = every status. */
 	statuses: string[] | null;
+	/** Category filter chip value (e.g. "anime"). Null = all. */
+	filter: string | null;
 	errors: string[];
 }
 
@@ -39,10 +41,11 @@ export interface BlockParams {
  * view: shelf          (shelf | board | list | upnext; default shelf)
  * library: book        (optional)
  * status: backlog, reading   (optional)
+ * filter: anime        (optional: one category, like the toolbar chips)
  * ```
  */
 export function parseBlockParams(source: string): BlockParams {
-	const params: BlockParams = { view: "shelf", library: null, statuses: null, errors: [] };
+	const params: BlockParams = { view: "shelf", library: null, statuses: null, filter: null, errors: [] };
 	for (const raw of source.split("\n")) {
 		const line = raw.trim();
 		if (line === "" || line.startsWith("#")) continue;
@@ -62,8 +65,10 @@ export function parseBlockParams(source: string): BlockParams {
 		} else if (key === "status" || key === "statuses") {
 			const list = value.split(",").map((s) => s.trim()).filter((s) => s !== "");
 			params.statuses = list.length > 0 ? list : null;
+		} else if (key === "filter" || key === "category") {
+			params.filter = value || null;
 		} else {
-			params.errors.push(`Unknown option "${m[1]}". Options: view, library, status.`);
+			params.errors.push(`Unknown option "${m[1]}". Options: view, library, status, filter.`);
 		}
 	}
 	return params;

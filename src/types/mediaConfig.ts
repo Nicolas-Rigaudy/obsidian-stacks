@@ -12,7 +12,15 @@ export interface StatusDef {
 	bucket: StatusBucket;
 }
 
+/** A filter chip over the category field, e.g. { value: "anime", label: "Anime" }. */
+export interface FilterDef {
+	value: string;
+	label: string;
+}
+
 export interface ProgressConfig {
+	/** Only notes of these categories track progress (books yes, BDs no). Empty = all. */
+	categories: string[];
 	currentField: string;
 	totalField: string;
 	unitLabel: string;
@@ -43,12 +51,16 @@ export interface MediaTypeConfig {
 	categoryField: string;
 	/** Notes must have one of these in `categoryField`. Empty list = no category filter. */
 	categoryValues: string[];
+	/** Filter chips shown in the toolbar (All / Films / Series...). Fewer than two = no chips. */
+	categoryFilters: FilterDef[];
 	statusField: string;
 	/** Ordered: defines kanban column order. */
 	statuses: StatusDef[];
 	titleField: string;
 	/** Shown on cards next to the series (author for books). Empty string = none. */
 	creatorField: string;
+	/** Column/label name for the creator field ("Author", "Platform"). */
+	creatorLabel: string;
 	coverField: string;
 	ratingField: string;
 	/** Date fields stamped on status changes. Empty string = not tracked. */

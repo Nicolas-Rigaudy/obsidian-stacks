@@ -76,7 +76,7 @@ export class ListRenderer extends LibraryRenderer {
 			},
 		];
 		if (config.series) cols.push({ id: "series", label: "Series", cell: (td, n) => td.setText(seriesLabel(n) ?? "") });
-		if (config.creatorField) cols.push({ id: "creator", label: "Author", cell: (td, n) => td.setText(creatorOf(n, config) ?? "") });
+		if (config.creatorField) cols.push({ id: "creator", label: config.creatorLabel || "Creator", cell: (td, n) => td.setText(creatorOf(n, config) ?? "") });
 		cols.push({
 			id: "status",
 			label: "Status",

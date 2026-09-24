@@ -8,6 +8,7 @@ import { defaultLibraryId, type StacksHost } from "../views/shared.ts";
  * view: shelf | board | list | upnext
  * library: book            (optional)
  * status: backlog, reading (optional)
+ * filter: anime            (optional)
  * ```
  * Mounts the same renderer as the full tab, inline in the note.
  */
@@ -24,6 +25,6 @@ export function registerCodeBlock(plugin: Plugin, host: StacksHost): void {
 			el.createDiv({ cls: "stacks-empty", text: "No library is enabled. Turn one on in Settings → Stacks." });
 			return;
 		}
-		ctx.addChild(createRenderer(params.view, host, el.createDiv(), { libraryId, statuses: params.statuses, embedded: true }));
+		ctx.addChild(createRenderer(params.view, host, el.createDiv(), { libraryId, statuses: params.statuses, category: params.filter, embedded: true }));
 	});
 }

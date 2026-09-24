@@ -10,14 +10,18 @@ export function isInFolder(path: string, folder: string): boolean {
 	return f === "" || path.startsWith(f + "/");
 }
 
-export function matchesCategory(fm: Frontmatter, config: MediaTypeConfig): boolean {
-	if (config.categoryValues.length === 0) return true;
+/** The note's category: the first value that belongs to the library (any value if unfiltered). */
+export function categoryOf(fm: Frontmatter, config: MediaTypeConfig): string | null {
 	const raw = fm[config.categoryField];
-	const values = Array.isArray(raw) ? raw : [raw];
-	return values.some((v) => {
+	for (const v of Array.isArray(raw) ? raw : [raw]) {
 		const s = toStr(v);
-		return s !== null && config.categoryValues.includes(s);
-	});
+		if (s !== null && (config.categoryValues.length === 0 || config.categoryValues.includes(s))) return s;
+	}
+	return null;
+}
+
+export function matchesCategory(fm: Frontmatter, config: MediaTypeConfig): boolean {
+	return config.categoryValues.length === 0 || categoryOf(fm, config) !== null;
 }
 
 /** Normalize one note, or null if it doesn't belong to this library. */
@@ -29,11 +33,13 @@ export function parseNote(
 ): MediaNote | null {
 	if (!isInFolder(path, config.folder) || !fm || !matchesCategory(fm, config)) return null;
 
+	const category = categoryOf(fm, config);
 	let progress: MediaNote["progress"] = null;
-	if (config.progress) {
+	const p = config.progress;
+	if (p && (p.categories.length === 0 || (category !== null && p.categories.includes(category)))) {
 		progress = {
-			current: toNum(fm[config.progress.currentField]) ?? 0,
-			total: toNum(fm[config.progress.totalField]),
+			current: toNum(fm[p.currentField]) ?? 0,
+			total: toNum(fm[p.totalField]),
 		};
 	}
 
@@ -53,6 +59,7 @@ export function parseNote(
 	return {
 		path,
 		title: toStr(fm[config.titleField]) ?? basename,
+		category,
 		status: toStr(fm[config.statusField]),
 		cover: toStr(fm[config.coverField]),
 		rating: toNum(fm[config.ratingField]),
