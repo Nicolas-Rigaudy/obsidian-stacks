@@ -22,6 +22,11 @@ export function bucketOf(status: string | null, config: MediaTypeConfig): Status
 	return config.statuses.find((s) => s.value === status)?.bucket ?? "other";
 }
 
+/** The first configured status in a bucket (what "Start" and "Finish" set), or null. */
+export function firstStatusOf(config: MediaTypeConfig, bucket: StatusBucket): string | null {
+	return config.statuses.find((s) => s.bucket === bucket)?.value ?? null;
+}
+
 /**
  * A backlog item is eligible unless an earlier volume of its series hasn't been
  * reached yet. An earlier volume is fine if it's done, in progress (active), or

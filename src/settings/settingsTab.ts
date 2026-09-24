@@ -102,6 +102,7 @@ export class StacksSettingTab extends PluginSettingTab {
 
 		el.createEl("h4", { text: "Fields" });
 		this.text(el, "Title", "Falls back to the file name.", config.titleField, (v) => (config.titleField = v));
+		this.text(el, "Creator", "Shown on cards after the series, e.g. author. Empty = none.", config.creatorField, (v) => (config.creatorField = v));
 		this.text(el, "Cover", "Image URL or vault path.", config.coverField, (v) => (config.coverField = v));
 		this.text(el, "Rating", "", config.ratingField, (v) => (config.ratingField = v));
 		this.text(el, "Started date", "Stamped when moved to an active status. Empty = don't track.", config.startedField, (v) => (config.startedField = v));

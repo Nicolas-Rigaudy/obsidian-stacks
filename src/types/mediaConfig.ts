@@ -47,6 +47,8 @@ export interface MediaTypeConfig {
 	/** Ordered: defines kanban column order. */
 	statuses: StatusDef[];
 	titleField: string;
+	/** Shown on cards next to the series (author for books). Empty string = none. */
+	creatorField: string;
 	coverField: string;
 	ratingField: string;
 	/** Date fields stamped on status changes. Empty string = not tracked. */

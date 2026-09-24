@@ -10,10 +10,16 @@ import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 
 type Fm = Record<string, unknown>;
 
+export interface ProgressChange {
+	previous: number;
+	value: number;
+}
+
 /**
- * Set the status. Moving into an active status stamps the started date if it's
- * empty; moving into a done status stamps the finished date if it's empty and
- * fills progress up to the total (like Reading.md's "Finish" button).
+ * Set the status and return the previous one. Moving into an active status
+ * stamps the started date if it's empty; moving into a done status stamps the
+ * finished date if it's empty and fills progress up to the total (like
+ * Reading.md's "Finish" button). Setting the current status changes nothing.
  */
 export async function setStatus(
 	app: App,
@@ -21,9 +27,12 @@ export async function setStatus(
 	config: MediaTypeConfig,
 	status: string,
 	today: string = todayISO(),
-): Promise<void> {
+): Promise<string | null> {
 	const bucket = bucketOf(status, config);
+	let previous: string | null = null;
 	await app.fileManager.processFrontMatter(file, (fm: Fm) => {
+		previous = toStr(fm[config.statusField]);
+		if (previous === status) return;
 		fm[config.statusField] = status;
 		if (bucket === "active" && config.startedField && toStr(fm[config.startedField]) === null) {
 			fm[config.startedField] = today;
@@ -37,40 +46,43 @@ export async function setStatus(
 			}
 		}
 	});
+	return previous;
 }
 
-/** Add `delta` to the progress field. Returns the new value, or null if the library has no progress. */
+/** Add `delta` to the progress field. Null if the library has no progress. */
 export async function bumpProgress(
 	app: App,
 	file: TFile,
 	config: MediaTypeConfig,
 	delta: number,
-): Promise<number | null> {
+): Promise<ProgressChange | null> {
 	const p = config.progress;
 	if (!p) return null;
-	let result: number | null = null;
+	let result: ProgressChange | null = null;
 	await app.fileManager.processFrontMatter(file, (fm: Fm) => {
-		const next = nextProgress(fm[p.currentField], delta, fm[p.totalField]);
-		fm[p.currentField] = next;
-		result = next;
+		const previous = toNum(fm[p.currentField]) ?? 0;
+		const value = nextProgress(fm[p.currentField], delta, fm[p.totalField]);
+		fm[p.currentField] = value;
+		result = { previous, value };
 	});
 	return result;
 }
 
-/** Set the progress field to an exact value (typed correction). Returns the stored value. */
+/** Set the progress field to an exact value (typed correction), clamped to the total. */
 export async function setProgress(
 	app: App,
 	file: TFile,
 	config: MediaTypeConfig,
 	value: number,
-): Promise<number | null> {
+): Promise<ProgressChange | null> {
 	const p = config.progress;
 	if (!p) return null;
-	let result: number | null = null;
+	let result: ProgressChange | null = null;
 	await app.fileManager.processFrontMatter(file, (fm: Fm) => {
+		const previous = toNum(fm[p.currentField]) ?? 0;
 		const next = clampProgress(value, fm[p.totalField]);
 		fm[p.currentField] = next;
-		result = next;
+		result = { previous, value: next };
 	});
 	return result;
 }

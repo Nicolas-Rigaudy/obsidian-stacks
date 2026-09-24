@@ -1,43 +1,1178 @@
-/* Stacks plugin styles */
+/* ==========================================================================
+   Stacks — a library, not a dashboard.
+   Wood bookcases with brass nameplates, books standing on shelves, a card
+   catalogue for the board, a ledger for the list, a reading desk for up next.
+   All tokens live on .stacks-view / .stacks-root so embeds get them too.
+   ========================================================================== */
 
-.stacks-muted {
-	color: var(--text-muted);
+.stacks-view,
+.stacks-root {
+	--stacks-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", Georgia, serif;
+
+	/* furniture: the same in every theme, it's a physical object */
+	--stacks-wood-hi: #9a6238;
+	--stacks-wood-1: #7d4d29;
+	--stacks-wood-2: #603819;
+	--stacks-wood-3: #3a2110;
+	--stacks-wall-1: #2e1e14;
+	--stacks-wall-2: #1f140d;
+	--stacks-brass-hi: #f4dc9c;
+	--stacks-brass-1: #e2c27a;
+	--stacks-brass-2: #b8903f;
+	--stacks-brass-3: #7c5b1f;
+	--stacks-brass-ink: #3a2708;
+	--stacks-card: #f8f1de;
+	--stacks-card-ink: #2b2118;
+	--stacks-card-muted: #75634d;
+
+	/* the room and the paper around the furniture: follow the theme */
+	--stacks-room: radial-gradient(ellipse 120% 70% at 50% -10%, #fbf6ea 0%, #f1e7d1 55%, #e6d8bb 100%);
+	--stacks-paper: #fbf6ea;
+	--stacks-paper-2: #f1e7d1;
+	--stacks-ink: #2b2118;
+	--stacks-ink-muted: #75634d;
+	--stacks-rule: rgba(117, 99, 77, 0.22);
+
+	/* sizes */
+	--stacks-book-w: 124px;
+	--stacks-book-h: 188px;
+	--stacks-plank: 18px;
+	--stacks-row: 236px;
+	--stacks-pile-w: 172px;
+	--stacks-gutter: clamp(16px, 4vw, 48px);
+}
+
+body.theme-dark .stacks-view,
+body.theme-dark .stacks-root {
+	--stacks-room: radial-gradient(ellipse 120% 70% at 50% -10%, #3a2b1f 0%, #211812 55%, #150f0b 100%);
+	--stacks-paper: #2a211a;
+	--stacks-paper-2: #332820;
+	--stacks-ink: #efe4cf;
+	--stacks-ink-muted: #b4a38a;
+	--stacks-rule: rgba(226, 194, 122, 0.16);
+}
+
+@media (max-width: 600px) {
+	.stacks-view,
+	.stacks-root {
+		--stacks-book-w: 88px;
+		--stacks-book-h: 134px;
+		--stacks-plank: 14px;
+		--stacks-row: 176px;
+		--stacks-pile-w: 124px;
+	}
+}
+
+/* Heights below are exact (rows line up with the plank gradient), so size borders-in. */
+.stacks-view *,
+.stacks-root,
+.stacks-root * {
+	box-sizing: border-box;
+}
+
+/* ---------- the tab ---------- */
+
+.workspace-leaf-content .view-content.stacks-view {
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	background: var(--stacks-room);
+	color: var(--stacks-ink);
+}
+
+.stacks-view-body {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.stacks-view-body > .stacks-root.is-board {
+	height: 100%;
+}
+
+.stacks-toolbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px 16px;
+	padding: 12px var(--stacks-gutter);
+	border-bottom: 1px solid rgba(184, 144, 63, 0.35);
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.stacks-toolbar-title {
+	font-family: var(--stacks-serif);
+	font-size: 1.35em;
+	letter-spacing: 0.04em;
+	margin-right: auto;
+	color: var(--stacks-ink);
+}
+
+.stacks-tabs {
+	display: flex;
+	gap: 2px;
+	padding: 3px;
+	border-radius: 999px;
+	background: rgba(117, 99, 77, 0.14);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+button.stacks-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: auto;
+	padding: 5px 13px;
+	border: none;
+	border-radius: 999px;
+	background: transparent;
+	box-shadow: none;
+	color: var(--stacks-ink-muted);
+	font-family: var(--stacks-serif);
+	font-size: 13.5px;
+	cursor: pointer;
+}
+
+button.stacks-tab:hover {
+	color: var(--stacks-ink);
+	background: rgba(184, 144, 63, 0.15);
+}
+
+button.stacks-tab.is-active {
+	background: linear-gradient(180deg, var(--stacks-brass-hi), var(--stacks-brass-2));
+	color: var(--stacks-brass-ink);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.stacks-tab-icon {
+	display: inline-flex;
+}
+
+.stacks-tab-icon svg {
+	width: 15px;
+	height: 15px;
+}
+
+.stacks-library-select {
+	font-family: var(--stacks-serif);
+}
+
+.stacks-empty {
+	padding: 40px var(--stacks-gutter);
+	font-family: var(--stacks-serif);
+	font-style: italic;
+	color: var(--stacks-ink-muted);
+}
+
+.stacks-block-error {
+	margin-bottom: 8px;
+	padding: 8px 12px;
+	border-left: 3px solid var(--text-error);
+	background: var(--background-secondary);
 	font-size: var(--font-ui-small);
 }
 
-/* Library status view (Phase 1 check view) */
-.stacks-status {
-	padding: 1.5rem 2rem;
+/* ---------- the library room ---------- */
+
+.stacks-library {
+	/* a wall of bookcases: small ones stand side by side, big ones take the full width */
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 52px 34px;
+	padding: 40px var(--stacks-gutter) 56px;
 }
 
-.stacks-status h2 {
-	margin-top: 0;
+.stacks-library > .stacks-bookcase {
+	flex: 0 1 auto;
+	min-width: min(100%, 300px);
+	max-width: 100%;
 }
 
-.stacks-status-library {
-	margin-bottom: 2rem;
+.stacks-root.is-embedded .stacks-library {
+	padding: 18px 0 8px;
+	gap: 32px;
 }
 
-.stacks-status-table td {
-	padding: 0.15rem 1.5rem 0.15rem 0;
+/* ---------- bookcase: wooden frame, nameplate, back wall, shelves ---------- */
+
+.stacks-bookcase {
+	position: relative;
+	padding: 46px 14px 16px;
+	border-radius: 7px 7px 3px 3px;
+	background:
+		repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 6px, rgba(255, 255, 255, 0.035) 6px 7px, transparent 7px 13px),
+		linear-gradient(180deg, var(--stacks-wood-hi) 0%, var(--stacks-wood-1) 18%, var(--stacks-wood-2) 100%);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.18),
+		inset 0 -3px 0 rgba(0, 0, 0, 0.35),
+		inset 3px 0 0 rgba(255, 255, 255, 0.05),
+		0 28px 44px -20px rgba(0, 0, 0, 0.65),
+		0 2px 3px rgba(0, 0, 0, 0.3);
 }
 
-.stacks-status-unknown td {
-	color: var(--text-warning);
+/* crown moulding */
+.stacks-bookcase::before {
+	content: "";
+	position: absolute;
+	left: -7px;
+	right: -7px;
+	top: -9px;
+	height: 16px;
+	border-radius: 4px 4px 2px 2px;
+	background: linear-gradient(180deg, var(--stacks-wood-hi), var(--stacks-wood-2) 70%, var(--stacks-wood-3));
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Settings tab */
+.stacks-plaque {
+	position: absolute;
+	top: 12px;
+	left: 50%;
+	transform: translateX(-50%);
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	padding: 3px 22px 4px;
+	border-radius: 3px;
+	background: linear-gradient(180deg, var(--stacks-brass-hi) 0%, var(--stacks-brass-1) 38%, var(--stacks-brass-2) 58%, var(--stacks-brass-1) 100%);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.55);
+	color: var(--stacks-brass-ink);
+	font-family: var(--stacks-serif);
+	font-size: 13px;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+	white-space: nowrap;
+}
+
+/* screws */
+.stacks-plaque::before,
+.stacks-plaque::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	width: 5px;
+	height: 5px;
+	margin-top: -2.5px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 35%, var(--stacks-brass-hi), var(--stacks-brass-3));
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.stacks-plaque::before {
+	left: 7px;
+}
+
+.stacks-plaque::after {
+	right: 7px;
+}
+
+.stacks-plaque-count {
+	letter-spacing: 0.02em;
+	font-variant-numeric: oldstyle-nums;
+	opacity: 0.72;
+}
+
+.stacks-shelves {
+	isolation: isolate;
+	--stacks-shelf-top: calc(var(--stacks-row) - var(--stacks-plank));
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	column-gap: 14px;
+	row-gap: 0;
+	min-height: var(--stacks-row);
+	padding: 0 20px;
+	border-radius: 2px;
+	background:
+		/* one plank per row, with a lit front edge and the shadow it casts on the wall below */
+		repeating-linear-gradient(
+			180deg,
+			rgba(0, 0, 0, 0.5) 0,
+			transparent 26px,
+			transparent var(--stacks-shelf-top),
+			var(--stacks-wood-hi) var(--stacks-shelf-top),
+			var(--stacks-wood-1) calc(var(--stacks-shelf-top) + 3px),
+			var(--stacks-wood-2) calc(var(--stacks-row) - 5px),
+			var(--stacks-wood-3) calc(var(--stacks-row) - 5px),
+			var(--stacks-wood-3) var(--stacks-row)
+		),
+		/* lamplight */
+		radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255, 206, 140, 0.13), transparent 70%),
+		/* back-wall boards */
+		repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px 64px),
+		linear-gradient(180deg, var(--stacks-wall-1), var(--stacks-wall-2));
+	box-shadow:
+		inset 12px 0 16px -12px rgba(0, 0, 0, 0.75),
+		inset -12px 0 16px -12px rgba(0, 0, 0, 0.75);
+}
+
+.stacks-slot {
+	position: relative;
+	flex: none;
+	height: var(--stacks-row);
+	display: flex;
+	align-items: flex-end;
+	padding-bottom: var(--stacks-plank);
+}
+
+.stacks-shelf-note {
+	align-self: center;
+	margin-top: calc(var(--stacks-row) / -2 - var(--stacks-plank));
+	width: 100%;
+	text-align: center;
+	font-family: var(--stacks-serif);
+	font-style: italic;
+	color: rgba(244, 220, 156, 0.6);
+}
+
+/* ---------- a book ---------- */
+
+.stacks-book {
+	position: relative;
+	flex: none;
+	width: var(--stacks-book-w);
+	height: var(--stacks-book-h);
+	border-radius: 2px 5px 5px 2px;
+	background: #3b2b20;
+	box-shadow: 1px 0 0 rgba(0, 0, 0, 0.45), 6px 9px 14px rgba(0, 0, 0, 0.55);
+	transform-origin: 50% 100%;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	cursor: pointer;
+	outline: none;
+}
+
+.stacks-book-cover {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	border-radius: inherit;
+	user-select: none;
+}
+
+/* hinge and spine sheen, page-edge glint */
+.stacks-book::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	border-radius: inherit;
+	pointer-events: none;
+	background: linear-gradient(90deg, rgba(0, 0, 0, 0.5) 0, rgba(255, 255, 255, 0.2) 3px, rgba(0, 0, 0, 0.22) 7px, transparent 12px, transparent 94%, rgba(255, 255, 255, 0.1));
+}
+
+/* contact shadow on the plank */
+.stacks-book::after {
+	content: "";
+	position: absolute;
+	left: 4%;
+	right: -6%;
+	bottom: -5px;
+	height: 10px;
+	z-index: -1;
+	border-radius: 50%;
+	background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0.6), transparent 70%);
+	pointer-events: none;
+}
+
+.stacks-slot .stacks-book:hover,
+.stacks-slot .stacks-book:focus-visible,
+.stacks-desk-item .stacks-book:hover,
+.stacks-desk-item .stacks-book:focus-visible {
+	transform: translateY(-12px) rotate(-1.6deg);
+	box-shadow: 1px 0 0 rgba(0, 0, 0, 0.45), 10px 20px 24px rgba(0, 0, 0, 0.55);
+}
+
+.stacks-book:focus-visible {
+	box-shadow: 0 0 0 2px var(--stacks-brass-1), 10px 20px 24px rgba(0, 0, 0, 0.55);
+}
+
+/* ribbon bookmark on books in progress */
+.stacks-bookmark {
+	position: absolute;
+	top: -5px;
+	right: 16%;
+	z-index: 2;
+	width: 13px;
+	height: 46px;
+	background: linear-gradient(90deg, #7d1616, #c43a2f 50%, #7d1616);
+	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+	filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+	pointer-events: none;
+}
+
+/* cloth binding for books without cover art */
+.stacks-book.is-binding {
+	background:
+		linear-gradient(90deg, rgba(0, 0, 0, 0.4), transparent 14%),
+		repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.035) 0 2px, transparent 2px 4px),
+		repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.06) 0 2px, transparent 2px 4px),
+		hsl(var(--stacks-hue, 20) 34% 28%);
+}
+
+.stacks-binding-face {
+	position: absolute;
+	inset: 12% 10% 12% 16%;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 6px;
+	border: 1px solid rgba(226, 194, 122, 0.6);
+	outline: 1px solid rgba(226, 194, 122, 0.25);
+	outline-offset: 3px;
+	text-align: center;
+	pointer-events: none;
+}
+
+.stacks-binding-title {
+	display: -webkit-box;
+	-webkit-line-clamp: 5;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	overflow-wrap: break-word;
+	font-family: var(--stacks-serif);
+	font-size: 13.5px;
+	line-height: 1.2;
+	letter-spacing: 0.02em;
+	color: var(--stacks-brass-1);
+	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+}
+
+.stacks-binding-title.is-long {
+	font-size: 11px;
+	letter-spacing: 0;
+}
+
+.stacks-binding-sub {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	font-family: var(--stacks-serif);
+	font-style: italic;
+	font-size: 10px;
+	line-height: 1.25;
+	color: rgba(226, 194, 122, 0.78);
+}
+
+.stacks-book.is-thumb .stacks-binding-face,
+.stacks-book.is-thumb .stacks-bookmark {
+	display: none;
+}
+
+/* ---------- a series lying in a pile ---------- */
+
+.stacks-pile {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	width: var(--stacks-pile-w);
+	cursor: pointer;
+	transition: transform 0.2s ease;
+	outline: none;
+}
+
+.stacks-pile:hover,
+.stacks-pile:focus-visible {
+	transform: translateY(-5px);
+}
+
+.stacks-pile:focus-visible .stacks-pile-tag {
+	box-shadow: 0 0 0 2px var(--stacks-brass-hi);
+}
+
+.stacks-pile-tag {
+	max-width: 100%;
+	margin-bottom: 10px;
+	padding: 2px 10px 3px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	border-radius: 2px;
+	background: linear-gradient(180deg, var(--stacks-card), #e9dfc5);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+	color: var(--stacks-card-ink);
+	font-family: var(--stacks-serif);
+	font-size: 11.5px;
+	letter-spacing: 0.03em;
+}
+
+.stacks-spine {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	width: calc(var(--stacks-pile-w) * var(--stacks-wp, 94) / 100);
+	height: 24px;
+	margin-left: var(--stacks-dx, 0);
+	padding: 0 18px;
+	overflow: hidden;
+	border-radius: 3px 2px 2px 3px;
+	background:
+		linear-gradient(90deg, transparent 10px, rgba(226, 194, 122, 0.55) 10px 11px, transparent 11px calc(100% - 11px), rgba(226, 194, 122, 0.55) calc(100% - 11px) calc(100% - 10px), transparent 0),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 35%, rgba(0, 0, 0, 0.28)),
+		hsl(var(--stacks-hue, 20) 36% 30%);
+	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+	color: var(--stacks-brass-1);
+	font-family: var(--stacks-serif);
+	font-size: 11px;
+	white-space: nowrap;
+	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+
+.stacks-spine-num {
+	flex: none;
+	font-variant-numeric: oldstyle-nums;
+	opacity: 0.8;
+}
+
+.stacks-spine-title {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.stacks-spine.is-more {
+	justify-content: center;
+	font-style: italic;
+}
+
+/* ---------- a series stood up between bookends ---------- */
+
+.stacks-bookend {
+	flex: none;
+	height: var(--stacks-row);
+	display: flex;
+	align-items: flex-end;
+	padding-bottom: var(--stacks-plank);
+}
+
+.stacks-bookend-plate {
+	width: 16px;
+	height: 112px;
+	border-radius: 3px 3px 0 0;
+	background: linear-gradient(90deg, #4b4d52, #a3a5aa 40%, #6a6c71 60%, #3f4145);
+	box-shadow: 4px 6px 10px rgba(0, 0, 0, 0.55);
+}
+
+.stacks-bookend.is-start .stacks-bookend-plate {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 150px;
+	overflow: hidden;
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+	background: linear-gradient(90deg, var(--stacks-brass-3), var(--stacks-brass-1) 45%, var(--stacks-brass-2));
+	color: var(--stacks-brass-ink);
+	font-family: var(--stacks-serif);
+	font-size: 11.5px;
+	letter-spacing: 0.08em;
+	white-space: nowrap;
+	cursor: pointer;
+	outline: none;
+}
+
+.stacks-bookend.is-start .stacks-bookend-plate:hover,
+.stacks-bookend.is-start .stacks-bookend-plate:focus-visible {
+	background: linear-gradient(90deg, var(--stacks-brass-2), var(--stacks-brass-hi) 45%, var(--stacks-brass-1));
+}
+
+/* ---------- board: the card catalogue ---------- */
+
+.stacks-board {
+	display: flex;
+	align-items: flex-start;
+	gap: 20px;
+	height: 100%;
+	padding: 28px var(--stacks-gutter) 28px;
+	overflow-x: auto;
+}
+
+.stacks-root.is-embedded .stacks-board {
+	height: auto;
+	padding: 12px 0;
+}
+
+.stacks-drawer {
+	flex: 0 0 290px;
+	display: flex;
+	flex-direction: column;
+	max-height: 100%;
+	padding: 12px 10px 10px;
+	border-radius: 6px;
+	background:
+		repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 7px),
+		linear-gradient(180deg, var(--stacks-wood-hi), var(--stacks-wood-1) 20%, var(--stacks-wood-2));
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 18px 30px -16px rgba(0, 0, 0, 0.6);
+	transition: box-shadow 0.15s ease;
+}
+
+.stacks-root.is-embedded .stacks-drawer {
+	max-height: 70vh;
+}
+
+.stacks-drawer.is-drop-target {
+	box-shadow: 0 0 0 2px var(--stacks-brass-hi), 0 0 24px rgba(244, 220, 156, 0.35), 0 18px 30px -16px rgba(0, 0, 0, 0.6);
+}
+
+/* brass label holder with a paper label */
+.stacks-drawer-head {
+	align-self: center;
+	margin-bottom: 12px;
+	padding: 3px;
+	border-radius: 3px;
+	background: linear-gradient(180deg, var(--stacks-brass-hi), var(--stacks-brass-2));
+	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5);
+}
+
+.stacks-drawer-label {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	padding: 2px 16px;
+	background: var(--stacks-card);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+	color: var(--stacks-card-ink);
+	font-family: var(--stacks-serif);
+	font-size: 13px;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.stacks-drawer-count {
+	letter-spacing: 0;
+	color: var(--stacks-card-muted);
+	font-variant-numeric: oldstyle-nums;
+}
+
+.stacks-drawer-cards {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	flex: 1;
+	min-height: 110px;
+	padding: 10px;
+	overflow-y: auto;
+	border-radius: 3px;
+	background: linear-gradient(180deg, #24160d, #1a0f08);
+	box-shadow: inset 0 6px 12px rgba(0, 0, 0, 0.7);
+}
+
+.stacks-drawer-cards::-webkit-scrollbar {
+	width: 8px;
+}
+
+.stacks-drawer-cards::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.stacks-drawer-cards::-webkit-scrollbar-thumb {
+	border-radius: 4px;
+	background: linear-gradient(90deg, var(--stacks-brass-3), var(--stacks-brass-2));
+}
+
+.stacks-drawer-empty {
+	margin: auto;
+	font-family: var(--stacks-serif);
+	font-style: italic;
+	color: rgba(244, 220, 156, 0.45);
+}
+
+.stacks-card {
+	flex: none;
+	display: flex;
+	gap: 11px;
+	padding: 9px 10px 9px 9px;
+	border-radius: 3px;
+	background:
+		linear-gradient(180deg, transparent 21px, rgba(196, 72, 64, 0.35) 21px 22px, transparent 22px),
+		repeating-linear-gradient(180deg, transparent 0 17px, rgba(88, 118, 168, 0.14) 17px 18px),
+		var(--stacks-card);
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 2px 4px rgba(0, 0, 0, 0.45);
+	color: var(--stacks-card-ink);
+	cursor: grab;
+	outline: none;
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stacks-card:hover,
+.stacks-card:focus-visible {
+	transform: translateY(-2px) rotate(-0.4deg);
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 8px 14px rgba(0, 0, 0, 0.5);
+}
+
+.stacks-card:focus-visible {
+	box-shadow: 0 0 0 2px var(--stacks-brass-1), 0 8px 14px rgba(0, 0, 0, 0.5);
+}
+
+.stacks-card.is-dragging {
+	opacity: 0.35;
+}
+
+.stacks-book.is-thumb {
+	width: 44px;
+	height: 66px;
+	border-radius: 1px 3px 3px 1px;
+	box-shadow: 1px 0 0 rgba(0, 0, 0, 0.4), 2px 3px 5px rgba(0, 0, 0, 0.45);
+	cursor: inherit;
+}
+
+.stacks-book.is-thumb::after {
+	display: none;
+}
+
+.stacks-card-text {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 3px;
+}
+
+.stacks-card-title {
+	font-family: var(--stacks-serif);
+	font-size: 14.5px;
+	font-weight: 600;
+	line-height: 1.2;
+	overflow-wrap: anywhere;
+}
+
+.stacks-card-sub {
+	font-family: var(--stacks-serif);
+	font-style: italic;
+	font-size: 12px;
+	line-height: 1.25;
+	color: var(--stacks-card-muted);
+}
+
+.stacks-meter {
+	height: 5px;
+	margin-top: 4px;
+	overflow: hidden;
+	border-radius: 3px;
+	background: rgba(117, 99, 77, 0.22);
+}
+
+.stacks-meter > span {
+	display: block;
+	height: 100%;
+	width: 0;
+	border-radius: inherit;
+	background: linear-gradient(90deg, var(--stacks-brass-2), var(--stacks-brass-hi));
+	transition: width 0.35s ease;
+}
+
+.stacks-meter.is-large {
+	height: 8px;
+	margin-top: 8px;
+	background: rgba(255, 255, 255, 0.12);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- list: the catalogue ledger ---------- */
+
+.stacks-ledger-wrap {
+	padding: 30px var(--stacks-gutter) 48px;
+}
+
+.stacks-root.is-embedded .stacks-ledger-wrap {
+	padding: 12px 0;
+}
+
+.stacks-ledger-sheet {
+	padding: 22px 26px 26px;
+	border-radius: 4px;
+	background: linear-gradient(180deg, var(--stacks-paper), var(--stacks-paper-2));
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 16px 36px -16px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.2);
+	color: var(--stacks-ink);
+}
+
+.stacks-ledger-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	padding-bottom: 10px;
+	margin-bottom: 4px;
+	border-bottom: 3px double var(--stacks-brass-2);
+	font-family: var(--stacks-serif);
+}
+
+.stacks-ledger-title {
+	font-size: 1.3em;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+}
+
+.stacks-ledger-count {
+	font-style: italic;
+	color: var(--stacks-ink-muted);
+}
+
+.stacks-ledger-scroll {
+	overflow-x: auto;
+}
+
+.stacks-ledger {
+	width: 100%;
+	border-collapse: collapse;
+	font-family: var(--stacks-serif);
+	font-size: 14px;
+}
+
+.stacks-ledger th {
+	padding: 10px 10px 8px;
+	border-bottom: 1px solid var(--stacks-brass-2);
+	text-align: left;
+	white-space: nowrap;
+	font-weight: 600;
+	font-size: 12px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--stacks-ink-muted);
+	cursor: pointer;
+	user-select: none;
+}
+
+.stacks-ledger th.is-cover {
+	cursor: default;
+	width: 42px;
+}
+
+.stacks-ledger th:hover,
+.stacks-ledger th.is-sorted {
+	color: var(--stacks-ink);
+}
+
+.stacks-sort-arrow {
+	font-size: 9px;
+	color: var(--stacks-brass-2);
+}
+
+.stacks-ledger td {
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--stacks-rule);
+	vertical-align: middle;
+}
+
+.stacks-ledger tbody tr:hover td {
+	background: rgba(184, 144, 63, 0.09);
+}
+
+.stacks-ledger .stacks-book.is-thumb {
+	width: 28px;
+	height: 42px;
+}
+
+.stacks-ledger-link {
+	cursor: pointer;
+	font-weight: 600;
+	outline: none;
+}
+
+.stacks-ledger-link:hover,
+.stacks-ledger-link:focus-visible {
+	text-decoration: underline;
+	text-decoration-color: var(--stacks-brass-2);
+	text-underline-offset: 3px;
+}
+
+select.stacks-status-select {
+	height: auto;
+	padding: 2px 26px 2px 8px;
+	font-family: var(--stacks-serif);
+	font-size: 13px;
+	background-color: transparent;
+	color: var(--stacks-ink);
+	box-shadow: none;
+	border: 1px solid var(--stacks-rule);
+}
+
+.stacks-stars {
+	color: var(--stacks-brass-2);
+	letter-spacing: 1px;
+}
+
+/* ---------- up next: the reading desk ---------- */
+
+.stacks-upnext {
+	display: flex;
+	flex-direction: column;
+	gap: 40px;
+	padding: 30px var(--stacks-gutter) 56px;
+}
+
+.stacks-root.is-embedded .stacks-upnext {
+	padding: 12px 0;
+	gap: 28px;
+}
+
+.stacks-heading {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	margin-bottom: 14px;
+	font-family: var(--stacks-serif);
+	font-size: 1.4em;
+	letter-spacing: 0.03em;
+	color: var(--stacks-ink);
+}
+
+.stacks-heading-count {
+	font-size: 0.7em;
+	color: var(--stacks-ink-muted);
+	font-variant-numeric: oldstyle-nums;
+}
+
+.stacks-desk {
+	display: grid;
+	gap: 22px;
+}
+
+.stacks-desk-item {
+	position: relative;
+	isolation: isolate;
+	display: flex;
+	align-items: flex-end;
+	gap: 30px;
+	padding: 28px 30px 22px;
+	border-radius: 10px 10px 4px 4px;
+	background:
+		radial-gradient(ellipse 60% 90% at 15% -10%, rgba(255, 210, 145, 0.28), transparent 65%),
+		linear-gradient(180deg, transparent calc(100% - 22px), var(--stacks-wood-hi) calc(100% - 22px), var(--stacks-wood-1) calc(100% - 18px), var(--stacks-wood-2) calc(100% - 5px), var(--stacks-wood-3) calc(100% - 5px)),
+		repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.09) 0 1px, transparent 1px 9px),
+		linear-gradient(180deg, #3a2618, #2a1a10);
+	box-shadow: 0 24px 40px -22px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+	color: #f1e6d0;
+}
+
+.stacks-book.is-desk {
+	width: calc(var(--stacks-book-w) * 1.1);
+	height: calc(var(--stacks-book-h) * 1.1);
+}
+
+.stacks-desk-info {
+	flex: 1;
+	min-width: 0;
+	padding-bottom: 30px;
+}
+
+.stacks-desk-title {
+	font-family: var(--stacks-serif);
+	font-size: 1.45em;
+	line-height: 1.2;
+	cursor: pointer;
+	outline: none;
+}
+
+.stacks-desk-title:hover,
+.stacks-desk-title:focus-visible {
+	text-decoration: underline;
+	text-decoration-color: var(--stacks-brass-1);
+	text-underline-offset: 4px;
+}
+
+.stacks-desk-sub {
+	margin-top: 3px;
+	font-family: var(--stacks-serif);
+	font-style: italic;
+	color: rgba(241, 230, 208, 0.7);
+}
+
+.stacks-progress-row {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 18px;
+	font-family: var(--stacks-serif);
+}
+
+input.stacks-page-input {
+	width: 4.5em;
+	height: auto;
+	padding: 1px 4px;
+	border: none;
+	border-bottom: 1px solid var(--stacks-brass-1);
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	color: #fff4dc;
+	font-family: var(--stacks-serif);
+	font-size: 1.35em;
+	text-align: right;
+	font-variant-numeric: lining-nums tabular-nums;
+}
+
+input.stacks-page-input:focus {
+	outline: none;
+	border-bottom-width: 2px;
+	background: rgba(255, 255, 255, 0.05);
+}
+
+.stacks-progress-of {
+	color: rgba(241, 230, 208, 0.75);
+}
+
+.stacks-progress-pct {
+	margin-left: auto;
+	color: var(--stacks-brass-1);
+	font-variant-numeric: oldstyle-nums;
+}
+
+.stacks-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 16px;
+}
+
+button.stacks-btn {
+	height: auto;
+	padding: 6px 15px;
+	border: 1px solid rgba(226, 194, 122, 0.45);
+	border-radius: 4px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.18));
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset, 0 2px 3px rgba(0, 0, 0, 0.35);
+	color: #f1e6d0;
+	font-family: var(--stacks-serif);
+	font-size: 14px;
+	font-variant-numeric: lining-nums;
+	cursor: pointer;
+}
+
+button.stacks-btn:hover {
+	border-color: var(--stacks-brass-1);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.1));
+}
+
+button.stacks-btn:active {
+	transform: translateY(1px);
+}
+
+button.stacks-btn.is-primary {
+	border-color: var(--stacks-brass-3);
+	background: linear-gradient(180deg, var(--stacks-brass-hi), var(--stacks-brass-2));
+	color: var(--stacks-brass-ink);
+	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+button.stacks-btn.is-primary:hover {
+	background: linear-gradient(180deg, #fbe8b4, var(--stacks-brass-1));
+}
+
+/* up-next shelf: a one-shelf bookcase with rank tags and Start buttons */
+.stacks-bookcase.is-single .stacks-shelves {
+	min-height: var(--stacks-row);
+	max-height: none;
+}
+
+.stacks-rank {
+	position: absolute;
+	top: calc(var(--stacks-row) - var(--stacks-plank) - var(--stacks-book-h) - 11px);
+	left: -8px;
+	z-index: 3;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 30%, var(--stacks-brass-hi), var(--stacks-brass-2) 70%, var(--stacks-brass-3));
+	box-shadow: 0 2px 3px rgba(0, 0, 0, 0.55);
+	color: var(--stacks-brass-ink);
+	font-family: var(--stacks-serif);
+	font-size: 12px;
+	font-weight: 700;
+	pointer-events: none;
+}
+
+.stacks-slot > button.stacks-start {
+	position: absolute;
+	left: 50%;
+	bottom: calc(var(--stacks-plank) + 12px);
+	z-index: 3;
+	transform: translateX(-50%);
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.stacks-slot:hover > button.stacks-start,
+.stacks-slot:focus-within > button.stacks-start {
+	opacity: 1;
+}
+
+@media (hover: none) {
+	.stacks-slot > button.stacks-start {
+		opacity: 1;
+	}
+}
+
+.stacks-footnote {
+	margin-top: 14px;
+	font-family: var(--stacks-serif);
+	font-style: italic;
+	color: var(--stacks-ink-muted);
+}
+
+.stacks-footnote > div + div {
+	margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+	.stacks-desk-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 18px;
+		padding: 22px 20px 22px;
+	}
+
+	.stacks-desk-info {
+		width: 100%;
+	}
+
+	.stacks-toolbar-title {
+		width: 100%;
+	}
+
+	button.stacks-tab {
+		padding: 5px 10px;
+	}
+
+	.stacks-drawer {
+		flex-basis: 250px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.stacks-book,
+	.stacks-pile,
+	.stacks-card,
+	.stacks-meter > span {
+		transition: none;
+	}
+}
+
+/* ---------- settings tab ---------- */
+
 .stacks-settings-library {
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-m);
 	margin-bottom: 1rem;
 	padding: 0.5rem 1rem;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
 }
 
 .stacks-settings-library > summary {
-	cursor: pointer;
-	font-weight: var(--font-semibold);
 	padding: 0.25rem 0;
+	font-weight: var(--font-semibold);
+	cursor: pointer;
 }
 
 .stacks-status-row .setting-item-control {

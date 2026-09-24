@@ -1,0 +1,122 @@
+import { secondaryLine } from "../../logic/cardText.ts";
+import { bindingHue, stableRange } from "../../logic/placeholder.ts";
+import { shelfSections, type ShelfItem } from "../../logic/shelf.ts";
+import type { MediaTypeConfig } from "../../types/mediaConfig.ts";
+import type { MediaNote } from "../../types/mediaNote.ts";
+import { emptyState, LibraryRenderer, makeInteractive, renderBook } from "../shared.ts";
+
+type Pile = Extract<ShelfItem, { kind: "pile" }>;
+
+/** Spines drawn in a pile before it's summarized as "+N more". */
+const PILE_SPINES = 6;
+
+/**
+ * The library: one bookcase per status, books standing on wooden shelves.
+ * A series with several volumes on the same shelf lies flat as a pile of
+ * spines; clicking it stands the volumes up between bookends.
+ */
+export class ShelfRenderer extends LibraryRenderer {
+	private readonly openPiles = new Set<string>();
+
+	protected render(el: HTMLElement, config: MediaTypeConfig, notes: readonly MediaNote[]): void {
+		el.addClass("is-shelf");
+		const sections = shelfSections(notes, config, this.options.statuses);
+		if (sections.length === 0) {
+			emptyState(el, `No ${config.label.toLowerCase() || "items"} here yet.`);
+			return;
+		}
+
+		const room = el.createDiv({ cls: "stacks-library" });
+		for (const section of sections) {
+			const bookcase = room.createDiv({ cls: "stacks-bookcase" });
+			if (section.status) bookcase.dataset.bucket = section.status.bucket;
+			const plaque = bookcase.createDiv({ cls: "stacks-plaque" });
+			plaque.createSpan({ cls: "stacks-plaque-label", text: section.status ? section.status.label || section.status.value : "Unsorted" });
+			plaque.createSpan({ cls: "stacks-plaque-count", text: String(section.count) });
+
+			const shelves = bookcase.createDiv({ cls: "stacks-shelves" });
+			for (const item of section.items) {
+				if (item.kind === "book") {
+					this.standing(shelves, config, item.note);
+					continue;
+				}
+				const key = `${section.status?.value ?? ""}\u0000${item.series}`;
+				if (this.openPiles.has(key)) this.spreadOut(shelves, config, item, key);
+				else this.pile(shelves, item, key);
+			}
+		}
+	}
+
+	private standing(parent: HTMLElement, config: MediaTypeConfig, note: MediaNote): void {
+		const slot = parent.createDiv({ cls: "stacks-slot" });
+		makeInteractive(renderBook(slot, this.host, config, note, "shelf"), this.host, config, note);
+	}
+
+	private pile(parent: HTMLElement, pile: Pile, key: string): void {
+		const slot = parent.createDiv({ cls: "stacks-slot is-pile" });
+		const el = slot.createDiv({
+			cls: "stacks-pile",
+			attr: {
+				role: "button",
+				tabindex: "0",
+				"aria-label": `${pile.series}: ${pile.notes.length} volumes. Click to stand them up.`,
+			},
+		});
+		el.createDiv({ cls: "stacks-pile-tag", text: `${pile.series} · ${pile.notes.length}` });
+
+		const hidden = pile.notes.length > PILE_SPINES ? pile.notes.length - (PILE_SPINES - 1) : 0;
+		const shown = hidden > 0 ? pile.notes.slice(0, PILE_SPINES - 1) : pile.notes;
+		for (const n of shown) {
+			const spine = el.createDiv({ cls: "stacks-spine" });
+			spine.style.setProperty("--stacks-hue", String(bindingHue(`${pile.series}:${n.title}`)));
+			spine.style.setProperty("--stacks-wp", String(stableRange(n.title, 88, 100)));
+			spine.style.setProperty("--stacks-dx", `${stableRange(`${n.title}:dx`, -6, 6)}px`);
+			if (n.series?.position !== null && n.series?.position !== undefined) {
+				spine.createSpan({ cls: "stacks-spine-num", text: String(n.series.position) });
+			}
+			spine.createSpan({ cls: "stacks-spine-title", text: n.title });
+		}
+		if (hidden > 0) {
+			const more = el.createDiv({ cls: "stacks-spine is-more", text: `+${hidden} more` });
+			more.style.setProperty("--stacks-hue", String(bindingHue(pile.series)));
+			more.style.setProperty("--stacks-wp", "96");
+		}
+
+		const open = () => {
+			this.openPiles.add(key);
+			this.refresh();
+		};
+		el.addEventListener("click", open);
+		el.addEventListener("keydown", (evt) => {
+			if (evt.key === "Enter" || evt.key === " ") {
+				evt.preventDefault();
+				open();
+			}
+		});
+	}
+
+	private spreadOut(parent: HTMLElement, config: MediaTypeConfig, pile: Pile, key: string): void {
+		const start = parent.createDiv({ cls: "stacks-bookend is-start" });
+		const plate = start.createDiv({
+			cls: "stacks-bookend-plate",
+			text: pile.series,
+			attr: { role: "button", tabindex: "0", "aria-label": `Stack ${pile.series} back into a pile` },
+		});
+		const close = () => {
+			this.openPiles.delete(key);
+			this.refresh();
+		};
+		plate.addEventListener("click", close);
+		plate.addEventListener("keydown", (evt) => {
+			if (evt.key === "Enter" || evt.key === " ") {
+				evt.preventDefault();
+				close();
+			}
+		});
+
+		for (const n of pile.notes) this.standing(parent, config, n);
+		parent.createDiv({ cls: "stacks-bookend is-end" }).createDiv({ cls: "stacks-bookend-plate" });
+		// Keep the series readable on hover even when covers are unfamiliar.
+		plate.setAttr("title", pile.notes.map((n) => `${n.title} (${secondaryLine(n, config)})`).join("\n"));
+	}
+}
