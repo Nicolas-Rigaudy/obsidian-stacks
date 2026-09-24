@@ -1,14 +1,46 @@
 /* Stacks plugin styles */
 
-.stacks-hello {
-	padding: 2rem;
+.stacks-muted {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
 }
 
-.stacks-hello h2 {
+/* Library status view (Phase 1 check view) */
+.stacks-status {
+	padding: 1.5rem 2rem;
+}
+
+.stacks-status h2 {
 	margin-top: 0;
 }
 
-.stacks-hello .stacks-hello-meta {
-	color: var(--text-muted);
-	font-size: var(--font-ui-small);
+.stacks-status-library {
+	margin-bottom: 2rem;
+}
+
+.stacks-status-table td {
+	padding: 0.15rem 1.5rem 0.15rem 0;
+}
+
+.stacks-status-unknown td {
+	color: var(--text-warning);
+}
+
+/* Settings tab */
+.stacks-settings-library {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	margin-bottom: 1rem;
+	padding: 0.5rem 1rem;
+}
+
+.stacks-settings-library > summary {
+	cursor: pointer;
+	font-weight: var(--font-semibold);
+	padding: 0.25rem 0;
+}
+
+.stacks-status-row .setting-item-control {
+	flex-wrap: wrap;
+	justify-content: flex-start;
 }

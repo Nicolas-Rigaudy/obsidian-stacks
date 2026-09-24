@@ -12,11 +12,14 @@
 		"isolatedModules": true,
 		"strictNullChecks": true,
 		"strict": true,
+		"noEmit": true,
+		"allowImportingTsExtensions": true,
+		"verbatimModuleSyntax": true,
+		"erasableSyntaxOnly": true,
+		"allowSyntheticDefaultImports": true,
 		"lib": [
 			"DOM",
-			"ES5",
-			"ES6",
-			"ES7"
+			"ES2018"
 		]
 	},
 	"include": [

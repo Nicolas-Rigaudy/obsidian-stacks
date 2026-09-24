@@ -1,84 +1,42 @@
-import { ItemView, Plugin, WorkspaceLeaf } from "obsidian";
-
-export const VIEW_TYPE_STACKS_HELLO = "stacks-hello-view";
-
-/**
- * Phase 0 hello-world view. Its only job is to prove that a standalone
- * ItemView opens in its own leaf from a ribbon icon — confirming the whole
- * build -> deploy -> enable loop works before any real feature code lands.
- */
-class StacksHelloView extends ItemView {
-	constructor(leaf: WorkspaceLeaf) {
-		super(leaf);
-	}
-
-	getViewType(): string {
-		return VIEW_TYPE_STACKS_HELLO;
-	}
-
-	getDisplayText(): string {
-		return "Stacks";
-	}
-
-	getIcon(): string {
-		return "layers";
-	}
-
-	async onOpen(): Promise<void> {
-		const container = this.contentEl;
-		container.empty();
-		container.addClass("stacks-hello");
-		container.createEl("h2", { text: "Stacks" });
-		container.createEl("p", {
-			text: "Hello world — a standalone ItemView is rendering in its own leaf.",
-		});
-		container.createEl("p", {
-			cls: "stacks-hello-meta",
-			text: "Phase 0 milestone: the build → deploy → enable loop works.",
-		});
-	}
-
-	async onClose(): Promise<void> {
-		this.contentEl.empty();
-	}
-}
+import { Plugin } from "obsidian";
+import { LiveIndex } from "./data/liveIndex.ts";
+import { mergeSettings, type StacksSettings } from "./settings/settings.ts";
+import { StacksSettingTab } from "./settings/settingsTab.ts";
+import { IndexStatusView, VIEW_TYPE_INDEX_STATUS } from "./views/IndexStatusView.ts";
 
 export default class StacksPlugin extends Plugin {
+	settings: StacksSettings = mergeSettings(null);
+	index!: LiveIndex;
+
 	async onload(): Promise<void> {
-		this.registerView(
-			VIEW_TYPE_STACKS_HELLO,
-			(leaf) => new StacksHelloView(leaf),
-		);
+		this.settings = mergeSettings(await this.loadData());
+		this.index = new LiveIndex(this, () => this.settings);
+		this.index.start();
 
-		this.addRibbonIcon("layers", "Open Stacks", () => {
-			void this.activateView();
-		});
-
+		this.registerView(VIEW_TYPE_INDEX_STATUS, (leaf) => new IndexStatusView(leaf, this));
+		this.addRibbonIcon("layers", "Open Stacks", () => void this.openStatusView());
 		this.addCommand({
-			id: "open-stacks-hello",
-			name: "Open Stacks (hello world)",
-			callback: () => void this.activateView(),
+			id: "open-library-status",
+			name: "Open library status",
+			callback: () => void this.openStatusView(),
 		});
+		this.addSettingTab(new StacksSettingTab(this.app, this));
 	}
 
-	async onunload(): Promise<void> {
-		// Obsidian detaches this plugin's leaves automatically on unload.
+	async saveSettings(): Promise<void> {
+		await this.saveData(this.settings);
+		this.index.settingsChanged();
 	}
 
-	async activateView(): Promise<void> {
+	private async openStatusView(): Promise<void> {
 		const { workspace } = this.app;
-
-		const existing = workspace.getLeavesOfType(VIEW_TYPE_STACKS_HELLO);
-		if (existing.length > 0) {
-			workspace.revealLeaf(existing[0]);
+		const existing = workspace.getLeavesOfType(VIEW_TYPE_INDEX_STATUS)[0];
+		if (existing) {
+			await workspace.revealLeaf(existing);
 			return;
 		}
-
 		const leaf = workspace.getLeaf(true);
-		await leaf.setViewState({
-			type: VIEW_TYPE_STACKS_HELLO,
-			active: true,
-		});
-		workspace.revealLeaf(leaf);
+		await leaf.setViewState({ type: VIEW_TYPE_INDEX_STATUS, active: true });
+		await workspace.revealLeaf(leaf);
 	}
 }
