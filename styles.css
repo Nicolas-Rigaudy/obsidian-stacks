@@ -1,0 +1,14 @@
+/* Stacks plugin styles */
+
+.stacks-hello {
+	padding: 2rem;
+}
+
+.stacks-hello h2 {
+	margin-top: 0;
+}
+
+.stacks-hello .stacks-hello-meta {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
