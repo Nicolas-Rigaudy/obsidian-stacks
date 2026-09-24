@@ -31,6 +31,7 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 		{ value: "book", label: "Books" },
 		{ value: "bd", label: "BDs" },
 	],
+	filterField: "",
 	statusField: "status",
 	statuses: [
 		{ value: "wishlist", label: "Wishlist", bucket: "other", hint: "don't own it yet" },
@@ -74,7 +75,13 @@ export const GAME_CONFIG: MediaTypeConfig = {
 	folder: "20 Personal/Hobbies/Video Games/Games",
 	categoryField: "category",
 	categoryValues: ["game"],
-	categoryFilters: [],
+	// Chips by platform (the three in the vault, checked 2026-09-25); more can be added in settings.
+	categoryFilters: [
+		{ value: "Switch", label: "Switch" },
+		{ value: "PC", label: "PC" },
+		{ value: "Miyoo", label: "Miyoo" },
+	],
+	filterField: "platform",
 	statusField: "status",
 	statuses: [
 		{ value: "backlog", label: "Backlog", bucket: "backlog", hint: "not started" },
@@ -109,6 +116,7 @@ export const WATCHING_CONFIG: MediaTypeConfig = {
 		{ value: "series", label: "Series" },
 		{ value: "anime", label: "Anime" },
 	],
+	filterField: "",
 	statusField: "status",
 	statuses: [
 		{ value: "backlog", label: "Backlog", bucket: "backlog", hint: "not started" },
@@ -169,6 +177,7 @@ export function blankMediaTypeConfig(label: string): MediaTypeConfig {
 		categoryField: "category",
 		categoryValues: [],
 		categoryFilters: [],
+		filterField: "",
 		statusField: "status",
 		statuses: [
 			{ value: "backlog", label: "Backlog", bucket: "backlog" },

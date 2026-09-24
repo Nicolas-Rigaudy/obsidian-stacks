@@ -20,6 +20,14 @@ export function categoryOf(fm: Frontmatter, config: MediaTypeConfig): string | n
 	return null;
 }
 
+function firstStr(v: unknown): string | null {
+	for (const x of Array.isArray(v) ? v : [v]) {
+		const s = toStr(x);
+		if (s !== null) return s;
+	}
+	return null;
+}
+
 export function matchesCategory(fm: Frontmatter, config: MediaTypeConfig): boolean {
 	return config.categoryValues.length === 0 || categoryOf(fm, config) !== null;
 }
@@ -60,6 +68,7 @@ export function parseNote(
 		path,
 		title: toStr(fm[config.titleField]) ?? basename,
 		category,
+		facet: config.filterField ? firstStr(fm[config.filterField]) : category,
 		status: toStr(fm[config.statusField]),
 		cover: toStr(fm[config.coverField]),
 		rating: toNum(fm[config.ratingField]),

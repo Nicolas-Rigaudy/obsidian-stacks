@@ -61,6 +61,8 @@ export interface MediaTypeConfig {
 	categoryValues: string[];
 	/** Filter chips shown in the toolbar (All / Films / Series...). Fewer than two = no chips. */
 	categoryFilters: FilterDef[];
+	/** Field the chips filter on (e.g. "platform"). Empty = the category field. */
+	filterField: string;
 	statusField: string;
 	/** Ordered: defines kanban column order. */
 	statuses: StatusDef[];

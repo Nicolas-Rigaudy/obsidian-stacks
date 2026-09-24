@@ -103,7 +103,7 @@ export class StacksView extends ItemView {
 		const filters = this.host.settings.mediaTypes[id].categoryFilters;
 		const category = filters.length >= 2 && filters.some((f) => f.value === this.filter) ? this.filter : null;
 		this.renderer = this.addChild(
-			createRenderer(this.kind, this.host, body.createDiv(), { libraryId: id, statuses: null, category, embedded: false }),
+			createRenderer(this.kind, this.host, body.createDiv(), { libraryId: id, statuses: null, filter: category, embedded: false }),
 		);
 	}
 
@@ -126,6 +126,9 @@ export class StacksView extends ItemView {
 			}
 		}
 
+		// Libraries stay anchored on the left, filters and screens on the right,
+		// so nothing shifts under the pointer when switching.
+		bar.createDiv({ cls: "stacks-toolbar-spacer" });
 		const filters = id ? this.host.settings.mediaTypes[id].categoryFilters : [];
 		if (filters.length >= 2) {
 			const chips = bar.createDiv({ cls: "stacks-seg is-small", attr: { role: "radiogroup", "aria-label": "Filter" } });

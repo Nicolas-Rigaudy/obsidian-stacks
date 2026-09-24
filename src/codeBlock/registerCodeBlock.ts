@@ -25,6 +25,6 @@ export function registerCodeBlock(plugin: Plugin, host: StacksHost): void {
 			el.createDiv({ cls: "stacks-empty", text: "No library is enabled. Turn one on in Settings → Stacks." });
 			return;
 		}
-		ctx.addChild(createRenderer(params.view, host, el.createDiv(), { libraryId, statuses: params.statuses, category: params.filter, embedded: true }));
+		ctx.addChild(createRenderer(params.view, host, el.createDiv(), { libraryId, statuses: params.statuses, filter: params.filter, embedded: true }));
 	});
 }

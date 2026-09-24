@@ -196,9 +196,10 @@ export class StacksSettingTab extends PluginSettingTab {
 	}
 
 	private renderFilters(el: HTMLElement, config: MediaTypeConfig): void {
+		this.text(el, "Filter field", "Field the chips filter on, e.g. platform. Empty = the category field.", config.filterField, (v) => (config.filterField = v));
 		new Setting(el)
 			.setName("Filter chips")
-			.setDesc("Category values offered as chips in the toolbar (All / Films / Series...). Two or more to show them.")
+			.setDesc("Values offered as chips in the toolbar (All / Films / Series...). Two or more to show them.")
 			.addButton((b) =>
 				b.setButtonText("Add chip").onClick(async () => {
 					config.categoryFilters.push({ value: "", label: "" });

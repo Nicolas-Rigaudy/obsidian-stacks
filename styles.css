@@ -1575,27 +1575,7 @@ body.theme-light .stacks-root[data-appearance="films"] {
 }
 
 /* Switch: red case, red band */
-.stacks-book.is-case-games[data-kind="switch"],
-.stacks-book.is-case-games[data-kind="nintendo-switch"] {
-	background: #d11a22;
-}
-
-.stacks-book.is-case-games[data-kind="switch"] .stacks-case-band,
-.stacks-book.is-case-games[data-kind="nintendo-switch"] .stacks-case-band {
-	background: linear-gradient(180deg, #ef3a41, #c8141c);
-	color: #fff;
-}
-
 /* PC: black DVD-style box with a steel-blue band */
-.stacks-book.is-case-games[data-kind="pc"] {
-	background: #0c0d10;
-}
-
-.stacks-book.is-case-games[data-kind="pc"] .stacks-case-band {
-	background: linear-gradient(180deg, #2b3a4f, #18222f);
-	color: #cfe3ff;
-}
-
 /* Miyoo and other retro handhelds: a grey cartridge, shorter, with grip ridges */
 .stacks-book.is-case-games[data-kind="miyoo"] {
 	height: calc(var(--stacks-book-h) * 0.8);
@@ -1837,12 +1817,6 @@ button.stacks-button.stacks-bookcase-more {
 /* ---------- cases: proportions and blank inserts that say "game" or "disc" ---------- */
 
 /* Switch cases are narrow and tall */
-.stacks-book.is-case-games[data-kind="switch"],
-.stacks-book.is-case-games[data-kind="nintendo-switch"] {
-	width: calc(var(--stacks-book-w) * 0.84);
-	border-radius: 6px;
-}
-
 /* Blu-ray (films): shorter, very rounded; the disc logo band */
 .stacks-book.is-case-films[data-kind="films"],
 .stacks-book.is-case-films[data-kind="film"],
@@ -1900,6 +1874,217 @@ button.stacks-button.stacks-bookcase-more {
 		linear-gradient(160deg, hsl(var(--stacks-hue, 0) 35% 26%), hsl(calc(var(--stacks-hue, 0) + 30) 40% 12%));
 	justify-content: flex-end;
 	padding-bottom: 16px;
+}
+
+/* ---------- hover caption: the full name, instantly ---------- */
+
+.stacks-caption {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 4;
+	padding: 22px 8px 7px;
+	border-radius: 0 0 5px 5px;
+	background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.9) 45%);
+	color: #fff;
+	font-family: var(--font-interface, system-ui, sans-serif);
+	text-align: left;
+	opacity: 0;
+	transform: translateY(6px);
+	transition: opacity 0.1s ease, transform 0.1s ease;
+	pointer-events: none;
+}
+
+.stacks-book:hover > .stacks-caption,
+.stacks-book:focus-visible > .stacks-caption {
+	opacity: 1;
+	transform: none;
+}
+
+.stacks-caption-title {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.2;
+}
+
+.stacks-caption-sub {
+	margin-top: 2px;
+	overflow: hidden;
+	font-size: 10.5px;
+	opacity: 0.8;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+/* ---------- Switch: game cards (cartridges) ---------- */
+
+.stacks-book.is-case-games[data-kind="switch"],
+.stacks-book.is-case-games[data-kind="nintendo-switch"] {
+	height: calc(var(--stacks-book-h) * 0.9);
+	width: calc(var(--stacks-book-h) * 0.9 * 0.72);
+	border-radius: 7px 7px 9px 9px;
+	background: linear-gradient(180deg, #3a3d43, #24262a);
+	/* the notch in the top-right corner */
+	clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+}
+
+.stacks-book.is-case-games[data-kind="switch"] .stacks-case-band,
+.stacks-book.is-case-games[data-kind="nintendo-switch"] .stacks-case-band {
+	height: 18px;
+	border-radius: 7px 0 0 0;
+	background: repeating-linear-gradient(90deg, #2c2e33 0 3px, #44474e 3px 5px);
+	color: transparent;
+}
+
+.stacks-book.is-case-games[data-kind="switch"] .stacks-case-art,
+.stacks-book.is-case-games[data-kind="switch"] .stacks-case-insert,
+.stacks-book.is-case-games[data-kind="nintendo-switch"] .stacks-case-art,
+.stacks-book.is-case-games[data-kind="nintendo-switch"] .stacks-case-insert {
+	top: 24px;
+	left: 7px;
+	width: calc(100% - 14px);
+	height: calc(100% - 42px);
+	border-radius: 4px;
+}
+
+/* the red mark under the label */
+.stacks-book.is-case-games[data-kind="switch"]::after,
+.stacks-book.is-case-games[data-kind="nintendo-switch"]::after {
+	left: 50%;
+	right: auto;
+	bottom: 6px;
+	width: 22px;
+	height: 5px;
+	margin-left: -11px;
+	z-index: 2;
+	border-radius: 3px;
+	background: #e60012;
+}
+
+/* ---------- PC: a classic big box, with thickness ---------- */
+
+.stacks-book.is-case-games[data-kind="pc"] {
+	width: calc(var(--stacks-book-w) * 1.06);
+	height: calc(var(--stacks-book-h) * 1.03);
+	border-radius: 2px;
+	background: #101114;
+	box-shadow: 5px -4px 0 -1px #2a2d34, 5px -4px 0 0 rgba(0, 0, 0, 0.6), 8px 10px 16px rgba(0, 0, 0, 0.55);
+}
+
+.stacks-book.is-case-games[data-kind="pc"] .stacks-case-band {
+	height: 16px;
+	border-radius: 2px 2px 0 0;
+	background: #0a0b0d;
+	color: #e8ecf2;
+	font-size: 8.5px;
+	line-height: 16px;
+	letter-spacing: 0.3em;
+	text-align: left;
+}
+
+.stacks-book.is-case-games[data-kind="pc"] .stacks-case-art,
+.stacks-book.is-case-games[data-kind="pc"] .stacks-case-insert {
+	top: 16px;
+	left: 0;
+	width: 100%;
+	height: calc(100% - 16px);
+	border-radius: 0 0 2px 2px;
+}
+
+/* no plastic sleeve on cardboard */
+.stacks-book.is-case-games[data-kind="pc"]::before {
+	background: linear-gradient(115deg, rgba(255, 255, 255, 0.1) 0, transparent 30%);
+}
+
+/* ---------- anime: an obi strip down the spine side ---------- */
+
+.stacks-case-obi {
+	display: none;
+}
+
+.stacks-book.is-case-films[data-kind="anime"] .stacks-case-obi {
+	position: absolute;
+	top: 20px;
+	bottom: 3px;
+	left: 5px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 17%;
+	overflow: hidden;
+	background: linear-gradient(90deg, #f4efe6, #e6ded0);
+	box-shadow: 2px 0 4px rgba(0, 0, 0, 0.35);
+	border-top: 4px solid #c8102e;
+	border-bottom: 4px solid #c8102e;
+	color: #1d1d1f;
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	writing-mode: vertical-rl;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.stacks-book.is-case-films[data-kind="anime"].is-thumb .stacks-case-obi {
+	top: 6px;
+	left: 2px;
+	font-size: 0;
+	border-width: 2px;
+}
+
+/* ---------- series: a season box set, discs visible on the side ---------- */
+
+.stacks-book.is-case-films[data-kind="series"] {
+	width: calc(var(--stacks-book-w) * 1.16);
+	border-radius: 3px;
+	background:
+		linear-gradient(90deg, transparent calc(100% - 17px), rgba(0, 0, 0, 0.5) calc(100% - 17px) calc(100% - 15px), transparent 0),
+		repeating-linear-gradient(180deg, #2d3037 0 6px, #17181c 6px 8px);
+	box-shadow: 4px -3px 0 -1px #25272d, 8px 10px 16px rgba(0, 0, 0, 0.55);
+}
+
+.stacks-book.is-case-films[data-kind="series"] .stacks-case-art,
+.stacks-book.is-case-films[data-kind="series"] .stacks-case-insert {
+	left: 0;
+	width: calc(100% - 17px);
+	border-radius: 0 2px 2px 0;
+}
+
+.stacks-book.is-case-films[data-kind="series"] .stacks-case-band {
+	right: 17px;
+	border-radius: 3px 0 0 0;
+}
+
+/* ---------- Miyoo games on the shelf: retro cartridges ---------- */
+
+.stacks-book.is-case-games[data-kind="miyoo"] {
+	height: calc(var(--stacks-book-h) * 0.8);
+	border-radius: 6px 6px 10px 10px;
+	background: linear-gradient(180deg, #a3a6ad, #7d8088);
+}
+
+.stacks-book.is-case-games[data-kind="miyoo"] .stacks-case-band {
+	height: 22px;
+	border-radius: 6px 6px 0 0;
+	background: repeating-linear-gradient(180deg, #8c8f97 0 2px, #b3b6bd 2px 4px);
+	color: transparent;
+}
+
+.stacks-book.is-case-games[data-kind="miyoo"] .stacks-case-art,
+.stacks-book.is-case-games[data-kind="miyoo"] .stacks-case-insert {
+	top: 28px;
+	left: 10px;
+	width: calc(100% - 20px);
+	height: calc(100% - 44px);
+	border-radius: 4px;
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
 }
 
 
@@ -2179,15 +2364,6 @@ button.stacks-screen-tile img {
 }
 
 /* retro handheld (Miyoo): vertical, screen on top, controls below */
-.stacks-device.is-handheld {
-	flex-direction: column;
-	width: 176px;
-	padding: 14px 14px 20px;
-	border-radius: 14px 14px 26px 14px;
-	background: linear-gradient(180deg, #c9cbd1, #a6a9b0);
-	box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6), inset 0 -3px 0 rgba(0, 0, 0, 0.15);
-}
-
 .stacks-handheld-bezel {
 	width: 100%;
 	padding: 10px;
@@ -2210,40 +2386,6 @@ button.stacks-screen-tile img {
 .stacks-handheld-bezel .stacks-screen-sub {
 	display: none;
 }
-
-.stacks-handheld-pad {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-	margin-top: 18px;
-	padding: 0 6px;
-}
-
-.stacks-dpad {
-	position: relative;
-	width: 46px;
-	height: 46px;
-	background:
-		linear-gradient(#34373e, #34373e) center / 16px 100% no-repeat,
-		linear-gradient(#34373e, #34373e) center / 100% 16px no-repeat;
-	filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
-}
-
-.stacks-ab {
-	display: flex;
-	gap: 8px;
-	transform: rotate(-25deg);
-}
-
-.stacks-ab-btn {
-	width: 22px;
-	height: 22px;
-	border-radius: 50%;
-	background: radial-gradient(circle at 40% 35%, #b8455b, #7d1f33);
-	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
-}
-
 .stacks-device-caption {
 	display: flex;
 	flex-direction: column;
@@ -2258,6 +2400,152 @@ button.stacks-screen-tile img {
 	letter-spacing: 0.2em;
 	text-transform: uppercase;
 }
+/* Miyoo Mini: symmetric rounded body, big screen, d-pad and an X/Y/A/B diamond */
+.stacks-device.is-handheld {
+	flex-direction: column;
+	width: 178px;
+	padding: 14px 14px 12px;
+	border-radius: 18px;
+	background: linear-gradient(180deg, #eceef1, #cfd2d8);
+	box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.9), inset 0 -3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.stacks-handheld-bezel {
+	width: 100%;
+	padding: 9px 9px 14px;
+	border-radius: 10px;
+	background: #1d1f24;
+}
+
+.stacks-handheld-bezel .stacks-screen {
+	aspect-ratio: 4 / 3;
+	border-radius: 2px;
+}
+
+.stacks-handheld-pad {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-top: 16px;
+	padding: 0 4px;
+}
+
+.stacks-dpad {
+	width: 48px;
+	height: 48px;
+	background:
+		linear-gradient(#3a3d44, #3a3d44) center / 16px 100% no-repeat,
+		linear-gradient(#3a3d44, #3a3d44) center / 100% 16px no-repeat;
+	filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.25));
+}
+
+.stacks-face {
+	position: relative;
+	width: 58px;
+	height: 58px;
+}
+
+.stacks-face-btn {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 40% 35%, #6a6e78, #3a3d44);
+	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+	color: rgba(255, 255, 255, 0.7);
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 8px;
+	font-weight: 700;
+}
+
+.stacks-face-btn.is-x { top: 0; left: 19px; }
+.stacks-face-btn.is-y { top: 19px; left: 0; }
+.stacks-face-btn.is-a { top: 19px; right: 0; }
+.stacks-face-btn.is-b { bottom: 0; left: 19px; }
+
+.stacks-handheld-small {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+	margin-top: 12px;
+}
+
+.stacks-small-btn {
+	width: 18px;
+	height: 6px;
+	border-radius: 3px;
+	background: #9a9ea8;
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.stacks-small-btn.is-menu {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+}
+
+/* the TV on its feet, standing on a media cabinet */
+.stacks-tv-feet {
+	display: flex;
+	justify-content: space-between;
+	padding: 0 18%;
+}
+
+.stacks-tv-feet > div {
+	width: 46px;
+	height: 12px;
+	border-radius: 0 0 4px 4px;
+	background: linear-gradient(180deg, #2a2a2e, #111113);
+	clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
+}
+
+.stacks-tv-cabinet {
+	display: flex;
+	gap: 6px;
+	width: min(760px, 110%);
+	height: 70px;
+	padding: 8px 10px 10px;
+	border-radius: 4px;
+	background:
+		linear-gradient(180deg, rgba(150, 170, 255, 0.12), transparent 40%),
+		repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 9px),
+		linear-gradient(180deg, #4a3326, #2c1d15);
+	box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.08), 0 16px 22px -10px rgba(0, 0, 0, 0.75);
+}
+
+.stacks-tv-door {
+	position: relative;
+	flex: 1;
+	border-radius: 2px;
+	background: linear-gradient(180deg, #3a2519, #24170f);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* handles */
+.stacks-tv-door::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	width: 26px;
+	height: 3px;
+	margin-top: -1.5px;
+	border-radius: 2px;
+	background: linear-gradient(90deg, #8d7a55, #d9c38e, #8d7a55);
+}
+
+.stacks-tv-door:first-child::after {
+	right: 12px;
+}
+
+.stacks-tv-door:last-child::after {
+	left: 12px;
+}
+
+
 /* ---------- films: a TV on a media console, with a remote ---------- */
 
 .stacks-tv-room {
@@ -2318,18 +2606,6 @@ button.stacks-screen-tile img {
 	background: #4ad37a;
 	box-shadow: 0 0 6px #4ad37a;
 }
-
-.stacks-tv-console {
-	width: min(760px, 110%);
-	height: 26px;
-	margin-top: 26px;
-	border-radius: 4px;
-	background:
-		linear-gradient(90deg, transparent 33%, rgba(0, 0, 0, 0.35) 33% calc(33% + 1px), transparent calc(33% + 1px) 66%, rgba(0, 0, 0, 0.35) 66% calc(66% + 1px), transparent calc(66% + 1px)),
-		linear-gradient(180deg, #3b3436, #1c1819);
-	box-shadow: 0 14px 20px -8px rgba(0, 0, 0, 0.7);
-}
-
 .stacks-remote {
 	display: flex;
 	align-items: center;

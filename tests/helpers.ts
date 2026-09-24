@@ -10,6 +10,7 @@ export function note(
 		path: `Books/${title}.md`,
 		title,
 		category: "book",
+		facet: "book",
 		status,
 		cover: null,
 		rating: null,

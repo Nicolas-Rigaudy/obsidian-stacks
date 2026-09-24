@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { isInFolder, parseNote } from "../src/logic/parseNote.ts";
-import { BOOK_CONFIG } from "../src/settings/settings.ts";
+import { BOOK_CONFIG, GAME_CONFIG } from "../src/settings/settings.ts";
 
 const BOOKS = "20 Personal/Hobbies/Reading/Books";
 const path = (name: string) => `${BOOKS}/${name}.md`;
@@ -81,6 +81,14 @@ describe("parseNote (book config)", () => {
 		assert.deepEqual(book?.progress, { current: 10, total: null });
 		assert.equal(bd?.category, "bd");
 		assert.equal(bd?.progress, null);
+	});
+
+	test("filter chips can use another field: games filter on platform", () => {
+		const g = parseNote("20 Personal/Hobbies/Video Games/Games/Hades.md", "Hades", { category: "game", platform: "Switch" }, GAME_CONFIG);
+		assert.equal(g?.category, "game");
+		assert.equal(g?.facet, "Switch");
+		const b = parseNote(path("X"), "X", { category: "book" }, BOOK_CONFIG);
+		assert.equal(b?.facet, "book");
 	});
 
 	test("omnibus range; an invalid range is dropped", () => {

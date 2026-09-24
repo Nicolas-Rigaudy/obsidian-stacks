@@ -6,6 +6,8 @@ export interface MediaNote {
 	title: string;
 	/** The note's category value (e.g. "anime"), for filter chips. */
 	category: string | null;
+	/** The value filter chips match against (the category, or e.g. the platform). */
+	facet: string | null;
 	status: string | null;
 	cover: string | null;
 	rating: number | null;

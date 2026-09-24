@@ -172,12 +172,14 @@ function renderDevice(row: HTMLElement, host: StacksHost, config: MediaTypeConfi
 		current = renderScreen(body, host, config, slot.playing, key, idle, opts);
 		device.createDiv({ cls: "stacks-joycon is-right" }).createDiv({ cls: "stacks-joycon-stick" });
 	} else if (slot.kind === "handheld") {
+		// Miyoo Mini-style: screen on top, d-pad and an X/Y/A/B diamond, select/start/menu below.
 		current = renderScreen(device.createDiv({ cls: "stacks-handheld-bezel" }), host, config, slot.playing, key, idle, opts);
 		const pad = device.createDiv({ cls: "stacks-handheld-pad" });
 		pad.createDiv({ cls: "stacks-dpad" });
-		const ab = pad.createDiv({ cls: "stacks-ab" });
-		ab.createDiv({ cls: "stacks-ab-btn" });
-		ab.createDiv({ cls: "stacks-ab-btn" });
+		const face = pad.createDiv({ cls: "stacks-face" });
+		for (const b of ["x", "y", "a", "b"]) face.createDiv({ cls: `stacks-face-btn is-${b}`, text: b.toUpperCase() });
+		const small = device.createDiv({ cls: "stacks-handheld-small" });
+		for (const b of ["select", "start", "menu"]) small.createDiv({ cls: `stacks-small-btn is-${b}` });
 	} else {
 		current = renderScreen(device.createDiv({ cls: "stacks-monitor" }), host, config, slot.playing, key, idle, opts);
 		device.createDiv({ cls: "stacks-monitor-neck" });
@@ -194,7 +196,12 @@ function renderTv(section: HTMLElement, host: StacksHost, config: MediaTypeConfi
 	const tv = room.createDiv({ cls: "stacks-tv" });
 	const current = renderScreen(tv.createDiv({ cls: "stacks-tv-bezel" }), host, config, active, "tv", "No signal · drag something here to watch it", opts);
 	tv.createDiv({ cls: "stacks-tv-led" }).toggleClass("is-on", current !== null);
-	room.createDiv({ cls: "stacks-tv-console" });
+	const feet = tv.createDiv({ cls: "stacks-tv-feet" });
+	feet.createDiv();
+	feet.createDiv();
+	// The media cabinet the TV stands on: top, two doors with handles.
+	const cabinet = room.createDiv({ cls: "stacks-tv-cabinet" });
+	for (let i = 0; i < 2; i++) cabinet.createDiv({ cls: "stacks-tv-door" });
 	if (current) {
 		const remote = room.createDiv({ cls: "stacks-remote" });
 		remote.createDiv({ cls: "stacks-remote-dot" });

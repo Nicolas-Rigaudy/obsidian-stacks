@@ -24,14 +24,14 @@ export interface RenderOptions {
 	libraryId: string;
 	/** Only these statuses (shelf bookcases, board columns, list rows). Null = all. */
 	statuses: string[] | null;
-	/** Only this category (a filter chip). Null = all. */
-	category: string | null;
+	/** Only notes whose filter value (category, platform...) is this chip. Null = all. */
+	filter: string | null;
 	/** Inside a note (code block) rather than its own tab. */
 	embedded: boolean;
 }
 
-export function inCategory<T extends MediaNote>(notes: readonly T[], category: string | null): readonly T[] {
-	return category === null ? notes : notes.filter((n) => n.category === category);
+export function inFilter<T extends MediaNote>(notes: readonly T[], filter: string | null): readonly T[] {
+	return filter === null ? notes : notes.filter((n) => n.facet === filter);
 }
 
 export function defaultLibraryId(settings: StacksSettings): string | null {
@@ -74,7 +74,7 @@ export abstract class LibraryRenderer extends MarkdownRenderChild {
 			el.createDiv({ cls: "stacks-empty", text: `Library "${this.options.libraryId}" isn't set up or is disabled. See Settings → Stacks.` });
 			return;
 		}
-		let notes = inCategory(this.host.index.get(this.options.libraryId), this.options.category);
+		let notes = inFilter(this.host.index.get(this.options.libraryId), this.options.filter);
 		const only = this.options.statuses;
 		if (only) notes = notes.filter((n) => n.status !== null && only.includes(n.status));
 		this.render(el, config, notes);
@@ -106,7 +106,7 @@ export function renderBook(parent: HTMLElement, host: StacksHost, config: MediaT
 	if (config.appearance !== "books") return renderCase(parent, host, config, note, size);
 	const book = parent.createDiv({ cls: `stacks-book is-${size}` });
 	if (note.category) book.dataset.category = note.category;
-	book.setAttr("aria-label", [note.title, secondaryLine(note, config)].filter(Boolean).join(" — "));
+	renderCaption(book, config, note, size);
 	const bucket = bucketOf(note.status, config);
 	if (bucket === "active") book.createDiv({ cls: "stacks-bookmark" });
 
@@ -136,13 +136,15 @@ export function renderBook(parent: HTMLElement, host: StacksHost, config: MediaT
  */
 function renderCase(parent: HTMLElement, host: StacksHost, config: MediaTypeConfig, note: MediaNote, size: BookSize): HTMLElement {
 	const box = parent.createDiv({ cls: `stacks-book is-${size} is-case is-case-${config.appearance}` });
-	box.setAttr("aria-label", [note.title, secondaryLine(note, config)].filter(Boolean).join(" — "));
+	renderCaption(box, config, note, size);
 	const label =
 		config.appearance === "games"
 			? creatorOf(note, config)
 			: (config.categoryFilters.find((f) => f.value === note.category)?.label ?? note.category);
 	box.dataset.kind = label ? slugify(label) : "other";
 	box.createDiv({ cls: "stacks-case-band", text: label ?? "" });
+	// Japanese releases wrap an obi strip down the spine side (shown for anime).
+	if (config.appearance === "films") box.createDiv({ cls: "stacks-case-obi", text: note.title });
 
 	const src = resolveCover(host.app, note);
 	if (src) {
@@ -160,6 +162,22 @@ function renderCase(parent: HTMLElement, host: StacksHost, config: MediaTypeConf
 		renderInsert(box, note);
 	}
 	return box;
+}
+
+/**
+ * The full name, shown over the cover as soon as the pointer is on it (the
+ * system tooltip is slow). Also the element's accessible name. Thumbnails sit
+ * next to their text already, so they only get a label for screen readers.
+ */
+function renderCaption(el: HTMLElement, config: MediaTypeConfig, note: MediaNote, size: BookSize): void {
+	const sub = secondaryLine(note, config);
+	if (size === "thumb") {
+		el.setAttr("aria-hidden", "true");
+		return;
+	}
+	const cap = el.createDiv({ cls: "stacks-caption" });
+	cap.createDiv({ cls: "stacks-caption-title", text: note.title });
+	if (sub) cap.createDiv({ cls: "stacks-caption-sub", text: sub });
 }
 
 /** The printed insert of a case without cover art: title on a coloured sleeve. */
