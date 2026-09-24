@@ -71,9 +71,9 @@ describe("shelfSections", () => {
 		note("Odd", "abandoned"),
 	];
 
-	test("bookcases ordered reading → to read → read → other, empty ones skipped", () => {
+	test("bookcases follow the settings order (wishlist → backlog → reading → read), unsorted last", () => {
 		const labels = shelfSections(all, books).map((s) => s.status?.value ?? "(unsorted)");
-		assert.deepEqual(labels, ["reading", "backlog", "read", "wishlist", "(unsorted)"]);
+		assert.deepEqual(labels, ["wishlist", "backlog", "reading", "read", "(unsorted)"]);
 	});
 
 	test("several volumes of a series on one shelf become a pile, in reading order", () => {
@@ -99,11 +99,11 @@ describe("shelfSections", () => {
 		assert.deepEqual(s.map((x) => x.status?.value), ["read"]);
 	});
 
-	test("empty bookcases on request (drop targets), still in bucket order", () => {
+	test("empty bookcases on request (drop targets), same order", () => {
 		const onlyRead = [note("Xenos", "read")];
 		assert.deepEqual(shelfSections(onlyRead, books).map((x) => x.status?.value), ["read"]);
 		const all = shelfSections(onlyRead, books, null, true);
-		assert.deepEqual(all.map((x) => [x.status?.value, x.count]), [["reading", 0], ["backlog", 0], ["read", 1], ["wishlist", 0]]);
+		assert.deepEqual(all.map((x) => [x.status?.value, x.count]), [["wishlist", 0], ["backlog", 0], ["reading", 0], ["read", 1]]);
 	});
 
 	test("no piles when the library has no series config", () => {

@@ -1,7 +1,7 @@
-// Shelf layout: one bookcase per status, series with several volumes on the
+// Shelf layout: one bookcase per status (in settings order), series with several volumes on the
 // same shelf gathered into a pile. Pure: zero `obsidian` imports.
 
-import type { MediaTypeConfig, StatusBucket, StatusDef } from "../types/mediaConfig.ts";
+import type { MediaTypeConfig, StatusDef } from "../types/mediaConfig.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
 
 export type ShelfItem =
@@ -14,9 +14,6 @@ export interface ShelfSection {
 	count: number;
 	items: ShelfItem[];
 }
-
-/** Bookcases read like a library visit: what you're reading, what's next, what's read, the rest. */
-const BUCKET_ORDER: readonly StatusBucket[] = ["active", "backlog", "done", "other"];
 
 const collator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
 
@@ -70,11 +67,8 @@ export function shelfSections(
 	statuses: readonly string[] | null = null,
 	includeEmpty = false,
 ): ShelfSection[] {
-	const ordered = config.statuses
-		.map((s, i) => ({ s, i }))
-		.sort((a, b) => BUCKET_ORDER.indexOf(a.s.bucket) - BUCKET_ORDER.indexOf(b.s.bucket) || a.i - b.i)
-		.map(({ s }) => s)
-		.filter((s) => statuses === null || statuses.includes(s.value));
+	// Same order as the settings (and the board's columns): wishlist → backlog → reading → read.
+	const ordered = config.statuses.filter((s) => statuses === null || statuses.includes(s.value));
 
 	const known = new Set(config.statuses.map((s) => s.value));
 	const sections: ShelfSection[] = [];
