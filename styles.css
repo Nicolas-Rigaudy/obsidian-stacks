@@ -433,6 +433,12 @@ button.stacks-bookcase-more:hover {
 	user-select: none;
 }
 
+/* BD albums are larger than novels */
+.stacks-book.is-shelf[data-category="bd"] {
+	width: calc(var(--stacks-book-w) * 1.14);
+	height: calc(var(--stacks-book-h) * 1.08);
+}
+
 /* hinge and spine sheen, page-edge glint */
 .stacks-book::before {
 	content: "";

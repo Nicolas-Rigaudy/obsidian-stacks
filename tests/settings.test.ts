@@ -27,7 +27,7 @@ describe("mergeSettings", () => {
 	test("nested groups merge field by field", () => {
 		const s = mergeSettings({ mediaTypes: { book: { progress: { quickIncrements: [5, 50], unitLabel: "p." } } } });
 		assert.deepEqual(s.mediaTypes.book.progress, {
-			categories: [],
+			categories: ["book"],
 			currentField: "pages_read",
 			totalField: "pages_total",
 			unitLabel: "p.",
@@ -89,11 +89,34 @@ describe("mergeSettings", () => {
 		assert.equal(s.mediaTypes.watching.appearance, "books");
 	});
 
+	test("old books-only saved settings move to the combined Reading library; hand edits survive", () => {
+		const s = mergeSettings({
+			mediaTypes: {
+				book: {
+					label: "Books",
+					folder: "20 Personal/Hobbies/Reading/Books",
+					categoryValues: ["book"],
+					progress: { quickIncrements: [5, 50] },
+				},
+			},
+		});
+		const b = s.mediaTypes.book;
+		assert.equal(b.folder, "20 Personal/Hobbies/Reading");
+		assert.deepEqual(b.categoryValues, ["book", "bd"]);
+		assert.equal(b.label, "Reading");
+		assert.deepEqual(b.progress!.categories, ["book"]);
+		assert.deepEqual(b.progress!.quickIncrements, [5, 50]);
+
+		const custom = mergeSettings({ mediaTypes: { book: { folder: "Library", categoryValues: ["book"] } } });
+		assert.equal(custom.mediaTypes.book.folder, "Library");
+		assert.deepEqual(custom.mediaTypes.book.categoryValues, ["book"]);
+	});
+
 	test("wrong-typed values are ignored", () => {
 		const s = mergeSettings({ mediaTypes: { book: { folder: 42, enabled: "yes", categoryValues: "book" } } });
 		assert.equal(s.mediaTypes.book.folder, BOOK_CONFIG.folder);
 		assert.equal(s.mediaTypes.book.enabled, true);
-		assert.deepEqual(s.mediaTypes.book.categoryValues, ["book"]);
+		assert.deepEqual(s.mediaTypes.book.categoryValues, ["book", "bd"]);
 	});
 
 	test("libraries the user added are kept, filled out from the blank template", () => {

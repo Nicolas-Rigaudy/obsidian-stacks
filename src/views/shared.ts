@@ -105,6 +105,7 @@ export type BookSize = "shelf" | "thumb" | "desk";
 export function renderBook(parent: HTMLElement, host: StacksHost, config: MediaTypeConfig, note: MediaNote, size: BookSize): HTMLElement {
 	if (config.appearance !== "books") return renderCase(parent, host, config, note, size);
 	const book = parent.createDiv({ cls: `stacks-book is-${size}` });
+	if (note.category) book.dataset.category = note.category;
 	book.setAttr("aria-label", [note.title, secondaryLine(note, config)].filter(Boolean).join(" — "));
 	const bucket = bucketOf(note.status, config);
 	if (bucket === "active") book.createDiv({ cls: "stacks-bookmark" });

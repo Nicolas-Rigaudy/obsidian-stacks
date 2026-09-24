@@ -51,7 +51,7 @@ describe("parseNote (book config)", () => {
 	});
 
 	test("wrong category or no frontmatter is excluded", () => {
-		assert.equal(parseNote(path("X"), "X", { category: "bd" }, BOOK_CONFIG), null);
+		assert.equal(parseNote(path("X"), "X", { category: "game" }, BOOK_CONFIG), null);
 		assert.equal(parseNote(path("X"), "X", undefined, BOOK_CONFIG), null);
 	});
 

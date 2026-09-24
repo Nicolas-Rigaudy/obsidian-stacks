@@ -16,16 +16,21 @@ export interface StacksSettings {
 	mediaTypes: Record<string, MediaTypeConfig>;
 }
 
-// Matches the live Books schema (checked 2026-09-24 against all 125 notes) and
-// Reading.md's existing widgets: +10/+25 pages, "## Reading log" lines.
+// Books and BDs in one library (user decision 2026-09-24), filtered by chips.
+// Matches the live Books schema (checked 2026-09-24 against all 125 notes), the
+// BD tome notes from the 2026-09-25 split, and Reading.md's existing widgets:
+// +10/+25 pages (books only), "## Reading log" lines.
 export const BOOK_CONFIG: MediaTypeConfig = {
 	enabled: true,
-	label: "Books",
+	label: "Reading",
 	appearance: "books",
-	folder: "20 Personal/Hobbies/Reading/Books",
+	folder: "20 Personal/Hobbies/Reading",
 	categoryField: "category",
-	categoryValues: ["book"],
-	categoryFilters: [],
+	categoryValues: ["book", "bd"],
+	categoryFilters: [
+		{ value: "book", label: "Books" },
+		{ value: "bd", label: "BDs" },
+	],
 	statusField: "status",
 	statuses: [
 		{ value: "wishlist", label: "Wishlist", bucket: "other" },
@@ -41,7 +46,7 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 	startedField: "started",
 	finishedField: "finished",
 	progress: {
-		categories: [],
+		categories: ["book"],
 		currentField: "pages_read",
 		totalField: "pages_total",
 		unitLabel: "pages",
@@ -240,8 +245,29 @@ function mergeConfig(base: MediaTypeConfig, over: unknown): MediaTypeConfig {
  * DEFAULT_SETTINGS. New fields get their defaults; the user's values win;
  * libraries the user added (ids not in the defaults) are kept.
  */
+/**
+ * Older saved data (before BDs joined the book library, 2026-09-25): a book
+ * library still on its old books-only defaults takes the new ones. Anything the
+ * user changed by hand is left alone.
+ */
+function migrate(savedTypes: Rec): Rec {
+	const book = savedTypes.book;
+	if (!isRecord(book)) return savedTypes;
+	const cats = book.categoryValues;
+	const onOldDefaults =
+		book.folder === "20 Personal/Hobbies/Reading/Books" &&
+		(cats === undefined || (Array.isArray(cats) && cats.length === 1 && cats[0] === "book"));
+	if (!onOldDefaults) return savedTypes;
+	const next: Rec = { ...book };
+	delete next.folder;
+	delete next.categoryValues;
+	if (next.label === "Books") delete next.label;
+	if (isRecord(next.progress)) next.progress = { ...next.progress, categories: ["book"] };
+	return { ...savedTypes, book: next };
+}
+
 export function mergeSettings(saved: unknown): StacksSettings {
-	const savedTypes = isRecord(saved) && isRecord(saved.mediaTypes) ? saved.mediaTypes : {};
+	const savedTypes = migrate(isRecord(saved) && isRecord(saved.mediaTypes) ? saved.mediaTypes : {});
 	const mediaTypes: Record<string, MediaTypeConfig> = {};
 	for (const [id, base] of Object.entries(DEFAULT_SETTINGS.mediaTypes)) {
 		mediaTypes[id] = mergeConfig(base, savedTypes[id]);
