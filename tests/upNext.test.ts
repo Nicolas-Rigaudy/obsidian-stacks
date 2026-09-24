@@ -38,10 +38,24 @@ describe("isEligible", () => {
 		assert.equal(isEligible(two, [one, two], books), false);
 	});
 
-	test("an earlier volume in progress still blocks", () => {
+	test("an earlier volume in progress doesn't block the next one", () => {
 		const one = note("Xenos", "reading", { name: "Eisenhorn", position: 1 });
 		const two = note("Malleus", "backlog", { name: "Eisenhorn", position: 2 });
-		assert.equal(isEligible(two, [one, two], books), false);
+		assert.equal(isEligible(two, [one, two], books), true);
+	});
+
+	test("...but an unstarted earlier volume still blocks, even if a later one is in progress", () => {
+		const one = note("Xenos", "backlog", { name: "Eisenhorn", position: 1 });
+		const two = note("Malleus", "reading", { name: "Eisenhorn", position: 2 });
+		const three = note("Hereticus", "backlog", { name: "Eisenhorn", position: 3 });
+		assert.equal(isEligible(three, [one, two, three], books), false);
+	});
+
+	test("only the volume right after the current one opens up, not the ones beyond", () => {
+		const one = note("Xenos", "reading", { name: "Eisenhorn", position: 1 });
+		const two = note("Malleus", "backlog", { name: "Eisenhorn", position: 2 });
+		const three = note("Hereticus", "backlog", { name: "Eisenhorn", position: 3 });
+		assert.equal(isEligible(three, [one, two, three], books), false);
 	});
 
 	test("eligible once every earlier volume is read", () => {
@@ -106,13 +120,27 @@ describe("rankCandidates", () => {
 		assert.deepEqual(titles(r.heldBack), ["Malleus"]);
 	});
 
-	test("while book 2 is being read, book 3 is held back (current Reading.md behavior)", () => {
+	test("while book 2 is being read, book 3 is suggested first", () => {
 		const one = note("For the Emperor", "read", { name: "Ciaphas Cain", position: 1 });
 		const two = note("Caves of Ice", "reading", { name: "Ciaphas Cain", position: 2 });
 		const three = note("The Traitor's Hand", "backlog", { name: "Ciaphas Cain", position: 3 });
-		const r = rankCandidates([one, two, three], books);
-		assert.deepEqual(titles(r.eligible), []);
-		assert.deepEqual(titles(r.heldBack), ["The Traitor's Hand"]);
+		const four = note("Death or Glory", "backlog", { name: "Ciaphas Cain", position: 4 });
+		const fresh = note("Mistborn", "backlog", { name: "Mistborn", position: 1 });
+		const r = rankCandidates([fresh, one, two, three, four], books);
+		assert.deepEqual(titles(r.eligible), ["The Traitor's Hand", "Mistborn"]);
+		assert.deepEqual(titles(r.heldBack), ["Death or Glory"]);
+	});
+
+	test("real Eisenhorn data (2026-09-24): Ravenor opens up once The Magos sits after it", () => {
+		const s = (title: string, status: string, position: number) => note(title, status, { name: "Eisenhorn", position });
+		const all = [
+			s("Xenos", "read", 1), s("Malleus", "read", 2), s("Hereticus", "read", 3),
+			s("Ravenor", "backlog", 4), s("Ravenor Returned", "backlog", 5), s("Ravenor Rogue", "backlog", 6),
+			s("The Magos", "wishlist", 7), s("Pariah", "wishlist", 8),
+		];
+		const r = rankCandidates(all, books);
+		assert.deepEqual(titles(r.eligible), ["Ravenor"]);
+		assert.deepEqual(titles(r.heldBack), ["Ravenor Returned", "Ravenor Rogue"]);
 	});
 
 	test("an eligible book in an active series ranks ahead of a lower position elsewhere", () => {

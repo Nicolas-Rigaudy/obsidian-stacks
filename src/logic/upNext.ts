@@ -1,6 +1,10 @@
 // "Up next" sequencing: which backlog items are eligible, and in what order.
 // Port of Reading.md's dataviewjs, generalized from hardcoded status names to
-// status buckets. Pure: zero `obsidian` imports.
+// status buckets. One deliberate change (2026-09-24): a volume in progress no
+// longer blocks the next one, so the next book of the series you're reading is
+// suggested (and ranked first) before you finish the current one. Reading.md's
+// rule hid it, so its "continue your series first" ordering never applied.
+// Pure: zero `obsidian` imports.
 
 import type { MediaTypeConfig, StatusBucket } from "../types/mediaConfig.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
@@ -19,10 +23,10 @@ export function bucketOf(status: string | null, config: MediaTypeConfig): Status
 }
 
 /**
- * A backlog item is eligible unless an earlier volume of its series isn't done yet.
- * An earlier volume counts as done if its own status is done, or if a done omnibus
- * sibling's position..positionEnd range covers it. Items with no series or no
- * position are always eligible.
+ * A backlog item is eligible unless an earlier volume of its series hasn't been
+ * reached yet. An earlier volume is fine if it's done, in progress (active), or
+ * covered by a done omnibus sibling's position..positionEnd range. Items with no
+ * series or no position are always eligible.
  */
 export function isEligible(note: MediaNote, all: readonly MediaNote[], config: MediaTypeConfig): boolean {
 	if (!config.series || !isPositioned(note)) return true;
@@ -32,12 +36,13 @@ export function isEligible(note: MediaNote, all: readonly MediaNote[], config: M
 		(o): o is Positioned => o.path !== note.path && isPositioned(o) && o.series.name === name,
 	);
 	const done = (o: MediaNote) => bucketOf(o.status, config) === "done";
+	const reached = (o: MediaNote) => done(o) || bucketOf(o.status, config) === "active";
 	const doneRanges = siblings
 		.filter(done)
 		.map((o) => [o.series.position, o.series.positionEnd ?? o.series.position] as const);
 	const covered = (p: number) => doneRanges.some(([from, to]) => p >= from && p <= to);
 
-	return siblings.every((o) => o.series.position >= position || done(o) || covered(o.series.position));
+	return siblings.every((o) => o.series.position >= position || reached(o) || covered(o.series.position));
 }
 
 export interface UpNextResult {
