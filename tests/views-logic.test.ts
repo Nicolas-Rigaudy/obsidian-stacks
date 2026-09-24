@@ -7,6 +7,7 @@ import { bindingHue, stableRange } from "../src/logic/placeholder.ts";
 import { SerialQueue } from "../src/logic/serialQueue.ts";
 import { orderForShelf, shelfSections } from "../src/logic/shelf.ts";
 import { firstStatusOf } from "../src/logic/upNext.ts";
+import { slugify } from "../src/logic/values.ts";
 import { parseBlockParams } from "../src/logic/viewKinds.ts";
 import { BOOK_CONFIG } from "../src/settings/settings.ts";
 import type { MediaNote } from "../src/types/mediaNote.ts";
@@ -34,6 +35,15 @@ describe("card text", () => {
 		assert.equal(progressFraction({ ...note("T", "reading"), progress: { current: 208, total: 416 } }), 0.5);
 		assert.equal(progressFraction({ ...note("T", "reading"), progress: { current: 225, total: null } }), null);
 		assert.equal(progressFraction({ ...note("T", "reading"), progress: { current: 999, total: 416 } }), 1);
+	});
+});
+
+describe("slugify", () => {
+	test("platform names become CSS-safe keys", () => {
+		assert.equal(slugify("Switch"), "switch");
+		assert.equal(slugify("Nintendo Switch 2"), "nintendo-switch-2");
+		assert.equal(slugify(" PC / Steam "), "pc-steam");
+		assert.equal(slugify("Série"), "serie");
 	});
 });
 

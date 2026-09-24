@@ -74,6 +74,20 @@ export class StacksSettingTab extends PluginSettingTab {
 			}),
 		);
 		this.text(el, "Label", "Shown in view titles and menus.", config.label, (v) => (config.label = v));
+		new Setting(el)
+			.setName("Look")
+			.setDesc("How items and shelves look.")
+			.addDropdown((d) =>
+				d
+					.addOption("books", "Books in a bookcase")
+					.addOption("games", "Game cases in a media cabinet (by platform)")
+					.addOption("films", "Disc cases in a cinema cabinet")
+					.setValue(config.appearance)
+					.onChange(async (v) => {
+						config.appearance = v as MediaTypeConfig["appearance"];
+						await this.saveNow();
+					}),
+			);
 
 		new Setting(el)
 			.setName("Folder")

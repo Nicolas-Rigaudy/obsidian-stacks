@@ -85,6 +85,8 @@ export class StacksView extends ItemView {
 		el.empty();
 		el.addClass("stacks-view");
 		const id = this.currentLibraryId();
+		if (id) el.dataset.appearance = this.host.settings.mediaTypes[id].appearance;
+		else delete el.dataset.appearance;
 		this.toolbar(el, id);
 		const body = el.createDiv({ cls: "stacks-view-body" });
 		if (!id) {

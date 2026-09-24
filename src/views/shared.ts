@@ -1,10 +1,11 @@
 import { Keymap, Menu, MarkdownRenderChild, type App } from "obsidian";
 import type { LibraryActions } from "../data/actions.ts";
 import type { LiveIndex } from "../data/liveIndex.ts";
-import { secondaryLine } from "../logic/cardText.ts";
+import { creatorOf, secondaryLine, seriesLabel } from "../logic/cardText.ts";
 import { parseCoverRef } from "../logic/cover.ts";
 import { bindingHue } from "../logic/placeholder.ts";
 import { bucketOf } from "../logic/upNext.ts";
+import { slugify } from "../logic/values.ts";
 import type { ViewKind } from "../logic/viewKinds.ts";
 import type { StacksSettings } from "../settings/settings.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
@@ -68,6 +69,7 @@ export abstract class LibraryRenderer extends MarkdownRenderChild {
 		el.empty();
 		el.addClass("stacks-root");
 		el.toggleClass("is-embedded", this.options.embedded);
+		if (config) el.dataset.appearance = config.appearance;
 		if (!config || !config.enabled) {
 			el.createDiv({ cls: "stacks-empty", text: `Library "${this.options.libraryId}" isn't set up or is disabled. See Settings → Stacks.` });
 			return;
@@ -101,6 +103,7 @@ export type BookSize = "shelf" | "thumb" | "desk";
  * if the image fails to load), a cloth binding with the title stamped in foil.
  */
 export function renderBook(parent: HTMLElement, host: StacksHost, config: MediaTypeConfig, note: MediaNote, size: BookSize): HTMLElement {
+	if (config.appearance !== "books") return renderCase(parent, host, config, note, size);
 	const book = parent.createDiv({ cls: `stacks-book is-${size}` });
 	book.setAttr("aria-label", [note.title, secondaryLine(note, config)].filter(Boolean).join(" — "));
 	const bucket = bucketOf(note.status, config);
@@ -123,6 +126,49 @@ export function renderBook(parent: HTMLElement, host: StacksHost, config: MediaT
 		renderBinding(book, config, note);
 	}
 	return book;
+}
+
+/**
+ * A game case (styled per platform: Switch, PC, Miyoo...) or a disc case
+ * (per category: film, series, anime): a labelled band on top, the cover art
+ * behind a plastic sleeve, or a printed insert when there's no art.
+ */
+function renderCase(parent: HTMLElement, host: StacksHost, config: MediaTypeConfig, note: MediaNote, size: BookSize): HTMLElement {
+	const box = parent.createDiv({ cls: `stacks-book is-${size} is-case is-case-${config.appearance}` });
+	box.setAttr("aria-label", [note.title, secondaryLine(note, config)].filter(Boolean).join(" — "));
+	const label =
+		config.appearance === "games"
+			? creatorOf(note, config)
+			: (config.categoryFilters.find((f) => f.value === note.category)?.label ?? note.category);
+	box.dataset.kind = label ? slugify(label) : "other";
+	box.createDiv({ cls: "stacks-case-band", text: label ?? "" });
+
+	const src = resolveCover(host.app, note);
+	if (src) {
+		const img = box.createEl("img", { cls: "stacks-book-cover stacks-case-art", attr: { src, alt: note.title, loading: "lazy", draggable: "false" } });
+		const fallback = () => {
+			if (!img.isConnected) return;
+			img.remove();
+			renderInsert(box, note);
+		};
+		img.addEventListener("error", fallback, { once: true });
+		img.addEventListener("load", () => {
+			if (img.naturalWidth < 10 || img.naturalHeight < 10) fallback();
+		}, { once: true });
+	} else {
+		renderInsert(box, note);
+	}
+	return box;
+}
+
+/** The printed insert of a case without cover art: title on a coloured sleeve. */
+function renderInsert(box: HTMLElement, note: MediaNote): void {
+	box.addClass("is-blank");
+	box.style.setProperty("--stacks-hue", String(bindingHue(note.series?.name ?? note.title)));
+	const insert = box.createDiv({ cls: "stacks-case-insert" });
+	insert.createDiv({ cls: "stacks-case-title", text: note.title });
+	const sub = seriesLabel(note);
+	if (sub) insert.createDiv({ cls: "stacks-case-sub", text: sub });
 }
 
 function renderBinding(book: HTMLElement, config: MediaTypeConfig, note: MediaNote): void {

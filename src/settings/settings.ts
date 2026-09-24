@@ -9,7 +9,7 @@ import type {
 	StatusBucket,
 	StatusDef,
 } from "../types/mediaConfig.ts";
-import { STATUS_BUCKETS } from "../types/mediaConfig.ts";
+import { APPEARANCES, STATUS_BUCKETS } from "../types/mediaConfig.ts";
 
 export interface StacksSettings {
 	/** Keyed by a stable id ("book"). Key order = display order. */
@@ -21,6 +21,7 @@ export interface StacksSettings {
 export const BOOK_CONFIG: MediaTypeConfig = {
 	enabled: true,
 	label: "Books",
+	appearance: "books",
 	folder: "20 Personal/Hobbies/Reading/Books",
 	categoryField: "category",
 	categoryValues: ["book"],
@@ -64,6 +65,7 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 export const GAME_CONFIG: MediaTypeConfig = {
 	enabled: true,
 	label: "Games",
+	appearance: "games",
 	folder: "20 Personal/Hobbies/Video Games/Games",
 	categoryField: "category",
 	categoryValues: ["game"],
@@ -93,6 +95,7 @@ export const GAME_CONFIG: MediaTypeConfig = {
 export const WATCHING_CONFIG: MediaTypeConfig = {
 	enabled: true,
 	label: "Watching",
+	appearance: "films",
 	folder: "20 Personal/Hobbies/Media",
 	categoryField: "category",
 	categoryValues: ["movie", "series", "anime"],
@@ -149,6 +152,7 @@ export function blankMediaTypeConfig(label: string): MediaTypeConfig {
 	return {
 		enabled: true,
 		label,
+		appearance: "books",
 		folder: "",
 		categoryField: "category",
 		categoryValues: [],
@@ -207,6 +211,7 @@ function mergeConfig(base: MediaTypeConfig, over: unknown): MediaTypeConfig {
 	if (!isRecord(over)) return out;
 
 	Object.assign(out, mergeStrings(out, over));
+	if (!APPEARANCES.includes(out.appearance)) out.appearance = base.appearance;
 	if (typeof over.enabled === "boolean") out.enabled = over.enabled;
 	if (Array.isArray(over.categoryValues)) out.categoryValues = over.categoryValues.filter(isString);
 	if (Array.isArray(over.statuses)) out.statuses = over.statuses.flatMap(parseStatus);

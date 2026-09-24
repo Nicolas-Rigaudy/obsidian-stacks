@@ -21,6 +21,16 @@ export function toNum(v: unknown): number | null {
 	return null;
 }
 
+/** "Nintendo Switch" → "nintendo-switch": a CSS-safe key for a value. */
+export function slugify(v: string): string {
+	return v
+		.normalize("NFKD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, "-")
+		.replace(/^-+|-+$/g, "");
+}
+
 /** Local-time YYYY-MM-DD, matching the vault's date fields. */
 export function todayISO(now: Date = new Date()): string {
 	const pad = (n: number) => String(n).padStart(2, "0");

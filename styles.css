@@ -1455,6 +1455,376 @@ button.stacks-btn.is-primary:hover {
 	}
 }
 
+/* ==========================================================================
+   Looks per library: games and films don't sit in a bookcase.
+   ========================================================================== */
+
+/* ---------- games: a media cabinet, charcoal lacquer with LED strips ---------- */
+
+/* `body` so these beat the theme-dark room rule above, which has the same specificity otherwise */
+body .stacks-view[data-appearance="games"],
+body .stacks-root[data-appearance="games"] {
+	--stacks-wood-hi: #474d5a;
+	--stacks-wood-1: #2c313b;
+	--stacks-wood-2: #1e222a;
+	--stacks-wood-3: #0f1115;
+	--stacks-wall-1: #161920;
+	--stacks-wall-2: #0b0c10;
+	--stacks-led: 94, 234, 255;
+	--stacks-room: radial-gradient(ellipse 120% 70% at 50% -10%, #242a36 0%, #13161d 55%, #0a0b0f 100%);
+}
+
+body.theme-light .stacks-view[data-appearance="games"],
+body.theme-light .stacks-root[data-appearance="games"] {
+	--stacks-room: radial-gradient(ellipse 120% 70% at 50% -10%, #f3f5f8 0%, #e2e6ec 60%, #d3d9e1 100%);
+}
+
+.stacks-root[data-appearance="games"] .stacks-shelves {
+	background:
+		repeating-linear-gradient(
+			180deg,
+			rgba(0, 0, 0, 0.55) 0,
+			transparent 24px,
+			transparent calc(var(--stacks-shelf-top) - 70px),
+			rgba(var(--stacks-led), 0.1) calc(var(--stacks-shelf-top) - 2px),
+			rgba(var(--stacks-led), 0.95) calc(var(--stacks-shelf-top) - 2px),
+			rgba(var(--stacks-led), 0.95) var(--stacks-shelf-top),
+			#353b47 var(--stacks-shelf-top),
+			#20242c calc(var(--stacks-shelf-top) + 4px),
+			#15181e calc(var(--stacks-row) - 5px),
+			#07080a calc(var(--stacks-row) - 5px),
+			#07080a var(--stacks-row)
+		),
+		repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 80px),
+		linear-gradient(180deg, var(--stacks-wall-1), var(--stacks-wall-2));
+}
+
+.stacks-root[data-appearance="games"] .stacks-bookcase {
+	background:
+		linear-gradient(90deg, rgba(255, 255, 255, 0.05), transparent 12%, transparent 88%, rgba(255, 255, 255, 0.05)),
+		linear-gradient(180deg, var(--stacks-wood-hi) 0%, var(--stacks-wood-1) 15%, var(--stacks-wood-2) 100%);
+}
+
+.stacks-root[data-appearance="games"] .stacks-plaque {
+	background: linear-gradient(180deg, #0f1620, #0a0e14);
+	box-shadow: 0 0 0 1px rgba(var(--stacks-led), 0.55), 0 0 16px rgba(var(--stacks-led), 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	color: rgb(190, 248, 255);
+	text-shadow: 0 0 8px rgba(var(--stacks-led), 0.8);
+	font-family: var(--font-interface, system-ui, sans-serif);
+	letter-spacing: 0.22em;
+}
+
+.stacks-root[data-appearance="games"] .stacks-plaque::before,
+.stacks-root[data-appearance="games"] .stacks-plaque::after {
+	display: none;
+}
+
+.stacks-root[data-appearance="games"] button.stacks-bookcase-more {
+	background: #0f1620;
+	box-shadow: 0 0 0 1px rgba(var(--stacks-led), 0.5), 0 2px 6px rgba(0, 0, 0, 0.6);
+	color: rgb(190, 248, 255);
+	font-family: var(--font-interface, system-ui, sans-serif);
+}
+
+.stacks-root[data-appearance="games"] .stacks-bookcase.is-drop-target,
+.stacks-root[data-appearance="games"] .stacks-desk-section.is-drop-target {
+	box-shadow: 0 0 0 3px rgba(var(--stacks-led), 0.9), 0 0 36px rgba(var(--stacks-led), 0.4);
+}
+
+/* ---------- films: a cinema cabinet, black lacquer on red velvet ---------- */
+
+body .stacks-view[data-appearance="films"],
+body .stacks-root[data-appearance="films"] {
+	--stacks-wood-hi: #3b3436;
+	--stacks-wood-1: #241f21;
+	--stacks-wood-2: #171415;
+	--stacks-wood-3: #0a0909;
+	--stacks-wall-1: #5a111a;
+	--stacks-wall-2: #2e070c;
+	--stacks-room: radial-gradient(ellipse 120% 70% at 50% -10%, #3a1a1e 0%, #1c0e10 55%, #0f0708 100%);
+}
+
+body.theme-light .stacks-view[data-appearance="films"],
+body.theme-light .stacks-root[data-appearance="films"] {
+	--stacks-room: radial-gradient(ellipse 120% 70% at 50% -10%, #fbf3f0 0%, #efe0da 60%, #e3cfc7 100%);
+}
+
+.stacks-root[data-appearance="films"] .stacks-shelves {
+	background:
+		repeating-linear-gradient(
+			180deg,
+			rgba(0, 0, 0, 0.55) 0,
+			transparent 26px,
+			transparent var(--stacks-shelf-top),
+			#4a4245 var(--stacks-shelf-top),
+			#2a2527 calc(var(--stacks-shelf-top) + 3px),
+			#1a1718 calc(var(--stacks-row) - 5px),
+			#050404 calc(var(--stacks-row) - 5px),
+			#050404 var(--stacks-row)
+		),
+		/* velvet folds */
+		repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.32) 0, rgba(255, 255, 255, 0.05) 18px, rgba(0, 0, 0, 0.12) 34px, rgba(0, 0, 0, 0.32) 52px),
+		radial-gradient(ellipse 70% 60% at 50% 0%, rgba(255, 180, 120, 0.14), transparent 70%),
+		linear-gradient(180deg, var(--stacks-wall-1), var(--stacks-wall-2));
+}
+
+/* marquee nameplate ringed with bulbs: ::before is the bulb ring, ::after the dark sign on top of it */
+.stacks-root[data-appearance="films"] .stacks-plaque {
+	background: transparent;
+	box-shadow: none;
+	color: #ffe8a6;
+	text-shadow: 0 0 8px rgba(255, 210, 120, 0.7);
+	padding: 5px 24px 6px;
+}
+
+.stacks-root[data-appearance="films"] .stacks-plaque::before {
+	display: block;
+	left: -7px;
+	right: -7px;
+	top: -7px;
+	bottom: -7px;
+	width: auto;
+	height: auto;
+	margin: 0;
+	z-index: -1;
+	border-radius: 6px;
+	background:
+		radial-gradient(circle, #fff1c2 0 2px, rgba(255, 220, 140, 0.55) 2.6px, transparent 3.4px) 0 0 / 11px 11px,
+		#2a1a12;
+	box-shadow: 0 0 14px rgba(255, 210, 120, 0.35);
+}
+
+.stacks-root[data-appearance="films"] .stacks-plaque::after {
+	display: block;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	width: auto;
+	height: auto;
+	margin: 0;
+	z-index: -1;
+	border-radius: 3px;
+	background: #120b0c;
+	box-shadow: 0 0 0 2px #c9a24f, inset 0 0 12px rgba(0, 0, 0, 0.8);
+}
+
+.stacks-root[data-appearance="films"] button.stacks-bookcase-more {
+	background: #120b0c;
+	box-shadow: 0 0 0 1px #c9a24f, 0 2px 6px rgba(0, 0, 0, 0.6);
+	color: #ffe8a6;
+}
+
+/* in-progress area for games and films: a neutral surface in the cabinet's material
+   until the device / TV stages replace it */
+.stacks-root[data-appearance="games"] .stacks-desk-item,
+.stacks-root[data-appearance="games"] .stacks-desk-empty {
+	background:
+		radial-gradient(ellipse 50% 90% at 50% 120%, rgba(var(--stacks-led), 0.14), transparent 70%),
+		linear-gradient(180deg, #2a2f39, #1a1d24);
+}
+
+.stacks-root[data-appearance="films"] .stacks-desk-item,
+.stacks-root[data-appearance="films"] .stacks-desk-empty {
+	background:
+		radial-gradient(ellipse 50% 90% at 50% -20%, rgba(255, 190, 130, 0.16), transparent 70%),
+		linear-gradient(180deg, #2b2224, #171213);
+}
+
+.stacks-root[data-appearance="games"] .stacks-desk-empty,
+.stacks-root[data-appearance="films"] .stacks-desk-empty {
+	color: rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- cases ---------- */
+
+.stacks-book.is-case {
+	border-radius: 5px;
+	background: #111317;
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6), 6px 9px 14px rgba(0, 0, 0, 0.55);
+}
+
+/* plastic sleeve sheen and the hinge on the left */
+.stacks-book.is-case::before {
+	z-index: 2;
+	background:
+		linear-gradient(115deg, rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.05) 26%, transparent 42%, transparent 72%, rgba(255, 255, 255, 0.07) 86%, transparent 100%),
+		linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0, rgba(255, 255, 255, 0.12) 4px, transparent 8px);
+}
+
+.stacks-case-band {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	z-index: 1;
+	height: 20px;
+	padding: 0 8px;
+	overflow: hidden;
+	border-radius: 5px 5px 0 0;
+	background: linear-gradient(180deg, #2c3038, #1b1e24);
+	color: rgba(255, 255, 255, 0.85);
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 9.5px;
+	font-weight: 700;
+	line-height: 20px;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	text-align: center;
+}
+
+.stacks-book.is-case .stacks-case-art,
+.stacks-case-insert {
+	position: absolute;
+	top: 20px;
+	left: 5px;
+	width: calc(100% - 8px);
+	height: calc(100% - 23px);
+	border-radius: 1px 3px 3px 1px;
+}
+
+.stacks-book.is-case .stacks-case-art {
+	object-fit: cover;
+}
+
+.stacks-case-insert {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 10px;
+	text-align: center;
+	background:
+		radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.18), transparent 60%),
+		linear-gradient(160deg, hsl(var(--stacks-hue, 210) 55% 42%), hsl(calc(var(--stacks-hue, 210) + 40) 50% 22%));
+	color: #fff;
+	font-family: var(--font-interface, system-ui, sans-serif);
+}
+
+.stacks-case-title {
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	overflow-wrap: break-word;
+	font-size: 14px;
+	font-weight: 800;
+	line-height: 1.15;
+	letter-spacing: 0.01em;
+	text-transform: uppercase;
+	text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.stacks-case-sub {
+	font-size: 10px;
+	opacity: 0.85;
+}
+
+.stacks-book.is-case .stacks-bookmark {
+	display: none;
+}
+
+/* Switch: red case, red band */
+.stacks-book.is-case-games[data-kind="switch"],
+.stacks-book.is-case-games[data-kind="nintendo-switch"] {
+	background: #d11a22;
+}
+
+.stacks-book.is-case-games[data-kind="switch"] .stacks-case-band,
+.stacks-book.is-case-games[data-kind="nintendo-switch"] .stacks-case-band {
+	background: linear-gradient(180deg, #ef3a41, #c8141c);
+	color: #fff;
+}
+
+/* PC: black DVD-style box with a steel-blue band */
+.stacks-book.is-case-games[data-kind="pc"] {
+	background: #0c0d10;
+}
+
+.stacks-book.is-case-games[data-kind="pc"] .stacks-case-band {
+	background: linear-gradient(180deg, #2b3a4f, #18222f);
+	color: #cfe3ff;
+}
+
+/* Miyoo and other retro handhelds: a grey cartridge, shorter, with grip ridges */
+.stacks-book.is-case-games[data-kind="miyoo"] {
+	height: calc(var(--stacks-book-h) * 0.8);
+	border-radius: 6px 6px 10px 10px;
+	background: linear-gradient(180deg, #a3a6ad, #7d8088);
+}
+
+.stacks-book.is-case-games[data-kind="miyoo"] .stacks-case-band {
+	height: 22px;
+	border-radius: 6px 6px 0 0;
+	background: repeating-linear-gradient(180deg, #8c8f97 0 2px, #b3b6bd 2px 4px);
+	color: transparent;
+}
+
+.stacks-book.is-case-games[data-kind="miyoo"] .stacks-case-art,
+.stacks-book.is-case-games[data-kind="miyoo"] .stacks-case-insert {
+	top: 28px;
+	left: 10px;
+	width: calc(100% - 20px);
+	height: calc(100% - 44px);
+	border-radius: 4px;
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* films: Blu-ray blue; series and anime: black DVD with a coloured band */
+.stacks-book.is-case-films {
+	background: #101114;
+}
+
+.stacks-book.is-case-films[data-kind="films"],
+.stacks-book.is-case-films[data-kind="film"],
+.stacks-book.is-case-films[data-kind="movie"] {
+	background: #164a9a;
+}
+
+.stacks-book.is-case-films[data-kind="films"] .stacks-case-band,
+.stacks-book.is-case-films[data-kind="film"] .stacks-case-band,
+.stacks-book.is-case-films[data-kind="movie"] .stacks-case-band {
+	background: linear-gradient(180deg, #2f6fd1, #1a4f9f);
+	color: #fff;
+}
+
+.stacks-book.is-case-films[data-kind="anime"] .stacks-case-band {
+	background: linear-gradient(180deg, #d0353f, #93161e);
+	color: #fff;
+}
+
+.stacks-book.is-case-films[data-kind="series"] .stacks-case-band {
+	background: linear-gradient(180deg, #3a3d44, #222429);
+	color: #f0d894;
+}
+
+/* small sizes: a thin band, no text */
+.stacks-book.is-case.is-thumb .stacks-case-band {
+	height: 6px;
+	padding: 0;
+	font-size: 0;
+}
+
+.stacks-book.is-case.is-thumb .stacks-case-art,
+.stacks-book.is-case.is-thumb .stacks-case-insert {
+	top: 6px;
+	left: 2px;
+	width: calc(100% - 3px);
+	height: calc(100% - 8px);
+}
+
+.stacks-book.is-case.is-thumb .stacks-case-insert {
+	padding: 2px;
+}
+
+.stacks-book.is-case.is-thumb .stacks-case-title,
+.stacks-book.is-case.is-thumb .stacks-case-sub {
+	display: none;
+}
+
 /* ---------- settings tab ---------- */
 
 .stacks-settings-library {

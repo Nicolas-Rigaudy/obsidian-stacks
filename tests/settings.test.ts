@@ -82,6 +82,13 @@ describe("mergeSettings", () => {
 		assert.deepEqual(s.mediaTypes.watching.categoryFilters.map((f) => f.value), ["movie", "series", "anime"]);
 	});
 
+	test("look per library; an unknown look falls back to the default", () => {
+		const s = mergeSettings({ mediaTypes: { game: { appearance: "vinyl" }, watching: { appearance: "books" } } });
+		assert.equal(s.mediaTypes.book.appearance, "books");
+		assert.equal(s.mediaTypes.game.appearance, "games");
+		assert.equal(s.mediaTypes.watching.appearance, "books");
+	});
+
 	test("wrong-typed values are ignored", () => {
 		const s = mergeSettings({ mediaTypes: { book: { folder: 42, enabled: "yes", categoryValues: "book" } } });
 		assert.equal(s.mediaTypes.book.folder, BOOK_CONFIG.folder);

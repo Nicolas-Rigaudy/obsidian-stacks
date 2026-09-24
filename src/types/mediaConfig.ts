@@ -6,6 +6,11 @@ export type StatusBucket = "backlog" | "active" | "done" | "other";
 
 export const STATUS_BUCKETS: readonly StatusBucket[] = ["backlog", "active", "done", "other"];
 
+/** How items and furniture look: books in a bookcase, game cases in a media cabinet, disc cases in a cinema cabinet. */
+export type Appearance = "books" | "games" | "films";
+
+export const APPEARANCES: readonly Appearance[] = ["books", "games", "films"];
+
 export interface StatusDef {
 	value: string;
 	label: string;
@@ -46,6 +51,7 @@ export interface LogSectionConfig {
 export interface MediaTypeConfig {
 	enabled: boolean;
 	label: string;
+	appearance: Appearance;
 	/** Vault folder (subfolders included). Empty string = whole vault. */
 	folder: string;
 	categoryField: string;
