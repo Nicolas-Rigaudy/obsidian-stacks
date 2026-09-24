@@ -81,7 +81,7 @@ export class ListRenderer extends LibraryRenderer {
 			id: "status",
 			label: "Status",
 			cell: (td, n) => {
-				const select = td.createEl("select", { cls: "stacks-status-select dropdown" });
+				const select = td.createEl("select", { cls: "stacks-select" });
 				if (n.status === null || !config.statuses.some((s) => s.value === n.status)) {
 					select.createEl("option", { text: n.status ?? "—", value: n.status ?? "" });
 				}

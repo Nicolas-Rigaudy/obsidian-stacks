@@ -153,6 +153,13 @@ export class StacksSettingTab extends PluginSettingTab {
 					this.saveSoon();
 				}),
 			);
+			row.addText((t) =>
+				t.setPlaceholder("what it means (optional)").setValue(status.hint ?? "").onChange((v) => {
+					if (v.trim()) status.hint = v.trim();
+					else delete status.hint;
+					this.saveSoon();
+				}),
+			);
 			row.addDropdown((d) => {
 				for (const b of STATUS_BUCKETS) d.addOption(b, BUCKET_LABELS[b]);
 				d.setValue(status.bucket).onChange(async (v) => {

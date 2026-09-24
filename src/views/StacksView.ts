@@ -1,6 +1,7 @@
 import { ItemView, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
 import { VIEW_KINDS, VIEW_LABELS, type ViewKind } from "../logic/viewKinds.ts";
 import { createRenderer } from "./renderers/index.ts";
+import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 import { defaultLibraryId, emptyState, type LibraryRenderer, type StacksHost } from "./shared.ts";
 
 export const VIEW_TYPES: Record<ViewKind, string> = {
@@ -8,6 +9,12 @@ export const VIEW_TYPES: Record<ViewKind, string> = {
 	board: "stacks-board",
 	list: "stacks-list",
 	upnext: "stacks-upnext",
+};
+
+const LIBRARY_ICONS: Record<MediaTypeConfig["appearance"], string> = {
+	books: "book-open",
+	games: "gamepad-2",
+	films: "clapperboard",
 };
 
 export const VIEW_ICONS: Record<ViewKind, string> = {
@@ -104,22 +111,27 @@ export class StacksView extends ItemView {
 		const bar = el.createDiv({ cls: "stacks-toolbar" });
 		bar.createDiv({ cls: "stacks-toolbar-title", text: id ? this.host.settings.mediaTypes[id].label : "Stacks" });
 
+		// Same control family everywhere in the toolbar: libraries, filters, screens.
 		const libraries = Object.entries(this.host.settings.mediaTypes).filter(([, c]) => c.enabled);
 		if (libraries.length > 1 && id) {
-			const select = bar.createEl("select", { cls: "dropdown stacks-library-select", attr: { "aria-label": "Library" } });
-			for (const [lid, c] of libraries) select.createEl("option", { text: c.label || lid, value: lid });
-			select.value = id;
-			select.addEventListener("change", () => {
-				void this.leaf.setViewState({ type: VIEW_TYPES[this.kind], state: { library: select.value } });
-			});
+			const libs = bar.createDiv({ cls: "stacks-seg", attr: { role: "tablist", "aria-label": "Library" } });
+			for (const [lid, c] of libraries) {
+				const b = libs.createEl("button", { cls: "stacks-seg-btn", attr: { role: "tab", "aria-selected": String(lid === id) } });
+				b.toggleClass("is-active", lid === id);
+				setIcon(b.createSpan({ cls: "stacks-seg-icon" }), LIBRARY_ICONS[c.appearance]);
+				b.createSpan({ text: c.label || lid });
+				b.addEventListener("click", () => {
+					if (lid !== id) void this.leaf.setViewState({ type: VIEW_TYPES[this.kind], state: { library: lid } });
+				});
+			}
 		}
 
 		const filters = id ? this.host.settings.mediaTypes[id].categoryFilters : [];
 		if (filters.length >= 2) {
-			const chips = bar.createDiv({ cls: "stacks-chips", attr: { role: "radiogroup", "aria-label": "Filter" } });
+			const chips = bar.createDiv({ cls: "stacks-seg is-small", attr: { role: "radiogroup", "aria-label": "Filter" } });
 			const active = filters.some((f) => f.value === this.filter) ? this.filter : null;
 			for (const f of [{ value: null, label: "All" }, ...filters]) {
-				const chip = chips.createEl("button", { cls: "stacks-chip", text: f.label, attr: { role: "radio", "aria-checked": String(f.value === active) } });
+				const chip = chips.createEl("button", { cls: "stacks-seg-btn", text: f.label, attr: { role: "radio", "aria-checked": String(f.value === active) } });
 				chip.toggleClass("is-active", f.value === active);
 				chip.addEventListener("click", () => {
 					if (f.value === active) return;
@@ -130,11 +142,11 @@ export class StacksView extends ItemView {
 			}
 		}
 
-		const tabs = bar.createDiv({ cls: "stacks-tabs", attr: { role: "tablist" } });
+		const tabs = bar.createDiv({ cls: "stacks-seg", attr: { role: "tablist", "aria-label": "Screen" } });
 		for (const kind of VIEW_KINDS) {
-			const tab = tabs.createEl("button", { cls: "stacks-tab", attr: { role: "tab", "aria-selected": String(kind === this.kind) } });
+			const tab = tabs.createEl("button", { cls: "stacks-seg-btn", attr: { role: "tab", "aria-selected": String(kind === this.kind) } });
 			tab.toggleClass("is-active", kind === this.kind);
-			setIcon(tab.createSpan({ cls: "stacks-tab-icon" }), VIEW_ICONS[kind]);
+			setIcon(tab.createSpan({ cls: "stacks-seg-icon" }), VIEW_ICONS[kind]);
 			tab.createSpan({ text: VIEW_LABELS[kind] });
 			tab.addEventListener("click", () => {
 				if (kind === this.kind) return;

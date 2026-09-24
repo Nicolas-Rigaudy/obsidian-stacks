@@ -226,6 +226,7 @@ const DRAG_TYPE = "application/x-stacks-note";
  */
 export function makeDraggable(el: HTMLElement, root: HTMLElement, note: MediaNote): void {
 	el.setAttr("draggable", "true");
+	let stopScrolling: (() => void) | null = null;
 	el.addEventListener("dragstart", (evt) => {
 		if (!evt.dataTransfer) return;
 		evt.dataTransfer.setData(DRAG_TYPE, note.path);
@@ -233,11 +234,65 @@ export function makeDraggable(el: HTMLElement, root: HTMLElement, note: MediaNot
 		el.addClass("is-dragging");
 		// Changing layout inside dragstart cancels the drag in Chromium: wait a tick.
 		window.setTimeout(() => root.addClass("is-dragging-note"), 0);
+		stopScrolling = autoScrollWhileDragging(el);
 	});
 	el.addEventListener("dragend", () => {
 		el.removeClass("is-dragging");
 		root.removeClass("is-dragging-note");
+		stopScrolling?.();
+		stopScrolling = null;
 	});
+}
+
+/** Every ancestor that can scroll (the tab body, a board, a note's reading view...). */
+function scrollableAncestors(el: HTMLElement): HTMLElement[] {
+	const out: HTMLElement[] = [];
+	for (let n = el.parentElement; n; n = n.parentElement) {
+		const st = getComputedStyle(n);
+		const y = /(auto|scroll)/.test(st.overflowY) && n.scrollHeight > n.clientHeight;
+		const x = /(auto|scroll)/.test(st.overflowX) && n.scrollWidth > n.clientWidth;
+		if (x || y) out.push(n);
+	}
+	return out;
+}
+
+/**
+ * While a drag is in progress, holding the pointer near the edge of a
+ * scrollable area scrolls it, faster the closer to the edge. Returns a stop function.
+ */
+function autoScrollWhileDragging(source: HTMLElement): () => void {
+	const areas = scrollableAncestors(source);
+	const EDGE = 80;
+	const MAX_STEP = 26;
+	let pointer: { x: number; y: number } | null = null;
+	let frame = 0;
+	const step = (distance: number) => Math.ceil(MAX_STEP * Math.min(1, Math.max(0, 1 - distance / EDGE)));
+	const tick = () => {
+		if (pointer) {
+			for (const a of areas) {
+				const r = a.getBoundingClientRect();
+				if (pointer.x < r.left || pointer.x > r.right || pointer.y < r.top || pointer.y > r.bottom) continue;
+				if (a.scrollHeight > a.clientHeight) {
+					if (pointer.y < r.top + EDGE) a.scrollTop -= step(pointer.y - r.top);
+					else if (pointer.y > r.bottom - EDGE) a.scrollTop += step(r.bottom - pointer.y);
+				}
+				if (a.scrollWidth > a.clientWidth) {
+					if (pointer.x < r.left + EDGE) a.scrollLeft -= step(pointer.x - r.left);
+					else if (pointer.x > r.right - EDGE) a.scrollLeft += step(r.right - pointer.x);
+				}
+			}
+		}
+		frame = window.requestAnimationFrame(tick);
+	};
+	const onDragOver = (evt: DragEvent) => {
+		pointer = { x: evt.clientX, y: evt.clientY };
+	};
+	document.addEventListener("dragover", onDragOver, true);
+	frame = window.requestAnimationFrame(tick);
+	return () => {
+		document.removeEventListener("dragover", onDragOver, true);
+		window.cancelAnimationFrame(frame);
+	};
 }
 
 /** Make `target` accept dropped notes; `onDrop` gets the dropped note's path. */

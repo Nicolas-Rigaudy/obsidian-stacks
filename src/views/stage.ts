@@ -5,9 +5,10 @@ import { secondaryLine } from "../logic/cardText.ts";
 import { compareShelfOrder } from "../logic/shelf.ts";
 import { stageDevices, type DeviceSlot } from "../logic/stage.ts";
 import { bucketOf, firstStatusOf } from "../logic/upNext.ts";
-import type { MediaTypeConfig, StatusDef } from "../types/mediaConfig.ts";
+import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
 import { renderDesk } from "./desk.ts";
+import { Menu } from "obsidian";
 import { acceptNoteDrops, makeInteractive, resolveCover, type StacksHost } from "./shared.ts";
 
 export interface StageOptions {
@@ -97,17 +98,59 @@ function renderScreen(parent: HTMLElement, host: StacksHost, config: MediaTypeCo
 	return current;
 }
 
-/** Buttons that end the session: every done/other status except the wishlist-like ones before active. */
-function endStatuses(config: MediaTypeConfig): StatusDef[] {
+/**
+ * How a session ends: one clear main action (the first done status: Finished,
+ * Watched, Read) and a "Stop …" menu with the other ways out, each with its
+ * meaning spelled out (Played: stopped, might come back; Dropped: not going
+ * back; back to the backlog).
+ */
+export function renderSessionControls(parent: HTMLElement, host: StacksHost, config: MediaTypeConfig, note: MediaNote, withDone = true): void {
+	const row = parent.createDiv({ cls: "stacks-session" });
+	const done = config.statuses.find((s) => s.bucket === "done");
+	if (withDone && done) {
+		const b = row.createEl("button", { cls: "stacks-button is-primary", text: `✓ ${done.label || done.value}` });
+		b.setAttr("aria-label", `${note.title}: ${done.label || done.value}${done.hint ? ` (${done.hint})` : ""}`);
+		b.addEventListener("click", () => void host.actions.changeStatus(note.path, config, done.value));
+	}
 	const activeAt = config.statuses.findIndex((s) => s.bucket === "active");
-	return config.statuses.filter((s, i) => i > activeAt && (s.bucket === "done" || s.bucket === "other"));
+	const active = config.statuses[activeAt];
+	const exits = [
+		...config.statuses.filter((s, i) => i > activeAt && s.bucket === "other"),
+		...config.statuses.filter((s) => s.bucket === "backlog").slice(0, 1),
+	];
+	if (exits.length === 0) return;
+	const stop = row.createEl("button", { cls: "stacks-button", text: `Stop ${(active?.label || "this").toLowerCase()} ▾` });
+	stop.addEventListener("click", (evt) => {
+		const menu = new Menu();
+		for (const s of exits) {
+			const name = s.bucket === "backlog" ? `Back to ${(s.label || s.value).toLowerCase()}` : s.label || s.value;
+			menu.addItem((i) =>
+				i
+					.setTitle(s.hint ? `${name} — ${s.hint}` : name)
+					.setIcon(s.bucket === "backlog" ? "undo-2" : s.value === "dropped" ? "x-circle" : "pause-circle")
+					.onClick(() => void host.actions.changeStatus(note.path, config, s.value)),
+			);
+		}
+		menu.showAtMouseEvent(evt);
+	});
 }
 
-function renderEndButtons(parent: HTMLElement, host: StacksHost, config: MediaTypeConfig, note: MediaNote, cls: string): void {
-	for (const s of endStatuses(config)) {
-		const b = parent.createEl("button", { cls: `${cls} is-${s.bucket}`, text: s.label || s.value });
-		b.setAttr("aria-label", `${note.title}: mark ${(s.label || s.value).toLowerCase()}`);
-		b.addEventListener("click", () => void host.actions.changeStatus(note.path, config, s.value));
+/** −1 / "Episode 3 of 12" / +1, for items that track progress (series, anime). */
+function renderEpisodes(parent: HTMLElement, host: StacksHost, config: MediaTypeConfig, note: MediaNote): void {
+	const p = config.progress;
+	if (!p || !note.progress) return;
+	const total = note.progress.total;
+	const box = parent.createDiv({ cls: "stacks-episodes" });
+	const minus = box.createEl("button", { cls: "stacks-button is-round", text: "−", attr: { "aria-label": "One episode back" } });
+	const label = box.createSpan({ cls: "stacks-episodes-label" });
+	const plus = box.createEl("button", { cls: "stacks-button is-round", text: "+", attr: { "aria-label": "Next episode" } });
+	const unit = p.unitLabel === "episodes" ? "Episode" : p.unitLabel || "Progress";
+	const show = (v: number) => label.setText(total !== null ? `${unit} ${v} of ${total}` : `${unit} ${v}`);
+	show(note.progress.current);
+	const step = p.quickIncrements.find((n) => n > 0) ?? 1;
+	for (const [btn, delta] of [[minus, -step], [plus, step]] as const) {
+		// No disabling: the per-note queue applies every click in order.
+		btn.addEventListener("click", () => void host.actions.bump(note.path, config, delta).then((r) => r !== null && show(r)));
 	}
 }
 
@@ -143,7 +186,7 @@ function renderDevice(row: HTMLElement, host: StacksHost, config: MediaTypeConfi
 
 	const caption = wrap.createDiv({ cls: "stacks-device-caption" });
 	caption.createDiv({ cls: "stacks-device-name", text: slot.platform });
-	if (current) renderEndButtons(caption.createDiv({ cls: "stacks-device-buttons" }), host, config, current, "stacks-pad-btn");
+	if (current) renderSessionControls(caption, host, config, current);
 }
 
 function renderTv(section: HTMLElement, host: StacksHost, config: MediaTypeConfig, active: MediaNote[], opts: StageOptions): void {
@@ -155,6 +198,7 @@ function renderTv(section: HTMLElement, host: StacksHost, config: MediaTypeConfi
 	if (current) {
 		const remote = room.createDiv({ cls: "stacks-remote" });
 		remote.createDiv({ cls: "stacks-remote-dot" });
-		renderEndButtons(remote, host, config, current, "stacks-remote-btn");
+		renderEpisodes(remote, host, config, current);
+		renderSessionControls(remote, host, config, current);
 	}
 }

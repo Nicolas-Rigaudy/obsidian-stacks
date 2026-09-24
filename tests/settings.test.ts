@@ -27,7 +27,7 @@ describe("mergeSettings", () => {
 	test("nested groups merge field by field", () => {
 		const s = mergeSettings({ mediaTypes: { book: { progress: { quickIncrements: [5, 50], unitLabel: "p." } } } });
 		assert.deepEqual(s.mediaTypes.book.progress, {
-			categories: ["book"],
+			categories: [],
 			currentField: "pages_read",
 			totalField: "pages_total",
 			unitLabel: "p.",
@@ -73,6 +73,19 @@ describe("mergeSettings", () => {
 		assert.deepEqual(s.mediaTypes.book.progress!.categories, ["book"]);
 	});
 
+	test("status hints survive the merge; blank hints are dropped", () => {
+		const s = mergeSettings({ mediaTypes: { game: { statuses: [{ value: "played", label: "Played", bucket: "other", hint: "might return" }, { value: "x", bucket: "other", hint: "  " }] } } });
+		assert.deepEqual(s.mediaTypes.game.statuses, [
+			{ value: "played", label: "Played", bucket: "other", hint: "might return" },
+			{ value: "x", label: "x", bucket: "other" },
+		]);
+	});
+
+	test("episodes for series and anime, not films", () => {
+		const p = mergeSettings(null).mediaTypes.watching.progress!;
+		assert.deepEqual([p.currentField, p.totalField, p.categories], ["episodes_watched", "episodes_total", ["series", "anime"]]);
+	});
+
 	test("defaults ship Games and Watching with the agreed statuses", () => {
 		const s = mergeSettings(null);
 		const bucket = (id: string, v: string) => s.mediaTypes[id].statuses.find((x) => x.value === v)?.bucket;
@@ -104,7 +117,7 @@ describe("mergeSettings", () => {
 		assert.equal(b.folder, "20 Personal/Hobbies/Reading");
 		assert.deepEqual(b.categoryValues, ["book", "bd"]);
 		assert.equal(b.label, "Reading");
-		assert.deepEqual(b.progress!.categories, ["book"]);
+		assert.deepEqual(b.progress!.categories, []);
 		assert.deepEqual(b.progress!.quickIncrements, [5, 50]);
 
 		const custom = mergeSettings({ mediaTypes: { book: { folder: "Library", categoryValues: ["book"] } } });

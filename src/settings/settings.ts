@@ -33,10 +33,10 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 	],
 	statusField: "status",
 	statuses: [
-		{ value: "wishlist", label: "Wishlist", bucket: "other" },
-		{ value: "backlog", label: "Backlog", bucket: "backlog" },
+		{ value: "wishlist", label: "Wishlist", bucket: "other", hint: "don't own it yet" },
+		{ value: "backlog", label: "Backlog", bucket: "backlog", hint: "own it, not started" },
 		{ value: "reading", label: "Reading", bucket: "active" },
-		{ value: "read", label: "Read", bucket: "done" },
+		{ value: "read", label: "Read", bucket: "done", hint: "finished it" },
 	],
 	titleField: "title",
 	creatorField: "author",
@@ -46,7 +46,7 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 	startedField: "started",
 	finishedField: "finished",
 	progress: {
-		categories: ["book"],
+		categories: [],
 		currentField: "pages_read",
 		totalField: "pages_total",
 		unitLabel: "pages",
@@ -77,11 +77,11 @@ export const GAME_CONFIG: MediaTypeConfig = {
 	categoryFilters: [],
 	statusField: "status",
 	statuses: [
-		{ value: "backlog", label: "Backlog", bucket: "backlog" },
+		{ value: "backlog", label: "Backlog", bucket: "backlog", hint: "not started" },
 		{ value: "playing", label: "Playing", bucket: "active" },
-		{ value: "played", label: "Played", bucket: "other" },
-		{ value: "finished", label: "Finished", bucket: "done" },
-		{ value: "dropped", label: "Dropped", bucket: "other" },
+		{ value: "played", label: "Played", bucket: "other", hint: "stopped, might come back" },
+		{ value: "finished", label: "Finished", bucket: "done", hint: "reached the end" },
+		{ value: "dropped", label: "Dropped", bucket: "other", hint: "not going back" },
 	],
 	titleField: "title",
 	creatorField: "platform",
@@ -111,10 +111,10 @@ export const WATCHING_CONFIG: MediaTypeConfig = {
 	],
 	statusField: "status",
 	statuses: [
-		{ value: "backlog", label: "Backlog", bucket: "backlog" },
+		{ value: "backlog", label: "Backlog", bucket: "backlog", hint: "not started" },
 		{ value: "watching", label: "Watching", bucket: "active" },
-		{ value: "watched", label: "Watched", bucket: "done" },
-		{ value: "dropped", label: "Dropped", bucket: "other" },
+		{ value: "watched", label: "Watched", bucket: "done", hint: "seen it all" },
+		{ value: "dropped", label: "Dropped", bucket: "other", hint: "not going back" },
 	],
 	titleField: "title",
 	creatorField: "network",
@@ -123,7 +123,14 @@ export const WATCHING_CONFIG: MediaTypeConfig = {
 	ratingField: "rating",
 	startedField: "",
 	finishedField: "finished",
-	progress: null,
+	// Episodes for series and anime; films are just watched or not.
+	progress: {
+		categories: ["series", "anime"],
+		currentField: "episodes_watched",
+		totalField: "episodes_total",
+		unitLabel: "episodes",
+		quickIncrements: [1],
+	},
 	series: null,
 	logSection: null,
 };
@@ -197,7 +204,9 @@ function mergeStrings<T extends object>(base: T, over: Rec): T {
 function parseStatus(v: unknown): StatusDef[] {
 	if (!isRecord(v) || !isString(v.value)) return [];
 	const bucket = STATUS_BUCKETS.includes(v.bucket as StatusBucket) ? (v.bucket as StatusBucket) : "other";
-	return [{ value: v.value, label: isString(v.label) ? v.label : v.value, bucket }];
+	const def: StatusDef = { value: v.value, label: isString(v.label) ? v.label : v.value, bucket };
+	if (isString(v.hint) && v.hint.trim() !== "") def.hint = v.hint;
+	return [def];
 }
 
 /**
@@ -262,7 +271,7 @@ function migrate(savedTypes: Rec): Rec {
 	delete next.folder;
 	delete next.categoryValues;
 	if (next.label === "Books") delete next.label;
-	if (isRecord(next.progress)) next.progress = { ...next.progress, categories: ["book"] };
+	if (isRecord(next.progress)) next.progress = { ...next.progress, categories: [] };
 	return { ...savedTypes, book: next };
 }
 

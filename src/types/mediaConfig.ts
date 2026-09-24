@@ -15,6 +15,8 @@ export interface StatusDef {
 	value: string;
 	label: string;
 	bucket: StatusBucket;
+	/** What choosing it means, in plain words ("stopped, might come back"). Shown in menus. */
+	hint?: string;
 }
 
 /** A filter chip over the category field, e.g. { value: "anime", label: "Anime" }. */

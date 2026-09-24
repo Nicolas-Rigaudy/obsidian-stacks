@@ -47,7 +47,7 @@ export class UpNextRenderer extends LibraryRenderer {
 			const slot = shelves.createDiv({ cls: "stacks-slot" });
 			slot.createDiv({ cls: "stacks-rank", text: String(i + 1) });
 			makeInteractive(renderBook(slot, this.host, config, n, "shelf"), this.host, config, n);
-			const start = slot.createEl("button", { cls: "stacks-btn is-primary stacks-start", text: "Start" });
+			const start = slot.createEl("button", { cls: "stacks-button is-primary stacks-start", text: "Start" });
 			start.setAttr("aria-label", `${startLabel}: ${n.title}`);
 			start.addEventListener("click", (evt) => {
 				evt.stopPropagation();

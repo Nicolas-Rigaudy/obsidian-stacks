@@ -4,6 +4,8 @@
 import { progressFraction, secondaryLine } from "../logic/cardText.ts";
 import { compareShelfOrder } from "../logic/shelf.ts";
 import { bucketOf, firstStatusOf } from "../logic/upNext.ts";
+import { toStr } from "../logic/values.ts";
+import { renderSessionControls } from "./stage.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
 import { acceptNoteDrops, makeDraggable, makeInteractive, renderBook, type StacksHost } from "./shared.ts";
@@ -56,6 +58,8 @@ function deskItem(desk: HTMLElement, host: StacksHost, config: MediaTypeConfig, 
 	makeInteractive(title, host, config, note);
 	const sub = secondaryLine(note, config);
 	if (sub) card.createDiv({ cls: "stacks-desk-sub", text: sub });
+	const started = config.startedField ? toStr(note.frontmatter[config.startedField]) : null;
+	if (started) card.createDiv({ cls: "stacks-desk-started", text: `Started ${formatDay(started)}` });
 
 	const controls = side.createDiv({ cls: "stacks-desk-controls" });
 	const p = config.progress;
@@ -117,4 +121,12 @@ function deskItem(desk: HTMLElement, host: StacksHost, config: MediaTypeConfig, 
 			void host.actions.finish(note.path, config);
 		});
 	}
+	renderSessionControls(controls, host, config, note, false);
+}
+
+/** "2026-09-24" → "24 Sep 2026" in the reader's locale; anything else as written. */
+function formatDay(iso: string): string {
+	const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+	if (!m) return iso;
+	return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 }

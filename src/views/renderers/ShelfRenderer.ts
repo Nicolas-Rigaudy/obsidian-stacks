@@ -81,7 +81,7 @@ export class ShelfRenderer extends LibraryRenderer {
 		// A bookcase shows a couple of shelves; the rest behind a pull handle.
 		const expanded = this.openCases.has(key);
 		shelves.toggleClass("is-limited", !expanded);
-		const handle = bookcase.createEl("button", { cls: "stacks-bookcase-more" });
+		const handle = bookcase.createEl("button", { cls: "stacks-button is-primary stacks-bookcase-more" });
 		handle.hide();
 		handle.addEventListener("click", () => {
 			if (this.openCases.has(key)) this.openCases.delete(key);
