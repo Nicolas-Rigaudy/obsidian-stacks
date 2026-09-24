@@ -1,7 +1,7 @@
 import { firstStatusOf, rankCandidates } from "../../logic/upNext.ts";
 import type { MediaTypeConfig } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
-import { renderDesk } from "../desk.ts";
+import { renderStage } from "../stage.ts";
 import { inCategory, LibraryRenderer, makeInteractive, renderBook } from "../shared.ts";
 
 const UP_NEXT_SHOWN = 6;
@@ -11,16 +11,19 @@ const UP_NEXT_SHOWN = 6;
  * shelf. Port of Reading.md's "Reading now" and "Up next" widgets.
  */
 export class UpNextRenderer extends LibraryRenderer {
+	private readonly featured = new Map<string, string>();
+
 	protected render(el: HTMLElement, config: MediaTypeConfig, _filtered: readonly MediaNote[]): void {
 		el.addClass("is-upnext");
 		// Up next always looks at the whole library: eligibility depends on every volume.
 		const notes = this.host.index.get(this.options.libraryId);
 		const page = el.createDiv({ cls: "stacks-upnext" });
-		renderDesk(page, this.host, config, inCategory(notes, this.options.category), {
+		renderStage(page, this.host, config, inCategory(notes, this.options.category), {
 			libraryId: this.options.libraryId,
 			root: this.containerEl,
-			emptyText: "Nothing in progress. Start one from up next.",
 			droppable: false,
+			featured: this.featured,
+			refresh: () => this.refresh(),
 		});
 		this.nextShelf(page, config, notes);
 	}

@@ -1615,27 +1615,6 @@ body.theme-light .stacks-root[data-appearance="films"] {
 	color: #ffe8a6;
 }
 
-/* in-progress area for games and films: a neutral surface in the cabinet's material
-   until the device / TV stages replace it */
-.stacks-root[data-appearance="games"] .stacks-desk-item,
-.stacks-root[data-appearance="games"] .stacks-desk-empty {
-	background:
-		radial-gradient(ellipse 50% 90% at 50% 120%, rgba(var(--stacks-led), 0.14), transparent 70%),
-		linear-gradient(180deg, #2a2f39, #1a1d24);
-}
-
-.stacks-root[data-appearance="films"] .stacks-desk-item,
-.stacks-root[data-appearance="films"] .stacks-desk-empty {
-	background:
-		radial-gradient(ellipse 50% 90% at 50% -20%, rgba(255, 190, 130, 0.16), transparent 70%),
-		linear-gradient(180deg, #2b2224, #171213);
-}
-
-.stacks-root[data-appearance="games"] .stacks-desk-empty,
-.stacks-root[data-appearance="films"] .stacks-desk-empty {
-	color: rgba(255, 255, 255, 0.55);
-}
-
 /* ---------- cases ---------- */
 
 .stacks-book.is-case {
@@ -1823,6 +1802,549 @@ body.theme-light .stacks-root[data-appearance="films"] {
 .stacks-book.is-case.is-thumb .stacks-case-title,
 .stacks-book.is-case.is-thumb .stacks-case-sub {
 	display: none;
+}
+
+/* ==========================================================================
+   Stages: what's in progress, per look. Games → devices; films → a TV.
+   ========================================================================== */
+
+.stacks-stage {
+	border-radius: 14px;
+	transition: box-shadow 0.15s ease;
+}
+
+.stacks-stage.is-drop-target {
+	box-shadow: 0 0 0 3px var(--stacks-brass-hi), 0 0 36px rgba(244, 220, 156, 0.4);
+}
+
+.stacks-root[data-appearance="games"] .stacks-stage.is-drop-target {
+	box-shadow: 0 0 0 3px rgba(var(--stacks-led), 0.9), 0 0 36px rgba(var(--stacks-led), 0.35);
+}
+
+/* ---------- the screen ---------- */
+
+.stacks-screen {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	aspect-ratio: 16 / 9;
+	background: #05070a;
+	cursor: pointer;
+	outline: none;
+}
+
+.stacks-screen-glow {
+	position: absolute;
+	inset: -30px;
+	z-index: -1;
+	background-size: cover;
+	background-position: center;
+	filter: blur(22px) saturate(1.4) brightness(0.75);
+}
+
+.stacks-screen-art {
+	display: block;
+	height: 100%;
+	margin: 0 auto;
+	object-fit: contain;
+	box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+.stacks-screen.is-blank {
+	background: linear-gradient(160deg, #26324a, #0c111b);
+}
+
+.stacks-screen-bar {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 22px 12px 8px;
+	background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.85));
+	color: #fff;
+	font-family: var(--font-interface, system-ui, sans-serif);
+	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.stacks-screen-title {
+	overflow: hidden;
+	font-size: 14px;
+	font-weight: 700;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.stacks-screen-sub {
+	overflow: hidden;
+	font-size: 11px;
+	opacity: 0.8;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.stacks-screen.is-blank .stacks-screen-bar {
+	top: 0;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+	background: none;
+}
+
+.stacks-screen.is-off {
+	background:
+		linear-gradient(125deg, rgba(255, 255, 255, 0.07) 0%, transparent 35%),
+		#07090c;
+	cursor: default;
+}
+
+.stacks-screen-idle {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+	text-align: center;
+	color: rgba(255, 255, 255, 0.35);
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 12px;
+}
+
+.stacks-screen-tiles {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	display: flex;
+	gap: 5px;
+}
+
+button.stacks-screen-tile {
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	overflow: hidden;
+	border: 2px solid rgba(255, 255, 255, 0.35);
+	border-radius: 6px;
+	background: #1b2230;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+	color: #fff;
+	font-size: 12px;
+	cursor: pointer;
+}
+
+button.stacks-screen-tile.is-current {
+	border-color: #fff;
+	box-shadow: 0 0 0 2px rgba(var(--stacks-led, 94, 234, 255), 0.8);
+}
+
+button.stacks-screen-tile img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* ---------- games: the devices ---------- */
+
+.stacks-devices {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	justify-content: center;
+	gap: 40px 56px;
+	padding: 34px 20px 26px;
+	border-radius: 12px;
+	background:
+		radial-gradient(ellipse 60% 70% at 50% 110%, rgba(var(--stacks-led), 0.16), transparent 70%),
+		linear-gradient(180deg, #1c2029, #12151b 70%, #0c0e12);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 28px 40px -24px rgba(0, 0, 0, 0.8);
+}
+
+.stacks-device-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+}
+
+.stacks-device {
+	display: flex;
+	align-items: center;
+	filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.6));
+}
+
+/* Switch: joy-cons around the tablet */
+.stacks-switch-body {
+	width: 300px;
+	padding: 12px 14px;
+	border-radius: 10px;
+	background: linear-gradient(180deg, #2b2d31, #151619);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.stacks-switch-body .stacks-screen {
+	border-radius: 3px;
+}
+
+.stacks-joycon {
+	position: relative;
+	width: 38px;
+	height: 190px;
+}
+
+.stacks-joycon.is-left {
+	border-radius: 22px 4px 4px 22px;
+	background: linear-gradient(90deg, #009bd0, #00c3ea);
+}
+
+.stacks-joycon.is-right {
+	border-radius: 4px 22px 22px 4px;
+	background: linear-gradient(90deg, #ff4f4a, #e0302b);
+}
+
+.stacks-joycon-stick {
+	position: absolute;
+	left: 50%;
+	width: 20px;
+	height: 20px;
+	margin-left: -10px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 40% 35%, #4a4c52, #16171a);
+	box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+.stacks-joycon.is-left .stacks-joycon-stick {
+	top: 38px;
+}
+
+.stacks-joycon.is-right .stacks-joycon-stick {
+	top: 104px;
+}
+
+/* the four face buttons as dots */
+.stacks-joycon::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	width: 6px;
+	height: 6px;
+	margin-left: -3px;
+	border-radius: 50%;
+	background: #1d1e21;
+	box-shadow: 0 -9px 0 #1d1e21, 0 9px 0 #1d1e21, -9px 0 0 #1d1e21, 9px 0 0 #1d1e21;
+}
+
+.stacks-joycon.is-left::after {
+	top: 108px;
+}
+
+.stacks-joycon.is-right::after {
+	top: 48px;
+}
+
+/* PC: a monitor on a stand, RGB glow underneath */
+.stacks-device.is-pc,
+.stacks-device.is-console {
+	flex-direction: column;
+}
+
+.stacks-monitor {
+	width: 360px;
+	padding: 8px 8px 14px;
+	border-radius: 8px;
+	background: linear-gradient(180deg, #202329, #0f1114);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.stacks-monitor .stacks-screen {
+	border-radius: 2px;
+}
+
+.stacks-monitor-neck {
+	width: 34px;
+	height: 38px;
+	background: linear-gradient(90deg, #15171b, #34383f 50%, #15171b);
+}
+
+.stacks-monitor-base {
+	width: 150px;
+	height: 10px;
+	border-radius: 6px 6px 3px 3px;
+	background: linear-gradient(180deg, #3a3e46, #16181c);
+	box-shadow: 0 6px 18px rgba(var(--stacks-led), 0.35);
+}
+
+.stacks-device.is-console .stacks-monitor {
+	width: 330px;
+}
+
+/* retro handheld (Miyoo): vertical, screen on top, controls below */
+.stacks-device.is-handheld {
+	flex-direction: column;
+	width: 176px;
+	padding: 14px 14px 20px;
+	border-radius: 14px 14px 26px 14px;
+	background: linear-gradient(180deg, #c9cbd1, #a6a9b0);
+	box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6), inset 0 -3px 0 rgba(0, 0, 0, 0.15);
+}
+
+.stacks-handheld-bezel {
+	width: 100%;
+	padding: 10px;
+	border-radius: 8px 8px 18px 8px;
+	background: #2c2f36;
+}
+
+.stacks-handheld-bezel .stacks-screen {
+	aspect-ratio: 4 / 3;
+}
+
+.stacks-handheld-bezel .stacks-screen-bar {
+	padding: 14px 6px 4px;
+}
+
+.stacks-handheld-bezel .stacks-screen-title {
+	font-size: 11px;
+}
+
+.stacks-handheld-bezel .stacks-screen-sub {
+	display: none;
+}
+
+.stacks-handheld-pad {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-top: 18px;
+	padding: 0 6px;
+}
+
+.stacks-dpad {
+	position: relative;
+	width: 46px;
+	height: 46px;
+	background:
+		linear-gradient(#34373e, #34373e) center / 16px 100% no-repeat,
+		linear-gradient(#34373e, #34373e) center / 100% 16px no-repeat;
+	filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
+}
+
+.stacks-ab {
+	display: flex;
+	gap: 8px;
+	transform: rotate(-25deg);
+}
+
+.stacks-ab-btn {
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 40% 35%, #b8455b, #7d1f33);
+	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.stacks-device-caption {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+}
+
+.stacks-device-name {
+	color: rgba(var(--stacks-led), 0.8);
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 11px;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+
+.stacks-device-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 8px;
+}
+
+button.stacks-pad-btn {
+	height: auto;
+	padding: 5px 13px 5px 24px;
+	position: relative;
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: 999px;
+	background: linear-gradient(180deg, #2a2e37, #1a1d23);
+	box-shadow: 0 2px 0 #07080a, 0 4px 8px rgba(0, 0, 0, 0.4);
+	color: #e6ebf2;
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 12px;
+	cursor: pointer;
+}
+
+button.stacks-pad-btn::before {
+	content: "";
+	position: absolute;
+	left: 9px;
+	top: 50%;
+	width: 9px;
+	height: 9px;
+	margin-top: -4.5px;
+	border-radius: 50%;
+	background: #e3b341;
+	box-shadow: 0 0 6px currentColor;
+}
+
+button.stacks-pad-btn.is-done::before {
+	background: #4ad37a;
+}
+
+button.stacks-pad-btn:hover {
+	border-color: rgba(var(--stacks-led), 0.6);
+}
+
+button.stacks-pad-btn:active {
+	transform: translateY(2px);
+	box-shadow: 0 0 0 #07080a, 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- films: a TV on a media console, with a remote ---------- */
+
+.stacks-tv-room {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 34px 20px 30px;
+	border-radius: 12px;
+	background:
+		radial-gradient(ellipse 55% 55% at 50% 40%, rgba(120, 150, 255, 0.1), transparent 70%),
+		linear-gradient(180deg, #221a1c, #140f10);
+	box-shadow: 0 28px 40px -24px rgba(0, 0, 0, 0.8);
+}
+
+.stacks-tv {
+	position: relative;
+	width: min(640px, 100%);
+}
+
+.stacks-tv-bezel {
+	padding: 10px 10px 16px;
+	border-radius: 10px;
+	background: linear-gradient(180deg, #1d1d20, #09090a);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+/* the screen lights the wall behind it */
+.stacks-tv-bezel .stacks-screen:not(.is-off) {
+	box-shadow: 0 0 80px rgba(150, 170, 255, 0.25);
+}
+
+.stacks-tv-bezel .stacks-screen-title {
+	font-size: 17px;
+}
+
+.stacks-tv-bezel .stacks-screen.is-off {
+	background: #0b2a6b;
+}
+
+.stacks-tv-bezel .stacks-screen.is-off .stacks-screen-idle {
+	color: rgba(255, 255, 255, 0.75);
+	font-size: 14px;
+	letter-spacing: 0.08em;
+}
+
+.stacks-tv-led {
+	position: absolute;
+	right: 22px;
+	bottom: 5px;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: #b3261e;
+}
+
+.stacks-tv-led.is-on {
+	background: #4ad37a;
+	box-shadow: 0 0 6px #4ad37a;
+}
+
+.stacks-tv-console {
+	width: min(760px, 110%);
+	height: 26px;
+	margin-top: 26px;
+	border-radius: 4px;
+	background:
+		linear-gradient(90deg, transparent 33%, rgba(0, 0, 0, 0.35) 33% calc(33% + 1px), transparent calc(33% + 1px) 66%, rgba(0, 0, 0, 0.35) 66% calc(66% + 1px), transparent calc(66% + 1px)),
+		linear-gradient(180deg, #3b3436, #1c1819);
+	box-shadow: 0 14px 20px -8px rgba(0, 0, 0, 0.7);
+}
+
+.stacks-remote {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 22px;
+	padding: 10px 18px;
+	border-radius: 999px;
+	background: linear-gradient(180deg, #2a2a2e, #141416);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.stacks-remote-dot {
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: #b3261e;
+	box-shadow: 0 0 6px #b3261e;
+}
+
+button.stacks-remote-btn {
+	height: auto;
+	padding: 6px 16px;
+	border: none;
+	border-radius: 999px;
+	background: linear-gradient(180deg, #3a3a40, #222226);
+	box-shadow: 0 2px 0 #09090a;
+	color: #f0e6d8;
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 13px;
+	cursor: pointer;
+}
+
+button.stacks-remote-btn.is-done {
+	background: linear-gradient(180deg, #2f8f55, #1d6038);
+	color: #fff;
+}
+
+button.stacks-remote-btn:active {
+	transform: translateY(2px);
+	box-shadow: none;
+}
+
+@media (max-width: 600px) {
+	.stacks-switch-body {
+		width: 210px;
+	}
+
+	.stacks-joycon {
+		width: 28px;
+		height: 136px;
+	}
+
+	.stacks-joycon.is-left::after {
+		top: 80px;
+	}
+
+	.stacks-joycon.is-right .stacks-joycon-stick {
+		top: 76px;
+	}
+
+	.stacks-monitor,
+	.stacks-device.is-console .stacks-monitor {
+		width: 260px;
+	}
 }
 
 /* ---------- settings tab ---------- */

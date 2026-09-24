@@ -3,7 +3,7 @@ import { bindingHue, stableRange } from "../../logic/placeholder.ts";
 import { orderForShelf, shelfSections, type ShelfItem, type ShelfSection } from "../../logic/shelf.ts";
 import type { MediaTypeConfig } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
-import { renderDesk } from "../desk.ts";
+import { renderStage } from "../stage.ts";
 import { acceptNoteDrops, emptyState, LibraryRenderer, makeDraggable, makeInteractive, renderBook } from "../shared.ts";
 
 type Pile = Extract<ShelfItem, { kind: "pile" }>;
@@ -22,6 +22,8 @@ const PILE_SPINES = 6;
  */
 export class ShelfRenderer extends LibraryRenderer {
 	private readonly openPiles = new Set<string>();
+	/** Which in-progress item each stage screen features. */
+	private readonly featured = new Map<string, string>();
 	/** Bookcases showing all their shelves. */
 	private readonly openCases = new Set<string>();
 
@@ -34,13 +36,15 @@ export class ShelfRenderer extends LibraryRenderer {
 		}
 
 		const room = el.createDiv({ cls: "stacks-library" });
-		// What's in progress sits on the desk at the top, with its page controls.
+		// What's in progress sits on the stage at the top: the reading desk, the
+		// game devices or the TV, depending on the library's look.
 		if (sections.some((s) => s.status?.bucket === "active")) {
-			renderDesk(room, this.host, config, notes, {
+			renderStage(room, this.host, config, notes, {
 				libraryId: this.options.libraryId,
 				root: this.containerEl,
-				emptyText: "Nothing in progress. Drag one onto the desk to start it.",
 				droppable: true,
+				featured: this.featured,
+				refresh: () => this.refresh(),
 			});
 		}
 		for (const section of orderForShelf(sections)) {
