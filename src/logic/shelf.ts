@@ -58,6 +58,17 @@ function arrange(notes: MediaNote[], piles: boolean): ShelfItem[] {
 }
 
 /**
+ * Top-to-bottom order of the Shelf: to read, then read, then everything else
+ * (wishlist, dropped...) at the bottom; unsorted last. Settings order within a
+ * bucket. Active statuses aren't bookcases on the Shelf: they're the desk.
+ */
+export function orderForShelf(sections: readonly ShelfSection[]): ShelfSection[] {
+	const rank = (s: ShelfSection) =>
+		s.status === null ? 9 : ({ active: 0, backlog: 1, done: 2, other: 3 } as const)[s.status.bucket];
+	return sections.map((s, i) => ({ s, i })).sort((a, b) => rank(a.s) - rank(b.s) || a.i - b.i).map(({ s }) => s);
+}
+
+/**
  * @param statuses optional filter: only these status values get a bookcase.
  * @param includeEmpty also return bookcases with no notes (drop targets while dragging).
  */

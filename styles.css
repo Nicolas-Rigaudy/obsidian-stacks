@@ -184,18 +184,11 @@ button.stacks-tab.is-active {
 /* ---------- the library room ---------- */
 
 .stacks-library {
-	/* a wall of bookcases: small ones stand side by side, big ones take the full width */
+	/* top to bottom: the desk, then one full-width bookcase per status */
 	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-end;
-	gap: 52px 34px;
-	padding: 40px var(--stacks-gutter) 56px;
-}
-
-.stacks-library > .stacks-bookcase {
-	flex: 0 1 auto;
-	min-width: min(100%, 300px);
-	max-width: 100%;
+	flex-direction: column;
+	gap: 52px;
+	padding: 36px var(--stacks-gutter) 56px;
 }
 
 .stacks-root.is-embedded .stacks-library {
@@ -314,6 +307,32 @@ button.stacks-tab.is-active {
 	box-shadow:
 		inset 12px 0 16px -12px rgba(0, 0, 0, 0.75),
 		inset -12px 0 16px -12px rgba(0, 0, 0, 0.75);
+}
+
+/* a bookcase shows a couple of shelves; the rest sits behind the pull handle */
+.stacks-shelves.is-limited {
+	max-height: calc(var(--stacks-row) * 2);
+	overflow: hidden;
+}
+
+button.stacks-bookcase-more {
+	display: block;
+	height: auto;
+	margin: 12px auto 0;
+	padding: 4px 18px 5px;
+	border: none;
+	border-radius: 0 0 8px 8px;
+	background: linear-gradient(180deg, var(--stacks-brass-2), var(--stacks-brass-hi) 60%, var(--stacks-brass-1));
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+	color: var(--stacks-brass-ink);
+	font-family: var(--stacks-serif);
+	font-size: 12.5px;
+	letter-spacing: 0.06em;
+	cursor: pointer;
+}
+
+button.stacks-bookcase-more:hover {
+	filter: brightness(1.08);
 }
 
 .stacks-slot {
@@ -965,40 +984,99 @@ select.stacks-status-select {
 
 .stacks-desk {
 	display: grid;
-	gap: 22px;
+	gap: 26px;
+}
+
+.stacks-desk-section {
+	border-radius: 12px;
+	transition: box-shadow 0.15s ease;
+}
+
+.stacks-desk-section.is-drop-target {
+	box-shadow: 0 0 0 3px var(--stacks-brass-hi), 0 0 36px rgba(244, 220, 156, 0.45);
+}
+
+/* the desk: a lamp-lit wooden top with a thick front edge */
+.stacks-desk-item,
+.stacks-desk-empty {
+	position: relative;
+	isolation: isolate;
+	border-radius: 12px 12px 4px 4px;
+	background:
+		radial-gradient(ellipse 45% 85% at 10% -5%, rgba(255, 214, 150, 0.34), transparent 70%),
+		radial-gradient(ellipse 60% 60% at 90% 110%, rgba(0, 0, 0, 0.35), transparent 70%),
+		repeating-linear-gradient(91deg, rgba(0, 0, 0, 0.07) 0 2px, transparent 2px 13px, rgba(255, 255, 255, 0.035) 13px 14px, transparent 14px 27px),
+		linear-gradient(180deg, #74482a, #5b371d 65%, #4b2c16);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 30px 40px -24px rgba(0, 0, 0, 0.75);
+}
+
+.stacks-desk-item::after,
+.stacks-desk-empty::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -16px;
+	height: 18px;
+	z-index: -1;
+	border-radius: 0 0 6px 6px;
+	background: linear-gradient(180deg, var(--stacks-wood-hi), var(--stacks-wood-2) 40%, var(--stacks-wood-3));
+	box-shadow: 0 10px 16px -6px rgba(0, 0, 0, 0.6);
+}
+
+.stacks-desk-empty {
+	padding: 36px 28px;
+	text-align: center;
+	font-family: var(--stacks-serif);
+	font-style: italic;
+	color: rgba(244, 220, 156, 0.7);
 }
 
 .stacks-desk-item {
-	position: relative;
-	isolation: isolate;
 	display: flex;
 	align-items: flex-end;
-	gap: 30px;
-	padding: 28px 30px 22px;
-	border-radius: 10px 10px 4px 4px;
-	background:
-		radial-gradient(ellipse 60% 90% at 15% -10%, rgba(255, 210, 145, 0.28), transparent 65%),
-		linear-gradient(180deg, transparent calc(100% - 22px), var(--stacks-wood-hi) calc(100% - 22px), var(--stacks-wood-1) calc(100% - 18px), var(--stacks-wood-2) calc(100% - 5px), var(--stacks-wood-3) calc(100% - 5px)),
-		repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.09) 0 1px, transparent 1px 9px),
-		linear-gradient(180deg, #3a2618, #2a1a10);
-	box-shadow: 0 24px 40px -22px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+	gap: 34px;
+	padding: 30px 34px 26px;
 	color: #f1e6d0;
 }
 
+.stacks-desk-book {
+	flex: none;
+	transform: rotate(-2deg);
+	transform-origin: 50% 100%;
+}
+
 .stacks-book.is-desk {
-	width: calc(var(--stacks-book-w) * 1.1);
-	height: calc(var(--stacks-book-h) * 1.1);
+	width: calc(var(--stacks-book-w) * 1.12);
+	height: calc(var(--stacks-book-h) * 1.12);
+	box-shadow: 1px 0 0 rgba(0, 0, 0, 0.45), 14px 14px 20px rgba(0, 0, 0, 0.5);
 }
 
 .stacks-desk-info {
 	flex: 1;
 	min-width: 0;
-	padding-bottom: 30px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+/* the reading card: cream paper, ruled, propped at a slight angle */
+.stacks-reading-card {
+	max-width: 560px;
+	padding: 16px 22px 18px;
+	border-radius: 3px;
+	background:
+		linear-gradient(180deg, transparent 30px, rgba(196, 72, 64, 0.32) 30px 31px, transparent 31px),
+		repeating-linear-gradient(180deg, transparent 0 21px, rgba(88, 118, 168, 0.12) 21px 22px),
+		var(--stacks-card);
+	box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 6px 10px 18px rgba(0, 0, 0, 0.45);
+	color: var(--stacks-card-ink);
+	transform: rotate(0.6deg);
 }
 
 .stacks-desk-title {
 	font-family: var(--stacks-serif);
-	font-size: 1.45em;
+	font-size: 1.4em;
 	line-height: 1.2;
 	cursor: pointer;
 	outline: none;
@@ -1007,15 +1085,15 @@ select.stacks-status-select {
 .stacks-desk-title:hover,
 .stacks-desk-title:focus-visible {
 	text-decoration: underline;
-	text-decoration-color: var(--stacks-brass-1);
+	text-decoration-color: var(--stacks-brass-2);
 	text-underline-offset: 4px;
 }
 
 .stacks-desk-sub {
-	margin-top: 3px;
+	margin-top: 4px;
 	font-family: var(--stacks-serif);
 	font-style: italic;
-	color: rgba(241, 230, 208, 0.7);
+	color: var(--stacks-card-muted);
 }
 
 .stacks-progress-row {
@@ -1023,47 +1101,203 @@ select.stacks-status-select {
 	align-items: baseline;
 	flex-wrap: wrap;
 	gap: 8px;
-	margin-top: 18px;
+	margin-top: 16px;
 	font-family: var(--stacks-serif);
+	color: var(--stacks-card-muted);
 }
 
 input.stacks-page-input {
-	width: 4.5em;
+	width: 3.6em;
 	height: auto;
-	padding: 1px 4px;
+	padding: 0 2px;
 	border: none;
-	border-bottom: 1px solid var(--stacks-brass-1);
+	border-bottom: 2px solid var(--stacks-brass-2);
 	border-radius: 0;
 	background: transparent;
 	box-shadow: none;
-	color: #fff4dc;
+	color: var(--stacks-card-ink);
 	font-family: var(--stacks-serif);
-	font-size: 1.35em;
+	font-size: 2em;
+	line-height: 1.1;
 	text-align: right;
 	font-variant-numeric: lining-nums tabular-nums;
+	-moz-appearance: textfield;
+}
+
+input.stacks-page-input::-webkit-inner-spin-button,
+input.stacks-page-input::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
 }
 
 input.stacks-page-input:focus {
 	outline: none;
-	border-bottom-width: 2px;
-	background: rgba(255, 255, 255, 0.05);
+	background: rgba(184, 144, 63, 0.12);
 }
 
-.stacks-progress-of {
-	color: rgba(241, 230, 208, 0.75);
+input.stacks-page-input.is-bumped {
+	animation: stacks-bump 0.45s ease;
+}
+
+@keyframes stacks-bump {
+	0% { transform: scale(1); color: var(--stacks-card-ink); }
+	35% { transform: scale(1.18); color: #9c3a1e; }
+	100% { transform: scale(1); color: var(--stacks-card-ink); }
 }
 
 .stacks-progress-pct {
 	margin-left: auto;
-	color: var(--stacks-brass-1);
+	color: var(--stacks-brass-3);
 	font-variant-numeric: oldstyle-nums;
 }
 
-.stacks-actions {
+/* progress: a silk ribbon with a notched bookmark tip */
+.stacks-ribbon-track {
+	position: relative;
+	height: 10px;
+	margin-top: 10px;
+	border-radius: 2px;
+	background: repeating-linear-gradient(90deg, rgba(117, 99, 77, 0.22) 0 1px, transparent 1px 10%), rgba(117, 99, 77, 0.14);
+}
+
+.stacks-ribbon {
+	position: relative;
+	height: 100%;
+	width: 2%;
+	background: linear-gradient(180deg, #d14a3c, #9c2a20);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+	transition: width 0.45s ease;
+}
+
+.stacks-ribbon::after {
+	content: "";
+	position: absolute;
+	right: -9px;
+	top: -4px;
+	width: 10px;
+	height: 18px;
+	background: linear-gradient(90deg, #9c2a20, #d14a3c);
+	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+	filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
+.stacks-desk-controls {
 	display: flex;
+	align-items: center;
 	flex-wrap: wrap;
+	gap: 18px;
+	max-width: 560px;
+}
+
+/* leather page tabs */
+.stacks-page-tabs {
+	display: flex;
 	gap: 8px;
-	margin-top: 16px;
+}
+
+button.stacks-page-tab {
+	position: relative;
+	height: auto;
+	min-width: 58px;
+	padding: 9px 14px 8px;
+	border: none;
+	border-radius: 6px 6px 3px 3px;
+	background:
+		radial-gradient(ellipse at 30% 0%, rgba(255, 255, 255, 0.18), transparent 60%),
+		linear-gradient(180deg, #8a4526, #5e2b16);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 3px 0 #3a190c, 0 5px 10px rgba(0, 0, 0, 0.4);
+	color: var(--stacks-brass-hi);
+	font-family: var(--stacks-serif);
+	font-size: 15px;
+	font-variant-numeric: lining-nums;
+	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+	cursor: pointer;
+	transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+/* stitching */
+button.stacks-page-tab::before {
+	content: "";
+	position: absolute;
+	inset: 3px;
+	border: 1px dashed rgba(244, 220, 156, 0.45);
+	border-radius: 4px 4px 2px 2px;
+	pointer-events: none;
+}
+
+button.stacks-page-tab.is-back {
+	background:
+		radial-gradient(ellipse at 30% 0%, rgba(255, 255, 255, 0.14), transparent 60%),
+		linear-gradient(180deg, #5d4a3a, #3d2f24);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 3px 0 #211810, 0 5px 10px rgba(0, 0, 0, 0.4);
+}
+
+button.stacks-page-tab:hover {
+	transform: translateY(-2px);
+}
+
+button.stacks-page-tab:active {
+	transform: translateY(2px);
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 0 #3a190c, 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* the wax seal: press to mark the book done */
+button.stacks-seal {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 74px;
+	height: 74px;
+	margin-left: auto;
+	padding: 0;
+	border: none;
+	border-radius: 47% 53% 50% 50% / 52% 48% 52% 48%;
+	background: radial-gradient(circle at 38% 32%, #e0574a, #b3261e 55%, #7c1410);
+	box-shadow:
+		inset 0 0 0 6px rgba(0, 0, 0, 0.12),
+		inset 0 0 0 7px rgba(255, 255, 255, 0.08),
+		0 4px 0 #5a0d0a,
+		0 8px 14px rgba(0, 0, 0, 0.5);
+	color: #ffd9c9;
+	font-family: var(--stacks-serif);
+	text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.15);
+	cursor: pointer;
+	transform: rotate(-8deg);
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* drips of wax around the edge */
+button.stacks-seal::before {
+	content: "";
+	position: absolute;
+	inset: -5px;
+	z-index: -1;
+	border-radius: 55% 45% 52% 48% / 45% 55% 45% 55%;
+	background: #9c1e17;
+}
+
+.stacks-seal-mark {
+	font-size: 22px;
+	line-height: 1;
+}
+
+.stacks-seal-label {
+	margin-top: 2px;
+	font-size: 10.5px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+button.stacks-seal:hover {
+	transform: rotate(-3deg) scale(1.05);
+}
+
+button.stacks-seal:active,
+button.stacks-seal.is-pressed {
+	transform: rotate(-8deg) scale(0.92);
+	box-shadow: inset 0 0 0 6px rgba(0, 0, 0, 0.18), 0 1px 0 #5a0d0a, 0 3px 6px rgba(0, 0, 0, 0.5);
 }
 
 button.stacks-btn {
@@ -1076,17 +1310,7 @@ button.stacks-btn {
 	color: #f1e6d0;
 	font-family: var(--stacks-serif);
 	font-size: 14px;
-	font-variant-numeric: lining-nums;
 	cursor: pointer;
-}
-
-button.stacks-btn:hover {
-	border-color: var(--stacks-brass-1);
-	background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.1));
-}
-
-button.stacks-btn:active {
-	transform: translateY(1px);
 }
 
 button.stacks-btn.is-primary {
@@ -1161,9 +1385,18 @@ button.stacks-btn.is-primary:hover {
 @media (max-width: 600px) {
 	.stacks-desk-item {
 		flex-direction: column;
-		align-items: flex-start;
-		gap: 18px;
-		padding: 22px 20px 22px;
+		align-items: stretch;
+		gap: 22px;
+		padding: 24px 18px 22px;
+	}
+
+	.stacks-desk-book {
+		align-self: center;
+	}
+
+	button.stacks-seal {
+		width: 64px;
+		height: 64px;
 	}
 
 	.stacks-desk-info {

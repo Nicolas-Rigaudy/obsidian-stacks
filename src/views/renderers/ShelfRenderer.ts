@@ -1,8 +1,9 @@
 import { secondaryLine } from "../../logic/cardText.ts";
 import { bindingHue, stableRange } from "../../logic/placeholder.ts";
-import { shelfSections, type ShelfItem } from "../../logic/shelf.ts";
+import { orderForShelf, shelfSections, type ShelfItem, type ShelfSection } from "../../logic/shelf.ts";
 import type { MediaTypeConfig } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
+import { renderDesk } from "../desk.ts";
 import { acceptNoteDrops, emptyState, LibraryRenderer, makeDraggable, makeInteractive, renderBook } from "../shared.ts";
 
 type Pile = Extract<ShelfItem, { kind: "pile" }>;
@@ -11,47 +12,84 @@ type Pile = Extract<ShelfItem, { kind: "pile" }>;
 const PILE_SPINES = 6;
 
 /**
- * The library: one bookcase per status, books standing on wooden shelves.
+ * The library, top to bottom: the reading desk (what's in progress, with page
+ * controls), then one full-width bookcase per status: to read, read, and the
+ * wishlist at the bottom. Each shows a couple of shelves, the rest behind a
+ * pull handle. Books stand on wooden shelves.
  * A series with several volumes on the same shelf lies flat as a pile of
  * spines; clicking it stands the volumes up between bookends. Drag a book to
  * another bookcase to change its status; empty bookcases appear while dragging.
  */
 export class ShelfRenderer extends LibraryRenderer {
 	private readonly openPiles = new Set<string>();
+	/** Bookcases showing all their shelves. */
+	private readonly openCases = new Set<string>();
 
 	protected render(el: HTMLElement, config: MediaTypeConfig, notes: readonly MediaNote[]): void {
 		el.addClass("is-shelf");
 		const sections = shelfSections(notes, config, this.options.statuses, true);
-		if (sections.every((s) => s.count === 0)) {
+		if (sections.every((s) => s.count === 0) && !sections.some((s) => s.status?.bucket === "active")) {
 			emptyState(el, `No ${config.label.toLowerCase() || "items"} here yet.`);
 			return;
 		}
 
 		const room = el.createDiv({ cls: "stacks-library" });
-		for (const section of sections) {
-			const bookcase = room.createDiv({ cls: "stacks-bookcase" });
-			bookcase.toggleClass("is-empty", section.count === 0);
-			if (section.status) bookcase.dataset.bucket = section.status.bucket;
-			const plaque = bookcase.createDiv({ cls: "stacks-plaque" });
-			plaque.createSpan({ cls: "stacks-plaque-label", text: section.status ? section.status.label || section.status.value : "Unsorted" });
-			plaque.createSpan({ cls: "stacks-plaque-count", text: String(section.count) });
-
-			const shelves = bookcase.createDiv({ cls: "stacks-shelves" });
-			const status = section.status;
-			if (status) {
-				if (section.count === 0) shelves.createDiv({ cls: "stacks-shelf-note", text: `Drop a book here to move it to ${status.label || status.value}` });
-				acceptNoteDrops(bookcase, (path) => this.moveTo(path, config, status.value, shelves));
-			}
-			for (const item of section.items) {
-				if (item.kind === "book") {
-					this.standing(shelves, config, item.note);
-					continue;
-				}
-				const key = `${section.status?.value ?? ""}\u0000${item.series}`;
-				if (this.openPiles.has(key)) this.spreadOut(shelves, config, item, key);
-				else this.pile(shelves, item, key);
-			}
+		// What's in progress sits on the desk at the top, with its page controls.
+		if (sections.some((s) => s.status?.bucket === "active")) {
+			renderDesk(room, this.host, config, notes, {
+				libraryId: this.options.libraryId,
+				root: this.containerEl,
+				emptyText: "Nothing in progress. Drag a book onto the desk to start it.",
+				droppable: true,
+			});
 		}
+		for (const section of orderForShelf(sections)) {
+			if (section.status?.bucket === "active") continue;
+			this.bookcase(room, config, section);
+		}
+	}
+
+	private bookcase(room: HTMLElement, config: MediaTypeConfig, section: ShelfSection): void {
+		const key = section.status?.value ?? "";
+		const bookcase = room.createDiv({ cls: "stacks-bookcase" });
+		bookcase.toggleClass("is-empty", section.count === 0);
+		if (section.status) bookcase.dataset.bucket = section.status.bucket;
+		const plaque = bookcase.createDiv({ cls: "stacks-plaque" });
+		plaque.createSpan({ cls: "stacks-plaque-label", text: section.status ? section.status.label || section.status.value : "Unsorted" });
+		plaque.createSpan({ cls: "stacks-plaque-count", text: String(section.count) });
+
+		const shelves = bookcase.createDiv({ cls: "stacks-shelves" });
+		const status = section.status;
+		if (status) {
+			if (section.count === 0) shelves.createDiv({ cls: "stacks-shelf-note", text: `Drop a book here to move it to ${status.label || status.value}` });
+			acceptNoteDrops(bookcase, (path) => this.moveTo(path, config, status.value, shelves));
+		}
+		for (const item of section.items) {
+			if (item.kind === "book") {
+				this.standing(shelves, config, item.note);
+				continue;
+			}
+			const pileKey = `${key}\u0000${item.series}`;
+			if (this.openPiles.has(pileKey)) this.spreadOut(shelves, config, item, pileKey);
+			else this.pile(shelves, item, pileKey);
+		}
+
+		// A bookcase shows a couple of shelves; the rest behind a pull handle.
+		const expanded = this.openCases.has(key);
+		shelves.toggleClass("is-limited", !expanded);
+		const handle = bookcase.createEl("button", { cls: "stacks-bookcase-more" });
+		handle.hide();
+		handle.addEventListener("click", () => {
+			if (this.openCases.has(key)) this.openCases.delete(key);
+			else this.openCases.add(key);
+			this.refresh();
+		});
+		window.requestAnimationFrame(() => {
+			if (expanded || shelves.scrollHeight > shelves.clientHeight + 2) {
+				handle.setText(expanded ? "Show fewer ▴" : `Show all ${section.count} ▾`);
+				handle.show();
+			}
+		});
 	}
 
 	private standing(parent: HTMLElement, config: MediaTypeConfig, note: MediaNote): void {

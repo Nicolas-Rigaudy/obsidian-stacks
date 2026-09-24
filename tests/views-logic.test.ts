@@ -5,7 +5,7 @@ import { parseCoverRef } from "../src/logic/cover.ts";
 import { sortNotes } from "../src/logic/listSort.ts";
 import { bindingHue, stableRange } from "../src/logic/placeholder.ts";
 import { SerialQueue } from "../src/logic/serialQueue.ts";
-import { shelfSections } from "../src/logic/shelf.ts";
+import { orderForShelf, shelfSections } from "../src/logic/shelf.ts";
 import { firstStatusOf } from "../src/logic/upNext.ts";
 import { parseBlockParams } from "../src/logic/viewKinds.ts";
 import { BOOK_CONFIG } from "../src/settings/settings.ts";
@@ -104,6 +104,11 @@ describe("shelfSections", () => {
 		assert.deepEqual(shelfSections(onlyRead, books).map((x) => x.status?.value), ["read"]);
 		const all = shelfSections(onlyRead, books, null, true);
 		assert.deepEqual(all.map((x) => [x.status?.value, x.count]), [["wishlist", 0], ["backlog", 0], ["reading", 0], ["read", 1]]);
+	});
+
+	test("shelf order top to bottom: backlog, read, then wishlist at the bottom, unsorted last", () => {
+		const order = orderForShelf(shelfSections(all, books)).map((x) => x.status?.value ?? "(unsorted)");
+		assert.deepEqual(order, ["reading", "backlog", "read", "wishlist", "(unsorted)"]);
 	});
 
 	test("no piles when the library has no series config", () => {
