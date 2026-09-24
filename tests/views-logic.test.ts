@@ -99,6 +99,13 @@ describe("shelfSections", () => {
 		assert.deepEqual(s.map((x) => x.status?.value), ["read"]);
 	});
 
+	test("empty bookcases on request (drop targets), still in bucket order", () => {
+		const onlyRead = [note("Xenos", "read")];
+		assert.deepEqual(shelfSections(onlyRead, books).map((x) => x.status?.value), ["read"]);
+		const all = shelfSections(onlyRead, books, null, true);
+		assert.deepEqual(all.map((x) => [x.status?.value, x.count]), [["reading", 0], ["backlog", 0], ["read", 1], ["wishlist", 0]]);
+	});
+
 	test("no piles when the library has no series config", () => {
 		const s = shelfSections(all, { ...books, series: null }).find((x) => x.status?.value === "read")!;
 		assert.ok(s.items.every((i) => i.kind === "book"));

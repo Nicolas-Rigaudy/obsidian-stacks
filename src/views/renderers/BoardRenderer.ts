@@ -3,9 +3,7 @@ import { compareShelfOrder } from "../../logic/shelf.ts";
 import { bucketOf } from "../../logic/upNext.ts";
 import type { MediaTypeConfig, StatusDef } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
-import { LibraryRenderer, makeInteractive, renderBook } from "../shared.ts";
-
-const DRAG_TYPE = "application/x-stacks-note";
+import { acceptNoteDrops, LibraryRenderer, makeDraggable, makeInteractive, renderBook } from "../shared.ts";
 
 /**
  * Card-catalogue board: one drawer per status, one index card per note.
@@ -59,7 +57,7 @@ export class BoardRenderer extends LibraryRenderer {
 	}
 
 	private card(parent: HTMLElement, config: MediaTypeConfig, note: MediaNote): void {
-		const card = parent.createDiv({ cls: "stacks-card", attr: { draggable: "true" } });
+		const card = parent.createDiv({ cls: "stacks-card" });
 		card.dataset.path = note.path;
 		renderBook(card, this.host, config, note, "thumb");
 		const text = card.createDiv({ cls: "stacks-card-text" });
@@ -71,33 +69,11 @@ export class BoardRenderer extends LibraryRenderer {
 			text.createDiv({ cls: "stacks-meter" }).createSpan().style.setProperty("width", `${Math.round(f * 100)}%`);
 		}
 		makeInteractive(card, this.host, config, note);
-
-		card.addEventListener("dragstart", (evt) => {
-			if (!evt.dataTransfer) return;
-			evt.dataTransfer.setData(DRAG_TYPE, note.path);
-			evt.dataTransfer.effectAllowed = "move";
-			card.addClass("is-dragging");
-		});
-		card.addEventListener("dragend", () => card.removeClass("is-dragging"));
+		makeDraggable(card, this.containerEl, note);
 	}
 
 	private acceptDrops(drawer: HTMLElement, cards: HTMLElement, config: MediaTypeConfig, status: StatusDef): void {
-		const ours = (evt: DragEvent) => evt.dataTransfer?.types.includes(DRAG_TYPE) ?? false;
-		drawer.addEventListener("dragover", (evt) => {
-			if (!ours(evt)) return;
-			evt.preventDefault();
-			if (evt.dataTransfer) evt.dataTransfer.dropEffect = "move";
-			drawer.addClass("is-drop-target");
-		});
-		drawer.addEventListener("dragleave", (evt) => {
-			if (!drawer.contains(evt.relatedTarget as Node | null)) drawer.removeClass("is-drop-target");
-		});
-		drawer.addEventListener("drop", (evt) => {
-			if (!ours(evt)) return;
-			evt.preventDefault();
-			drawer.removeClass("is-drop-target");
-			const path = evt.dataTransfer?.getData(DRAG_TYPE);
-			if (!path) return;
+		acceptNoteDrops(drawer, (path) => {
 			const note = this.host.index.get(this.options.libraryId).find((n) => n.path === path);
 			if (!note || note.status === status.value) return;
 			// Move the card now; the index rebuild re-renders it in its sorted place.

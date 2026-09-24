@@ -164,6 +164,50 @@ export function noteMenu(host: StacksHost, config: MediaTypeConfig, note: MediaN
 	return menu;
 }
 
+/** Drag payload type, so Obsidian's own file drags are ignored. */
+const DRAG_TYPE = "application/x-stacks-note";
+
+/**
+ * Let a book or card be dragged to another status. `root` gets
+ * `is-dragging-note` while it moves (the shelf uses it to reveal empty bookcases).
+ */
+export function makeDraggable(el: HTMLElement, root: HTMLElement, note: MediaNote): void {
+	el.setAttr("draggable", "true");
+	el.addEventListener("dragstart", (evt) => {
+		if (!evt.dataTransfer) return;
+		evt.dataTransfer.setData(DRAG_TYPE, note.path);
+		evt.dataTransfer.effectAllowed = "move";
+		el.addClass("is-dragging");
+		// Changing layout inside dragstart cancels the drag in Chromium: wait a tick.
+		window.setTimeout(() => root.addClass("is-dragging-note"), 0);
+	});
+	el.addEventListener("dragend", () => {
+		el.removeClass("is-dragging");
+		root.removeClass("is-dragging-note");
+	});
+}
+
+/** Make `target` accept dropped notes; `onDrop` gets the dropped note's path. */
+export function acceptNoteDrops(target: HTMLElement, onDrop: (path: string) => void): void {
+	const ours = (evt: DragEvent) => evt.dataTransfer?.types.includes(DRAG_TYPE) ?? false;
+	target.addEventListener("dragover", (evt) => {
+		if (!ours(evt)) return;
+		evt.preventDefault();
+		if (evt.dataTransfer) evt.dataTransfer.dropEffect = "move";
+		target.addClass("is-drop-target");
+	});
+	target.addEventListener("dragleave", (evt) => {
+		if (!target.contains(evt.relatedTarget as Node | null)) target.removeClass("is-drop-target");
+	});
+	target.addEventListener("drop", (evt) => {
+		if (!ours(evt)) return;
+		evt.preventDefault();
+		target.removeClass("is-drop-target");
+		const path = evt.dataTransfer?.getData(DRAG_TYPE);
+		if (path) onDrop(path);
+	});
+}
+
 export function emptyState(parent: HTMLElement, text: string): void {
 	parent.createDiv({ cls: "stacks-empty", text });
 }

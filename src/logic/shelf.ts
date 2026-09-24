@@ -62,12 +62,13 @@ function arrange(notes: MediaNote[], piles: boolean): ShelfItem[] {
 
 /**
  * @param statuses optional filter: only these status values get a bookcase.
- * Empty bookcases are left out.
+ * @param includeEmpty also return bookcases with no notes (drop targets while dragging).
  */
 export function shelfSections(
 	notes: readonly MediaNote[],
 	config: MediaTypeConfig,
 	statuses: readonly string[] | null = null,
+	includeEmpty = false,
 ): ShelfSection[] {
 	const ordered = config.statuses
 		.map((s, i) => ({ s, i }))
@@ -80,7 +81,7 @@ export function shelfSections(
 	const piles = config.series !== null;
 	for (const status of ordered) {
 		const inStatus = notes.filter((n) => n.status === status.value);
-		if (inStatus.length > 0) sections.push({ status, count: inStatus.length, items: arrange(inStatus, piles) });
+		if (inStatus.length > 0 || includeEmpty) sections.push({ status, count: inStatus.length, items: arrange(inStatus, piles) });
 	}
 	if (statuses === null) {
 		const unsorted = notes.filter((n) => n.status === null || !known.has(n.status));

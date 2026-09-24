@@ -3,7 +3,7 @@ import { bindingHue, stableRange } from "../../logic/placeholder.ts";
 import { shelfSections, type ShelfItem } from "../../logic/shelf.ts";
 import type { MediaTypeConfig } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
-import { emptyState, LibraryRenderer, makeInteractive, renderBook } from "../shared.ts";
+import { acceptNoteDrops, emptyState, LibraryRenderer, makeDraggable, makeInteractive, renderBook } from "../shared.ts";
 
 type Pile = Extract<ShelfItem, { kind: "pile" }>;
 
@@ -13,15 +13,16 @@ const PILE_SPINES = 6;
 /**
  * The library: one bookcase per status, books standing on wooden shelves.
  * A series with several volumes on the same shelf lies flat as a pile of
- * spines; clicking it stands the volumes up between bookends.
+ * spines; clicking it stands the volumes up between bookends. Drag a book to
+ * another bookcase to change its status; empty bookcases appear while dragging.
  */
 export class ShelfRenderer extends LibraryRenderer {
 	private readonly openPiles = new Set<string>();
 
 	protected render(el: HTMLElement, config: MediaTypeConfig, notes: readonly MediaNote[]): void {
 		el.addClass("is-shelf");
-		const sections = shelfSections(notes, config, this.options.statuses);
-		if (sections.length === 0) {
+		const sections = shelfSections(notes, config, this.options.statuses, true);
+		if (sections.every((s) => s.count === 0)) {
 			emptyState(el, `No ${config.label.toLowerCase() || "items"} here yet.`);
 			return;
 		}
@@ -29,12 +30,18 @@ export class ShelfRenderer extends LibraryRenderer {
 		const room = el.createDiv({ cls: "stacks-library" });
 		for (const section of sections) {
 			const bookcase = room.createDiv({ cls: "stacks-bookcase" });
+			bookcase.toggleClass("is-empty", section.count === 0);
 			if (section.status) bookcase.dataset.bucket = section.status.bucket;
 			const plaque = bookcase.createDiv({ cls: "stacks-plaque" });
 			plaque.createSpan({ cls: "stacks-plaque-label", text: section.status ? section.status.label || section.status.value : "Unsorted" });
 			plaque.createSpan({ cls: "stacks-plaque-count", text: String(section.count) });
 
 			const shelves = bookcase.createDiv({ cls: "stacks-shelves" });
+			const status = section.status;
+			if (status) {
+				if (section.count === 0) shelves.createDiv({ cls: "stacks-shelf-note", text: `Drop a book here to move it to ${status.label || status.value}` });
+				acceptNoteDrops(bookcase, (path) => this.moveTo(path, config, status.value, shelves));
+			}
 			for (const item of section.items) {
 				if (item.kind === "book") {
 					this.standing(shelves, config, item.note);
@@ -49,7 +56,22 @@ export class ShelfRenderer extends LibraryRenderer {
 
 	private standing(parent: HTMLElement, config: MediaTypeConfig, note: MediaNote): void {
 		const slot = parent.createDiv({ cls: "stacks-slot" });
-		makeInteractive(renderBook(slot, this.host, config, note, "shelf"), this.host, config, note);
+		slot.dataset.path = note.path;
+		const book = renderBook(slot, this.host, config, note, "shelf");
+		makeInteractive(book, this.host, config, note);
+		makeDraggable(book, this.containerEl, note);
+	}
+
+	private moveTo(path: string, config: MediaTypeConfig, status: string, shelves: HTMLElement): void {
+		const note = this.host.index.get(this.options.libraryId).find((n) => n.path === path);
+		if (!note || note.status === status) return;
+		// Put the book on its new shelf now; the index rebuild re-renders it in place (and re-piles series).
+		const slot = this.containerEl.querySelector<HTMLElement>(`.stacks-slot[data-path="${CSS.escape(path)}"]`);
+		if (slot) {
+			shelves.querySelector(".stacks-shelf-note")?.remove();
+			shelves.append(slot);
+		}
+		void this.host.actions.changeStatus(path, config, status);
 	}
 
 	private pile(parent: HTMLElement, pile: Pile, key: string): void {
