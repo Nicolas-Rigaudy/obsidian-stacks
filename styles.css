@@ -33,6 +33,29 @@
 	--stacks-ink-muted: #75634d;
 	--stacks-rule: rgba(117, 99, 77, 0.22);
 
+	/* scales: every component draws from these */
+	--s-1: 4px;
+	--s-2: 8px;
+	--s-3: 12px;
+	--s-4: 16px;
+	--s-5: 24px;
+	--s-6: 32px;
+	--s-7: 48px;
+	--r-1: 2px;
+	--r-2: 4px;
+	--r-3: 8px;
+	--r-4: 12px;
+	--r-pill: 999px;
+	--fs-1: 11px;
+	--fs-2: 12.5px;
+	--fs-3: 13.5px;
+	--fs-4: 15px;
+	--fs-5: 18px;
+	--shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+	--shadow-2: 0 6px 14px rgba(0, 0, 0, 0.45);
+	--shadow-3: 0 28px 44px -20px rgba(0, 0, 0, 0.7);
+	--ease: 0.15s ease;
+
 	/* controls: one family everywhere (toolbar, stages, pull handles, menus) */
 	--stacks-ui-font: var(--stacks-serif);
 	--stacks-accent-1: var(--stacks-brass-hi);
@@ -895,24 +918,6 @@ body.theme-dark .stacks-root {
 	padding: 12px 0;
 	gap: 28px;
 }
-
-.stacks-heading {
-	display: flex;
-	align-items: baseline;
-	gap: 10px;
-	margin-bottom: 14px;
-	font-family: var(--stacks-serif);
-	font-size: 1.4em;
-	letter-spacing: 0.03em;
-	color: var(--stacks-ink);
-}
-
-.stacks-heading-count {
-	font-size: 0.7em;
-	color: var(--stacks-ink-muted);
-	font-variant-numeric: oldstyle-nums;
-}
-
 .stacks-desk {
 	display: grid;
 	gap: 26px;
@@ -2268,7 +2273,6 @@ button.stacks-button.stacks-bookcase-more {
 	display: none !important;
 }
 
-
 /* ==========================================================================
    Stages: what's in progress, per look. Games → devices; films → a TV.
    ========================================================================== */
@@ -2439,75 +2443,6 @@ button.stacks-screen-tile img {
 	filter: drop-shadow(0 18px 18px rgba(0, 0, 0, 0.6));
 }
 
-/* Switch: joy-cons around the tablet */
-.stacks-switch-body {
-	width: 300px;
-	padding: 12px 14px;
-	border-radius: 10px;
-	background: linear-gradient(180deg, #2b2d31, #151619);
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.stacks-switch-body .stacks-screen {
-	border-radius: 3px;
-}
-
-.stacks-joycon {
-	position: relative;
-	width: 38px;
-	height: 190px;
-}
-
-.stacks-joycon.is-left {
-	border-radius: 22px 4px 4px 22px;
-	background: linear-gradient(90deg, #009bd0, #00c3ea);
-}
-
-.stacks-joycon.is-right {
-	border-radius: 4px 22px 22px 4px;
-	background: linear-gradient(90deg, #ff4f4a, #e0302b);
-}
-
-.stacks-joycon-stick {
-	position: absolute;
-	left: 50%;
-	width: 20px;
-	height: 20px;
-	margin-left: -10px;
-	border-radius: 50%;
-	background: radial-gradient(circle at 40% 35%, #4a4c52, #16171a);
-	box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
-}
-
-.stacks-joycon.is-left .stacks-joycon-stick {
-	top: 38px;
-}
-
-.stacks-joycon.is-right .stacks-joycon-stick {
-	top: 104px;
-}
-
-/* the four face buttons as dots */
-.stacks-joycon::after {
-	content: "";
-	position: absolute;
-	left: 50%;
-	width: 6px;
-	height: 6px;
-	margin-left: -3px;
-	border-radius: 50%;
-	background: #1d1e21;
-	box-shadow: 0 -9px 0 #1d1e21, 0 9px 0 #1d1e21, -9px 0 0 #1d1e21, 9px 0 0 #1d1e21;
-}
-
-.stacks-joycon.is-left::after {
-	top: 108px;
-}
-
-.stacks-joycon.is-right::after {
-	top: 48px;
-}
-
 /* PC: a monitor on a stand, RGB glow underneath */
 .stacks-device.is-pc,
 .stacks-device.is-console {
@@ -2544,29 +2479,6 @@ button.stacks-screen-tile img {
 	width: 330px;
 }
 
-/* retro handheld (Miyoo): vertical, screen on top, controls below */
-.stacks-handheld-bezel {
-	width: 100%;
-	padding: 10px;
-	border-radius: 8px 8px 18px 8px;
-	background: #2c2f36;
-}
-
-.stacks-handheld-bezel .stacks-screen {
-	aspect-ratio: 4 / 3;
-}
-
-.stacks-handheld-bezel .stacks-screen-bar {
-	padding: 14px 6px 4px;
-}
-
-.stacks-handheld-bezel .stacks-screen-title {
-	font-size: 11px;
-}
-
-.stacks-handheld-bezel .stacks-screen-sub {
-	display: none;
-}
 .stacks-device-caption {
 	display: flex;
 	flex-direction: column;
@@ -2581,7 +2493,6 @@ button.stacks-screen-tile img {
 	letter-spacing: 0.2em;
 	text-transform: uppercase;
 }
-/* Miyoo Mini: symmetric rounded body, big screen, d-pad and an X/Y/A/B diamond */
 .stacks-device.is-handheld {
 	flex-direction: column;
 	width: 178px;
@@ -2589,98 +2500,6 @@ button.stacks-screen-tile img {
 	border-radius: 18px;
 	background: linear-gradient(180deg, #eceef1, #cfd2d8);
 	box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.9), inset 0 -3px 0 rgba(0, 0, 0, 0.12);
-}
-
-.stacks-handheld-bezel {
-	width: 100%;
-	padding: 9px 9px 14px;
-	border-radius: 10px;
-	background: #1d1f24;
-}
-
-.stacks-handheld-bezel .stacks-screen {
-	aspect-ratio: 4 / 3;
-	border-radius: 2px;
-}
-
-.stacks-handheld-pad {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	width: 100%;
-	margin-top: 16px;
-	padding: 0 4px;
-}
-
-.stacks-dpad {
-	width: 48px;
-	height: 48px;
-	background:
-		linear-gradient(#3a3d44, #3a3d44) center / 16px 100% no-repeat,
-		linear-gradient(#3a3d44, #3a3d44) center / 100% 16px no-repeat;
-	filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.25));
-}
-
-.stacks-face {
-	position: relative;
-	width: 58px;
-	height: 58px;
-}
-
-.stacks-face-btn {
-	position: absolute;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 20px;
-	height: 20px;
-	border-radius: 50%;
-	background: radial-gradient(circle at 40% 35%, #6a6e78, #3a3d44);
-	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
-	color: rgba(255, 255, 255, 0.7);
-	font-family: var(--font-interface, system-ui, sans-serif);
-	font-size: 8px;
-	font-weight: 700;
-}
-
-.stacks-face-btn.is-x { top: 0; left: 19px; }
-.stacks-face-btn.is-y { top: 19px; left: 0; }
-.stacks-face-btn.is-a { top: 19px; right: 0; }
-.stacks-face-btn.is-b { bottom: 0; left: 19px; }
-
-.stacks-handheld-small {
-	display: flex;
-	justify-content: center;
-	gap: 12px;
-	margin-top: 12px;
-}
-
-.stacks-small-btn {
-	width: 18px;
-	height: 6px;
-	border-radius: 3px;
-	background: #9a9ea8;
-	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.3);
-}
-
-.stacks-small-btn.is-menu {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-}
-
-.stacks-tv-feet {
-	display: flex;
-	justify-content: space-between;
-	padding: 0 18%;
-}
-
-.stacks-tv-feet > div {
-	width: 46px;
-	height: 12px;
-	border-radius: 0 0 4px 4px;
-	background: linear-gradient(180deg, #2a2a2e, #111113);
-	clip-path: polygon(20% 0, 80% 0, 100% 100%, 0 100%);
 }
 /* ---------- films: a TV on a media console, with a remote ---------- */
 
@@ -2763,23 +2582,6 @@ button.stacks-screen-tile img {
 	box-shadow: 0 0 6px #b3261e;
 }
 @media (max-width: 600px) {
-	.stacks-switch-body {
-		width: 210px;
-	}
-
-	.stacks-joycon {
-		width: 28px;
-		height: 136px;
-	}
-
-	.stacks-joycon.is-left::after {
-		top: 80px;
-	}
-
-	.stacks-joycon.is-right .stacks-joycon-stick {
-		top: 76px;
-	}
-
 	.stacks-monitor,
 	.stacks-device.is-console .stacks-monitor {
 		width: 260px;
@@ -2830,20 +2632,6 @@ button.stacks-screen-tile img {
 	pointer-events: none;
 	box-shadow: inset 0 0 0 2px #000, inset 0 0 18px rgba(0, 0, 0, 0.55);
 }
-
-.stacks-switch-body,
-.stacks-monitor,
-.stacks-tv-bezel {
-	box-shadow:
-		0 0 0 1px rgba(255, 255, 255, 0.16),
-		inset 0 1px 0 rgba(255, 255, 255, 0.22),
-		0 14px 30px rgba(0, 0, 0, 0.55);
-}
-
-.stacks-switch-body {
-	background: linear-gradient(180deg, #3a3d43, #202226);
-}
-
 .stacks-monitor {
 	background: linear-gradient(180deg, #34373e, #1b1d21);
 }
@@ -2856,12 +2644,6 @@ button.stacks-screen-tile img {
 	background: linear-gradient(180deg, #5a5f69, #25282d);
 	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 6px 18px rgba(var(--stacks-led), 0.35);
 }
-
-.stacks-joycon {
-	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.35);
-}
-
-/* the TV stands on its feet in a lit living room; no cabinet */
 .stacks-tv-room {
 	background:
 		linear-gradient(0deg, #3a2f2c 0, #2c2322 16%, transparent 16.2%),
@@ -2873,15 +2655,408 @@ button.stacks-screen-tile img {
 	background: linear-gradient(180deg, #2c2c31, #121215);
 }
 
+/* ==========================================================================
+   Design-system pass: one heading component, shared scales
+   ========================================================================== */
+
+/* Section headings are nameplates, the same component as the bookcases' */
+.stacks-heading {
+	display: flex;
+	justify-content: center;
+	margin-bottom: var(--s-4);
+}
+
+.stacks-plaque.is-static {
+	position: relative;
+	top: auto;
+	left: auto;
+	transform: none;
+	/* its own layer, so the marquee's bulb ring and sign (z-index -1) stay behind the text, not the page */
+	isolation: isolate;
+	z-index: 0;
+}
+
+.stacks-section + .stacks-section,
+.stacks-library > * + * {
+	margin-top: 0;
+}
+
+.stacks-empty,
+.stacks-footnote,
+.stacks-shelf-note,
+.stacks-desk-empty,
+.stacks-drawer-empty {
+	font-size: var(--fs-3);
+}
+
+.stacks-caption-title {
+	font-size: var(--fs-2);
+}
+
+.stacks-caption-sub {
+	font-size: var(--fs-1);
+}
+
+button.stacks-button,
+button.stacks-seg-btn {
+	font-size: var(--fs-3);
+	transition: transform var(--ease), filter var(--ease), border-color var(--ease), background var(--ease);
+}
+
+.stacks-seg.is-small button.stacks-seg-btn,
+select.stacks-select {
+	font-size: var(--fs-2);
+}
+
+/* ==========================================================================
+   Fixes from review
+   ========================================================================== */
+
+/* BD albums are rectangular, not rounded */
+.stacks-book[data-category="bd"],
+.stacks-book[data-category="bd"] .stacks-book-cover {
+	border-radius: 1px 2px 2px 1px;
+}
+
+/* GBA and Game Boy: bigger, with the label taking more of the face so the art reads */
+.stacks-book[data-cart="gba"] {
+	height: calc(var(--stacks-book-h) * 0.74);
+	width: calc(var(--stacks-book-h) * 0.74 * 1.5);
+}
+
+.stacks-book[data-cart="gba"] .stacks-case-band {
+	top: 6%;
+	height: 13%;
+	font-size: 9px;
+}
+
+.stacks-book[data-cart="gba"] .stacks-case-art,
+.stacks-book[data-cart="gba"] .stacks-case-insert {
+	top: 22%;
+	left: 10%;
+	width: 80%;
+	height: 64%;
+}
+
+.stacks-book[data-cart="gb"] {
+	height: calc(var(--stacks-book-h) * 0.9);
+	width: calc(var(--stacks-book-h) * 0.9 * 0.88);
+}
+
+.stacks-book[data-cart="gb"] .stacks-case-art,
+.stacks-book[data-cart="gb"] .stacks-case-insert {
+	top: 21%;
+	left: 11%;
+	width: 78%;
+	height: 66%;
+}
+
+/* PC boxes: thinner */
+.stacks-book.is-case-games[data-kind="pc"] {
+	--stacks-depth: 6px;
+}
+
+.stacks-book.is-case-films[data-kind="series"] {
+	--stacks-depth: 9px;
+}
+
+/* ==========================================================================
+   Nintendo Switch, from a reference photo
+   ========================================================================== */
+
+.stacks-device.is-switch {
+	align-items: stretch;
+}
+
+.stacks-switch-body {
+	width: 300px;
+	padding: 11px 13px 13px;
+	background: linear-gradient(180deg, #2d2f34, #16171a);
+	box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.2), var(--shadow-2);
+}
+
+.stacks-switch-body .stacks-screen {
+	border-radius: 2px;
+}
+
+.stacks-joycon {
+	position: relative;
+	width: 44px;
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.35), var(--shadow-2);
+}
+
+.stacks-joycon.is-left {
+	border-radius: 26px 3px 3px 26px;
+	background: linear-gradient(90deg, #00a4cf, #00c1e6 70%, #00b3da);
+}
+
+.stacks-joycon.is-right {
+	border-radius: 3px 26px 26px 3px;
+	background: linear-gradient(90deg, #f53f45, #ff5a5f 30%, #e8353b);
+}
+
+.stacks-jc-stick {
+	position: absolute;
+	left: 50%;
+	width: 24px;
+	height: 24px;
+	margin-left: -12px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 45% 40%, #4d5058 0 38%, #26272b 40% 62%, #3a3c42 64%);
+	box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35), 0 2px 3px rgba(0, 0, 0, 0.4);
+}
+
+.stacks-joycon.is-left .stacks-jc-stick { top: 26%; }
+.stacks-joycon.is-right .stacks-jc-stick { top: 60%; }
+
+.stacks-jc-diamond {
+	position: absolute;
+	left: 50%;
+	width: 34px;
+	height: 34px;
+	margin-left: -17px;
+}
+
+.stacks-joycon.is-left .stacks-jc-diamond { top: 55%; }
+.stacks-joycon.is-right .stacks-jc-diamond { top: 16%; }
+
+.stacks-jc-btn {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 40% 35%, #3f4147, #1c1d20);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+	color: rgba(255, 255, 255, 0.75);
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 6.5px;
+	font-weight: 700;
+}
+
+.stacks-jc-btn:nth-child(1), .stacks-jc-btn.is-x { top: 0; left: 11px; }
+.stacks-jc-btn:nth-child(2), .stacks-jc-btn.is-y { top: 11px; left: 0; }
+.stacks-jc-btn:nth-child(3), .stacks-jc-btn.is-a { top: 11px; left: 22px; }
+.stacks-jc-btn:nth-child(4), .stacks-jc-btn.is-b { top: 22px; left: 11px; }
+
+.stacks-jc-minus,
+.stacks-jc-plus {
+	position: absolute;
+	top: 8px;
+	width: 9px;
+	height: 2.5px;
+	border-radius: 1px;
+	background: #1f2024;
+}
+
+.stacks-jc-minus { right: 8px; }
+
+.stacks-jc-plus {
+	left: 8px;
+	background:
+		linear-gradient(#1f2024, #1f2024) center / 9px 2.5px no-repeat,
+		linear-gradient(#1f2024, #1f2024) center / 2.5px 9px no-repeat;
+	top: 5px;
+	width: 9px;
+	height: 9px;
+}
+
+.stacks-jc-capture {
+	position: absolute;
+	top: 82%;
+	right: 10px;
+	width: 9px;
+	height: 9px;
+	border-radius: 2px;
+	background: #1f2024;
+	box-shadow: inset 0 0 0 2px #34363c;
+}
+
+.stacks-jc-home {
+	position: absolute;
+	top: 82%;
+	left: 10px;
+	width: 11px;
+	height: 11px;
+	border-radius: 50%;
+	background: #9aa0a8;
+	box-shadow: inset 0 0 0 2px #1f2024;
+}
+
+/* ==========================================================================
+   Miyoo Mini Plus, from reference photos
+   ========================================================================== */
+
+.stacks-device.is-handheld {
+	position: relative;
+	flex-direction: column;
+	width: 180px;
+	padding: 10px 10px 16px;
+	border-radius: 10px 10px 34px 10px;
+	background: linear-gradient(180deg, #ece8df, #d9d4c9);
+	box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.9), inset 0 -3px 0 rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.25), var(--shadow-2);
+}
+
+.stacks-handheld-bezel {
+	width: 100%;
+	padding: 6px;
+	border-radius: 6px;
+	background: #16171a;
+}
+
+.stacks-handheld-bezel .stacks-screen {
+	aspect-ratio: 4 / 3;
+	border-radius: 1px;
+}
+
+.stacks-handheld-bezel .stacks-screen-bar {
+	padding: 14px 6px 4px;
+}
+
+.stacks-handheld-bezel .stacks-screen-title {
+	font-size: 11px;
+}
+
+.stacks-handheld-bezel .stacks-screen-sub {
+	display: none;
+}
+
+.stacks-handheld-pad {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-top: 16px;
+	padding: 0 2px;
+}
+
+.stacks-dpad {
+	width: 50px;
+	height: 50px;
+	background:
+		radial-gradient(circle, rgba(255, 255, 255, 0.08) 0 5px, transparent 5.5px),
+		linear-gradient(#3b3d42, #3b3d42) center / 17px 100% no-repeat,
+		linear-gradient(#3b3d42, #3b3d42) center / 100% 17px no-repeat;
+	filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.3));
+}
+
+.stacks-hh-menu {
+	position: absolute;
+	top: -2px;
+	left: 50%;
+	width: 12px;
+	height: 12px;
+	margin-left: -6px;
+	border-radius: 50%;
+	background: #4a4c52;
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.stacks-face {
+	position: relative;
+	width: 70px;
+	height: 66px;
+}
+
+.stacks-face-btn {
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.25), 0 2px 1px rgba(0, 0, 0, 0.3);
+}
+
+.stacks-face-btn.is-x { top: 0; left: 24px; background: radial-gradient(circle at 40% 35%, #3d5fc8, #243f96); }
+.stacks-face-btn.is-y { top: 21px; left: 3px; background: radial-gradient(circle at 40% 35%, #2f9e6a, #1c6b45); }
+.stacks-face-btn.is-a { top: 21px; left: 45px; background: radial-gradient(circle at 40% 35%, #e0403a, #a8231f); }
+.stacks-face-btn.is-b { top: 42px; left: 24px; background: radial-gradient(circle at 40% 35%, #f0c330, #c49613); }
+
+/* letters printed beside the buttons, like on the real shell */
+.stacks-face-label {
+	position: absolute;
+	color: #4d6ab5;
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 7px;
+	font-weight: 700;
+}
+
+.stacks-face-label.is-x { top: 21px; left: 30px; }
+.stacks-face-label.is-y { top: 42px; left: 9px; }
+.stacks-face-label.is-a { top: 42px; left: 51px; }
+.stacks-face-label.is-b { top: 63px; left: 30px; }
+
+.stacks-handheld-small {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 10px;
+	margin-right: 24px;
+}
+
+.stacks-small-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+}
+
+.stacks-small-btn {
+	width: 22px;
+	height: 7px;
+	border-radius: 4px;
+	background: #3b3d42;
+	transform: rotate(-24deg);
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.stacks-small-label {
+	color: #4d6ab5;
+	font-family: var(--font-interface, system-ui, sans-serif);
+	font-size: 5.5px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	transform: rotate(-24deg);
+}
+
+.stacks-hh-speaker {
+	position: absolute;
+	right: 14px;
+	bottom: 12px;
+	width: 22px;
+	height: 18px;
+	background: repeating-linear-gradient(-55deg, transparent 0 3px, rgba(0, 0, 0, 0.28) 3px 4.5px);
+	clip-path: polygon(40% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+/* ==========================================================================
+   TV: solid feet standing on the floor, with a contact shadow
+   ========================================================================== */
+
 .stacks-tv-feet {
+	position: relative;
 	display: flex;
 	justify-content: space-between;
 	padding: 0 16%;
 }
 
 .stacks-tv-feet > div {
-	width: 50px;
-	height: 16px;
-	background: linear-gradient(180deg, #55555c, #1e1e22);
-	clip-path: polygon(30% 0, 70% 0, 100% 100%, 0 100%);
+	position: relative;
+	width: 54px;
+	height: 18px;
+	background: #1a1a1d;
+	clip-path: polygon(34% 0, 66% 0, 100% 100%, 0 100%);
+}
+
+.stacks-tv-feet::after {
+	content: "";
+	position: absolute;
+	left: 10%;
+	right: 10%;
+	bottom: -8px;
+	height: 12px;
+	border-radius: 50%;
+	background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55), transparent 70%);
 }

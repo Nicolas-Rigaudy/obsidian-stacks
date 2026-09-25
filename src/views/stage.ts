@@ -37,9 +37,9 @@ export function renderStage(parent: HTMLElement, host: StacksHost, config: Media
 	if (!activeStatus) return;
 	const section = parent.createDiv({ cls: `stacks-section stacks-stage is-${config.appearance}` });
 	const active = notes.filter((n) => bucketOf(n.status, config) === "active");
-	const h = section.createDiv({ cls: "stacks-heading" });
-	h.createSpan({ text: `${activeStatus.label || activeStatus.value} now` });
-	if (active.length > 0) h.createSpan({ cls: "stacks-heading-count", text: String(active.length) });
+	const plaque = section.createDiv({ cls: "stacks-heading" }).createDiv({ cls: "stacks-plaque is-static" });
+	plaque.createSpan({ cls: "stacks-plaque-label", text: `${activeStatus.label || activeStatus.value} now` });
+	if (active.length > 0) plaque.createSpan({ cls: "stacks-plaque-count", text: String(active.length) });
 
 	if (config.appearance === "games") renderDevices(section, host, config, notes, opts);
 	else renderTv(section, host, config, active.sort(compareShelfOrder), opts);
@@ -167,19 +167,42 @@ function renderDevice(row: HTMLElement, host: StacksHost, config: MediaTypeConfi
 
 	let current: MediaNote | null = null;
 	if (slot.kind === "switch") {
-		device.createDiv({ cls: "stacks-joycon is-left" }).createDiv({ cls: "stacks-joycon-stick" });
+		// Nintendo Switch (from a reference photo): full-height Joy-Cons, rounded outside, flat
+		// against the tablet. Left: −, stick, four direction buttons, capture. Right: +, X/Y/A/B, stick, home.
+		const left = device.createDiv({ cls: "stacks-joycon is-left" });
+		left.createDiv({ cls: "stacks-jc-minus" });
+		left.createDiv({ cls: "stacks-jc-stick" });
+		const dirs = left.createDiv({ cls: "stacks-jc-diamond" });
+		for (let i = 0; i < 4; i++) dirs.createDiv({ cls: "stacks-jc-btn" });
+		left.createDiv({ cls: "stacks-jc-capture" });
 		const body = device.createDiv({ cls: "stacks-switch-body" });
 		current = renderScreen(body, host, config, slot.playing, key, idle, opts);
-		device.createDiv({ cls: "stacks-joycon is-right" }).createDiv({ cls: "stacks-joycon-stick" });
+		const right = device.createDiv({ cls: "stacks-joycon is-right" });
+		right.createDiv({ cls: "stacks-jc-plus" });
+		const abxy = right.createDiv({ cls: "stacks-jc-diamond" });
+		for (const b of ["x", "y", "a", "b"]) abxy.createDiv({ cls: `stacks-jc-btn is-${b}`, text: b.toUpperCase() });
+		right.createDiv({ cls: "stacks-jc-stick" });
+		right.createDiv({ cls: "stacks-jc-home" });
 	} else if (slot.kind === "handheld") {
-		// Miyoo Mini-style: screen on top, d-pad and an X/Y/A/B diamond, select/start/menu below.
+		// Miyoo Mini Plus (from reference photos): cream body, screen on the top half, dark d-pad,
+		// menu button, SNES-coloured X/Y/A/B with printed letters beside them, angled select/start,
+		// speaker slots, a big rounded bottom-right corner.
 		current = renderScreen(device.createDiv({ cls: "stacks-handheld-bezel" }), host, config, slot.playing, key, idle, opts);
 		const pad = device.createDiv({ cls: "stacks-handheld-pad" });
 		pad.createDiv({ cls: "stacks-dpad" });
+		pad.createDiv({ cls: "stacks-hh-menu" });
 		const face = pad.createDiv({ cls: "stacks-face" });
-		for (const b of ["x", "y", "a", "b"]) face.createDiv({ cls: `stacks-face-btn is-${b}`, text: b.toUpperCase() });
+		for (const b of ["x", "y", "a", "b"]) {
+			face.createDiv({ cls: `stacks-face-btn is-${b}` });
+			face.createDiv({ cls: `stacks-face-label is-${b}`, text: b.toUpperCase() });
+		}
 		const small = device.createDiv({ cls: "stacks-handheld-small" });
-		for (const b of ["select", "start", "menu"]) small.createDiv({ cls: `stacks-small-btn is-${b}` });
+		for (const b of ["select", "start"]) {
+			const w = small.createDiv({ cls: "stacks-small-wrap" });
+			w.createDiv({ cls: "stacks-small-btn" });
+			w.createDiv({ cls: "stacks-small-label", text: b.toUpperCase() });
+		}
+		device.createDiv({ cls: "stacks-hh-speaker" });
 	} else {
 		current = renderScreen(device.createDiv({ cls: "stacks-monitor" }), host, config, slot.playing, key, idle, opts);
 		device.createDiv({ cls: "stacks-monitor-neck" });

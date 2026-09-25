@@ -27,9 +27,9 @@ export function renderDesk(parent: HTMLElement, host: StacksHost, config: MediaT
 	const active = notes.filter((n) => bucketOf(n.status, config) === "active").sort(compareShelfOrder);
 
 	const section = parent.createDiv({ cls: "stacks-section stacks-desk-section" });
-	const h = section.createDiv({ cls: "stacks-heading" });
-	h.createSpan({ text: `${activeStatus.label || activeStatus.value} now` });
-	if (active.length > 0) h.createSpan({ cls: "stacks-heading-count", text: String(active.length) });
+	const plaque = section.createDiv({ cls: "stacks-heading" }).createDiv({ cls: "stacks-plaque is-static" });
+	plaque.createSpan({ cls: "stacks-plaque-label", text: `${activeStatus.label || activeStatus.value} now` });
+	if (active.length > 0) plaque.createSpan({ cls: "stacks-plaque-count", text: String(active.length) });
 
 	const desk = section.createDiv({ cls: "stacks-desk" });
 	if (active.length === 0) desk.createDiv({ cls: "stacks-desk-empty", text: opts.emptyText });
