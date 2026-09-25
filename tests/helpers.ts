@@ -18,6 +18,7 @@ export function note(
 		series: series
 			? { name: series.name, position: series.position ?? null, positionEnd: series.positionEnd ?? null }
 			: null,
+		added: null,
 		frontmatter: {},
 	};
 }

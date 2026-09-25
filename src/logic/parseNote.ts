@@ -74,6 +74,7 @@ export function parseNote(
 		rating: toNum(fm[config.ratingField]),
 		progress,
 		series,
+		added: null,
 		frontmatter: fm,
 	};
 }

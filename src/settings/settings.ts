@@ -11,10 +11,27 @@ import type {
 	StatusDef,
 } from "../types/mediaConfig.ts";
 import { APPEARANCES, STATUS_BUCKETS } from "../types/mediaConfig.ts";
+import type { ShelfSort } from "../logic/shelf.ts";
+
+export type Density = "small" | "medium" | "large";
+
+/** How a library was last looked at: survives restarts, shared by its tabs and embeds. */
+export interface LibraryPrefs {
+	sort: ShelfSort;
+	density: Density;
+	/** Piles stood up, as "status\u0000series". */
+	openPiles: string[];
+	/** Bookcases showing all their shelves, by status value. */
+	openCases: string[];
+}
+
+export const DEFAULT_PREFS: LibraryPrefs = { sort: "library", density: "medium", openPiles: [], openCases: [] };
 
 export interface StacksSettings {
 	/** Keyed by a stable id ("book"). Key order = display order. */
 	mediaTypes: Record<string, MediaTypeConfig>;
+	/** View preferences per library id. */
+	prefs: Record<string, LibraryPrefs>;
 }
 
 // Books and BDs in one library (user decision 2026-09-24), filtered by chips.
@@ -158,7 +175,22 @@ export const WATCHING_CONFIG: MediaTypeConfig = {
 
 export const DEFAULT_SETTINGS: StacksSettings = {
 	mediaTypes: { book: BOOK_CONFIG, game: GAME_CONFIG, watching: WATCHING_CONFIG },
+	prefs: {},
 };
+
+const SORTS: readonly ShelfSort[] = ["library", "title", "creator", "added", "rating", "year"];
+const DENSITIES: readonly Density[] = ["small", "medium", "large"];
+
+export function mergePrefs(saved: unknown): LibraryPrefs {
+	const p = isRecord(saved) ? saved : {};
+	const strings = (v: unknown) => (Array.isArray(v) ? v.filter(isString).slice(0, 500) : []);
+	return {
+		sort: SORTS.includes(p.sort as ShelfSort) ? (p.sort as ShelfSort) : DEFAULT_PREFS.sort,
+		density: DENSITIES.includes(p.density as Density) ? (p.density as Density) : DEFAULT_PREFS.density,
+		openPiles: strings(p.openPiles),
+		openCases: strings(p.openCases),
+	};
+}
 
 // Starting values when a user switches an optional group on for a library.
 export const DEFAULT_PROGRESS: ProgressConfig = {
@@ -319,5 +351,9 @@ export function mergeSettings(saved: unknown): StacksSettings {
 		if (id in mediaTypes || !isRecord(over)) continue;
 		mediaTypes[id] = mergeConfig(blankMediaTypeConfig(isString(over.label) ? over.label : id), over);
 	}
-	return { mediaTypes };
+	const prefs: Record<string, LibraryPrefs> = {};
+	if (isRecord(saved) && isRecord(saved.prefs)) {
+		for (const [id, p] of Object.entries(saved.prefs)) prefs[id] = mergePrefs(p);
+	}
+	return { mediaTypes, prefs };
 }

@@ -3,6 +3,8 @@
 
 import type { MediaTypeConfig, StatusDef } from "../types/mediaConfig.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
+import { creatorOf } from "./cardText.ts";
+import { toNum } from "./values.ts";
 
 export type ShelfItem =
 	| { kind: "book"; note: MediaNote }
@@ -16,6 +18,45 @@ export interface ShelfSection {
 }
 
 const collator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
+
+export type ShelfSort = "library" | "title" | "creator" | "added" | "rating" | "year";
+
+export const SHELF_SORTS: ReadonlyArray<{ value: ShelfSort; label: string }> = [
+	{ value: "library", label: "Series, then title" },
+	{ value: "title", label: "Title" },
+	{ value: "creator", label: "Author / platform" },
+	{ value: "added", label: "Recently added" },
+	{ value: "rating", label: "Rating" },
+	{ value: "year", label: "Year" },
+];
+
+/**
+ * How notes are ordered within a bookcase or drawer. Missing values (no rating,
+ * no year) always go last; ties fall back to library order.
+ */
+export function comparatorFor(sort: ShelfSort, config: MediaTypeConfig): (a: MediaNote, b: MediaNote) => number {
+	const lastIfNull = (x: number | null, y: number | null, desc: boolean) =>
+		x === null && y === null ? 0 : x === null ? 1 : y === null ? -1 : desc ? y - x : x - y;
+	const yearOf = (n: MediaNote) => toNum(n.frontmatter.year);
+	switch (sort) {
+		case "title":
+			return (a, b) => collator.compare(a.title, b.title);
+		case "creator":
+			return (a, b) => {
+				const x = creatorOf(a, config), y = creatorOf(b, config);
+				if (x === null || y === null) return x === y ? compareShelfOrder(a, b) : x === null ? 1 : -1;
+				return collator.compare(x, y) || compareShelfOrder(a, b);
+			};
+		case "added":
+			return (a, b) => lastIfNull(a.added, b.added, true) || compareShelfOrder(a, b);
+		case "rating":
+			return (a, b) => lastIfNull(a.rating, b.rating, true) || compareShelfOrder(a, b);
+		case "year":
+			return (a, b) => lastIfNull(yearOf(a), yearOf(b), true) || compareShelfOrder(a, b);
+		default:
+			return compareShelfOrder;
+	}
+}
 
 /** Library order: by series name (or title for standalones), then volume, then title. */
 export function compareShelfOrder(a: MediaNote, b: MediaNote): number {
@@ -33,7 +74,7 @@ function itemKey(item: ShelfItem): string {
 	return item.note.series?.name ?? item.note.title;
 }
 
-function arrange(notes: MediaNote[], piles: boolean): ShelfItem[] {
+function arrange(notes: MediaNote[], piles: boolean, cmp: ((a: MediaNote, b: MediaNote) => number) | null): ShelfItem[] {
 	const bySeries = new Map<string, MediaNote[]>();
 	const items: ShelfItem[] = [];
 	for (const n of notes) {
@@ -50,11 +91,9 @@ function arrange(notes: MediaNote[], piles: boolean): ShelfItem[] {
 		if (list.length >= 2) items.push({ kind: "pile", series, notes: list });
 		else items.push({ kind: "book", note: list[0] });
 	}
-	return items.sort(
-		(a, b) =>
-			collator.compare(itemKey(a), itemKey(b)) ||
-			byPosition(a.kind === "pile" ? a.notes[0] : a.note, b.kind === "pile" ? b.notes[0] : b.note),
-	);
+	const lead = (i: ShelfItem) => (i.kind === "pile" ? i.notes[0] : i.note);
+	if (cmp) return items.sort((a, b) => cmp(lead(a), lead(b)));
+	return items.sort((a, b) => collator.compare(itemKey(a), itemKey(b)) || byPosition(lead(a), lead(b)));
 }
 
 /**
@@ -77,7 +116,9 @@ export function shelfSections(
 	config: MediaTypeConfig,
 	statuses: readonly string[] | null = null,
 	includeEmpty = false,
+	sort: ShelfSort = "library",
 ): ShelfSection[] {
+	const cmp = sort === "library" ? null : comparatorFor(sort, config);
 	// Same order as the settings (and the board's columns): wishlist → backlog → reading → read.
 	const ordered = config.statuses.filter((s) => statuses === null || statuses.includes(s.value));
 
@@ -86,11 +127,11 @@ export function shelfSections(
 	const piles = config.series !== null;
 	for (const status of ordered) {
 		const inStatus = notes.filter((n) => n.status === status.value);
-		if (inStatus.length > 0 || includeEmpty) sections.push({ status, count: inStatus.length, items: arrange(inStatus, piles) });
+		if (inStatus.length > 0 || includeEmpty) sections.push({ status, count: inStatus.length, items: arrange(inStatus, piles, cmp) });
 	}
 	if (statuses === null) {
 		const unsorted = notes.filter((n) => n.status === null || !known.has(n.status));
-		if (unsorted.length > 0) sections.push({ status: null, count: unsorted.length, items: arrange(unsorted, piles) });
+		if (unsorted.length > 0) sections.push({ status: null, count: unsorted.length, items: arrange(unsorted, piles, cmp) });
 	}
 	return sections;
 }

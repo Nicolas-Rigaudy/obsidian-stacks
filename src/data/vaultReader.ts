@@ -10,7 +10,7 @@ export function listNotes(app: App, config: MediaTypeConfig): MediaNote[] {
 		if (!isInFolder(file.path, config.folder)) continue;
 		const fm = app.metadataCache.getFileCache(file)?.frontmatter;
 		const note = parseNote(file.path, file.basename, fm, config);
-		if (note) notes.push(note);
+		if (note) notes.push({ ...note, added: file.stat.ctime });
 	}
 	return notes;
 }

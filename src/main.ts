@@ -1,9 +1,9 @@
-import { Menu, Plugin } from "obsidian";
+import { debounce, Menu, Plugin } from "obsidian";
 import { registerCodeBlock } from "./codeBlock/registerCodeBlock.ts";
 import { LibraryActions } from "./data/actions.ts";
 import { LiveIndex } from "./data/liveIndex.ts";
 import { VIEW_KINDS, VIEW_LABELS, type ViewKind } from "./logic/viewKinds.ts";
-import { mergeSettings, type StacksSettings } from "./settings/settings.ts";
+import { mergePrefs, mergeSettings, type LibraryPrefs, type StacksSettings } from "./settings/settings.ts";
 import { StacksSettingTab } from "./settings/settingsTab.ts";
 import { QuickAddModal } from "./views/quickAdd.ts";
 import { defaultLibraryId, type StacksHost } from "./views/shared.ts";
@@ -56,6 +56,13 @@ export default class StacksPlugin extends Plugin implements StacksHost {
 		registerCodeBlock(this, this);
 		this.addSettingTab(new StacksSettingTab(this.app, this));
 	}
+
+	prefs(libraryId: string): LibraryPrefs {
+		return (this.settings.prefs[libraryId] ??= mergePrefs(undefined));
+	}
+
+	/** View preferences change often (piles, sorting): save soon, without re-indexing. */
+	savePrefs = debounce(() => void this.saveData(this.settings), 800, true);
 
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);

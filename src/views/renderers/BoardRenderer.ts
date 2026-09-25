@@ -1,5 +1,5 @@
 import { progressFraction, secondaryLine } from "../../logic/cardText.ts";
-import { compareShelfOrder } from "../../logic/shelf.ts";
+import { comparatorFor } from "../../logic/shelf.ts";
 import { bucketOf } from "../../logic/upNext.ts";
 import type { MediaTypeConfig, StatusDef } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
@@ -50,7 +50,7 @@ export class BoardRenderer extends LibraryRenderer {
 
 		const cards = drawer.createDiv({ cls: "stacks-drawer-cards" });
 		cards.dataset.status = status?.value ?? "";
-		for (const n of [...notes].sort(compareShelfOrder)) this.card(cards, config, n);
+		for (const n of [...notes].sort(comparatorFor(this.host.prefs(this.options.libraryId).sort, config))) this.card(cards, config, n);
 		if (notes.length === 0) cards.createDiv({ cls: "stacks-drawer-empty", text: status ? "Drop a card here" : "" });
 
 		if (status) this.acceptDrops(drawer, cards, config, status);

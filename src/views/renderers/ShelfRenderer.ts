@@ -21,15 +21,29 @@ const PILE_SPINES = 6;
  * another bookcase to change its status; empty bookcases appear while dragging.
  */
 export class ShelfRenderer extends LibraryRenderer {
-	private readonly openPiles = new Set<string>();
 	/** Which in-progress item each stage screen features. */
 	private readonly featured = new Map<string, string>();
-	/** Bookcases showing all their shelves. */
-	private readonly openCases = new Set<string>();
+
+	/** Open piles and expanded bookcases are remembered per library (survive restarts). */
+	private get prefs() {
+		return this.host.prefs(this.options.libraryId);
+	}
+
+	private toggle(list: string[], key: string): void {
+		const i = list.indexOf(key);
+		if (i === -1) list.push(key);
+		else list.splice(i, 1);
+		this.host.savePrefs();
+		this.refresh();
+	}
 
 	protected render(el: HTMLElement, config: MediaTypeConfig, notes: readonly MediaNote[]): void {
 		el.addClass("is-shelf");
-		const sections = shelfSections(notes, config, this.options.statuses, true);
+		const sections = shelfSections(notes, config, this.options.statuses, !this.searching, this.prefs.sort);
+		if (this.searching && sections.every((s) => s.count === 0)) {
+			emptyState(el, `Nothing matches “${this.options.search}”.`);
+			return;
+		}
 		if (sections.every((s) => s.count === 0) && !sections.some((s) => s.status?.bucket === "active")) {
 			emptyState(el, `No ${config.label.toLowerCase() || "items"} here yet.`);
 			return;
@@ -74,21 +88,19 @@ export class ShelfRenderer extends LibraryRenderer {
 				continue;
 			}
 			const pileKey = `${key}\u0000${item.series}`;
-			if (this.openPiles.has(pileKey)) this.spreadOut(shelves, config, item, pileKey);
+			// While searching, piles stand open so the matching volumes show.
+			if (this.searching || this.prefs.openPiles.includes(pileKey)) this.spreadOut(shelves, config, item, pileKey);
 			else this.pile(shelves, item, pileKey);
 		}
 
 		// A bookcase shows a couple of shelves; the rest behind a pull handle.
-		const expanded = this.openCases.has(key);
+		const expanded = this.searching || this.prefs.openCases.includes(key);
 		shelves.toggleClass("is-limited", !expanded);
 		const handle = bookcase.createEl("button", { cls: "stacks-button is-primary stacks-bookcase-more" });
 		handle.hide();
-		handle.addEventListener("click", () => {
-			if (this.openCases.has(key)) this.openCases.delete(key);
-			else this.openCases.add(key);
-			this.refresh();
-		});
+		handle.addEventListener("click", () => this.toggle(this.prefs.openCases, key));
 		window.requestAnimationFrame(() => {
+			if (this.searching) return; // everything is shown while searching
 			if (expanded || shelves.scrollHeight > shelves.clientHeight + 2) {
 				handle.setText(expanded ? "Show fewer ▴" : `Show all ${section.count} ▾`);
 				handle.show();
@@ -146,10 +158,7 @@ export class ShelfRenderer extends LibraryRenderer {
 			more.style.setProperty("--stacks-wp", "96");
 		}
 
-		const open = () => {
-			this.openPiles.add(key);
-			this.refresh();
-		};
+		const open = () => this.toggle(this.prefs.openPiles, key);
 		el.addEventListener("click", open);
 		el.addEventListener("keydown", (evt) => {
 			if (evt.key === "Enter" || evt.key === " ") {
@@ -167,8 +176,8 @@ export class ShelfRenderer extends LibraryRenderer {
 			attr: { role: "button", tabindex: "0", "aria-label": `Stack ${pile.series} back into a pile` },
 		});
 		const close = () => {
-			this.openPiles.delete(key);
-			this.refresh();
+			if (this.searching) return;
+			this.toggle(this.prefs.openPiles, key);
 		};
 		plate.addEventListener("click", close);
 		plate.addEventListener("keydown", (evt) => {

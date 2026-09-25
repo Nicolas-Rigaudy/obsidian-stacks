@@ -8,7 +8,8 @@ import { cartridgeKind, type CartridgeKind } from "../logic/stage.ts";
 import { bucketOf } from "../logic/upNext.ts";
 import { slugify } from "../logic/values.ts";
 import type { ViewKind } from "../logic/viewKinds.ts";
-import type { StacksSettings } from "../settings/settings.ts";
+import type { LibraryPrefs, StacksSettings } from "../settings/settings.ts";
+import { matchesSearch } from "../logic/search.ts";
 import { CoverPickerModal } from "./coverPicker.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
@@ -20,6 +21,10 @@ export interface StacksHost {
 	index: LiveIndex;
 	actions: LibraryActions;
 	openView(kind: ViewKind, libraryId?: string): Promise<void>;
+	/** A library's remembered view preferences (created on first use). */
+	prefs(libraryId: string): LibraryPrefs;
+	/** Save preferences soon (doesn't re-index). */
+	savePrefs(): void;
 }
 
 export interface RenderOptions {
@@ -28,6 +33,8 @@ export interface RenderOptions {
 	statuses: string[] | null;
 	/** Only notes whose filter value (category, platform...) is this chip. Null = all. */
 	filter: string | null;
+	/** Live search text from the toolbar ("" = none). */
+	search?: string;
 	/** Inside a note (code block) rather than its own tab. */
 	embedded: boolean;
 }
@@ -72,6 +79,7 @@ export abstract class LibraryRenderer extends MarkdownRenderChild {
 		el.addClass("stacks-root");
 		el.toggleClass("is-embedded", this.options.embedded);
 		if (config) el.dataset.appearance = config.appearance;
+		el.dataset.density = this.host.prefs(this.options.libraryId).density;
 		if (!config || !config.enabled) {
 			el.createDiv({ cls: "stacks-empty", text: `Library "${this.options.libraryId}" isn't set up or is disabled. See Settings → Stacks.` });
 			return;
@@ -79,8 +87,21 @@ export abstract class LibraryRenderer extends MarkdownRenderChild {
 		let notes = inFilter(this.host.index.get(this.options.libraryId), this.options.filter);
 		const only = this.options.statuses;
 		if (only) notes = notes.filter((n) => n.status !== null && only.includes(n.status));
+		const q = this.options.search ?? "";
+		if (q.trim()) notes = notes.filter((n) => matchesSearch(n, config, q));
 		this.render(el, config, notes);
 		this.restoreState();
+	}
+
+	/** New toolbar search text: re-render in place (the input keeps focus). */
+	setSearch(query: string): void {
+		if ((this.options.search ?? "") === query) return;
+		this.options = { ...this.options, search: query };
+		this.refresh();
+	}
+
+	protected get searching(): boolean {
+		return (this.options.search ?? "").trim() !== "";
 	}
 
 	/** Hooks around a re-render, e.g. to keep scroll positions inside the view. */

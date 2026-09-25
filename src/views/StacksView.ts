@@ -1,4 +1,5 @@
-import { ItemView, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
+import { debounce, ItemView, Menu, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
+import { SHELF_SORTS } from "../logic/shelf.ts";
 import { VIEW_KINDS, VIEW_LABELS, type ViewKind } from "../logic/viewKinds.ts";
 import { QuickAddModal } from "./quickAdd.ts";
 import { createRenderer } from "./renderers/index.ts";
@@ -35,6 +36,11 @@ export class StacksView extends ItemView {
 	private libraryId: string | null = null;
 	/** Active filter chip (a category value), or null for All. */
 	private filter: string | null = null;
+	/** Live search text (not saved: a fresh tab starts unfiltered). */
+	private search = "";
+	/** Scroll position of the tab body, saved with the workspace. */
+	private scrollTop = 0;
+	private searchInput: HTMLInputElement | null = null;
 	private renderer: LibraryRenderer | null = null;
 
 	constructor(leaf: WorkspaceLeaf, host: StacksHost, kind: ViewKind) {
@@ -57,14 +63,15 @@ export class StacksView extends ItemView {
 	}
 
 	getState(): Record<string, unknown> {
-		return { ...super.getState(), library: this.libraryId, filter: this.filter };
+		return { ...super.getState(), library: this.libraryId, filter: this.filter, scroll: Math.round(this.scrollTop) };
 	}
 
 	async setState(state: unknown, result: ViewStateResult): Promise<void> {
 		if (typeof state === "object" && state !== null) {
-			const st = state as { library?: unknown; filter?: unknown };
+			const st = state as { library?: unknown; filter?: unknown; scroll?: unknown };
 			if (typeof st.library === "string") this.libraryId = st.library;
 			this.filter = typeof st.filter === "string" ? st.filter : null;
+			if (typeof st.scroll === "number") this.scrollTop = st.scroll;
 		}
 		await super.setState(state, result);
 		this.mount();
@@ -72,11 +79,46 @@ export class StacksView extends ItemView {
 
 	async onOpen(): Promise<void> {
 		this.mount();
+		// "/" jumps to the search box (unless typing somewhere already).
+		this.registerDomEvent(this.containerEl, "keydown", (evt: KeyboardEvent) => {
+			const t = evt.target as HTMLElement | null;
+			if (evt.key !== "/" || !this.searchInput || t?.closest("input, textarea, [contenteditable='true']")) return;
+			evt.preventDefault();
+			this.searchInput.focus();
+		});
 	}
 
 	async onClose(): Promise<void> {
 		if (this.renderer) this.removeChild(this.renderer);
 		this.renderer = null;
+	}
+
+	/** Sort and cover size for this library, remembered across restarts. */
+	private viewOptionsMenu(id: string): Menu {
+		const prefs = this.host.prefs(id);
+		const menu = new Menu();
+		menu.addItem((i) => i.setTitle("Sort").setIsLabel(true));
+		for (const s of SHELF_SORTS) {
+			menu.addItem((i) =>
+				i.setTitle(s.label).setChecked(prefs.sort === s.value).onClick(() => {
+					prefs.sort = s.value;
+					this.host.savePrefs();
+					this.renderer?.refresh();
+				}),
+			);
+		}
+		menu.addSeparator();
+		menu.addItem((i) => i.setTitle("Cover size").setIsLabel(true));
+		for (const d of ["small", "medium", "large"] as const) {
+			menu.addItem((i) =>
+				i.setTitle(d[0].toUpperCase() + d.slice(1)).setChecked(prefs.density === d).onClick(() => {
+					prefs.density = d;
+					this.host.savePrefs();
+					this.renderer?.refresh();
+				}),
+			);
+		}
+		return menu;
 	}
 
 	private currentLibraryId(): string | null {
@@ -104,8 +146,15 @@ export class StacksView extends ItemView {
 		const filters = this.host.settings.mediaTypes[id].categoryFilters;
 		const category = filters.length >= 2 && filters.some((f) => f.value === this.filter) ? this.filter : null;
 		this.renderer = this.addChild(
-			createRenderer(this.kind, this.host, body.createDiv(), { libraryId: id, statuses: null, filter: category, embedded: false }),
+			createRenderer(this.kind, this.host, body.createDiv(), { libraryId: id, statuses: null, filter: category, search: this.search, embedded: false }),
 		);
+		// Back where we were: restore the scroll once rendered, remember it as it changes.
+		const saveLayout = debounce(() => this.app.workspace.requestSaveLayout(), 600, true);
+		window.requestAnimationFrame(() => (body.scrollTop = this.scrollTop));
+		body.addEventListener("scroll", () => {
+			this.scrollTop = body.scrollTop;
+			saveLayout();
+		}, { passive: true });
 	}
 
 	private toolbar(el: HTMLElement, id: string | null): void {
@@ -131,6 +180,28 @@ export class StacksView extends ItemView {
 		// so nothing shifts under the pointer when switching.
 		bar.createDiv({ cls: "stacks-toolbar-spacer" });
 		if (id) {
+			const box = bar.createDiv({ cls: "stacks-search" });
+			setIcon(box.createSpan({ cls: "stacks-search-icon" }), "search");
+			const input = box.createEl("input", { cls: "stacks-search-input", attr: { type: "search", placeholder: "Search  /", "aria-label": "Search this library", spellcheck: "false" } });
+			input.value = this.search;
+			const apply = debounce(() => this.renderer?.setSearch(this.search), 120, true);
+			input.addEventListener("input", () => {
+				this.search = input.value;
+				apply();
+			});
+			input.addEventListener("keydown", (evt) => {
+				if (evt.key === "Escape" && input.value) {
+					evt.stopPropagation();
+					input.value = this.search = "";
+					this.renderer?.setSearch("");
+				}
+			});
+			this.searchInput = input;
+
+			const opts = bar.createEl("button", { cls: "stacks-button is-round stacks-view-options", attr: { "aria-label": "View options: sort and cover size" } });
+			setIcon(opts, "sliders-horizontal");
+			opts.addEventListener("click", (evt) => this.viewOptionsMenu(id).showAtMouseEvent(evt));
+
 			const add = bar.createEl("button", { cls: "stacks-button is-primary stacks-add", attr: { "aria-label": "Add to library" } });
 			setIcon(add.createSpan({ cls: "stacks-seg-icon" }), "plus");
 			add.createSpan({ text: "Add" });
