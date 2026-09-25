@@ -89,7 +89,9 @@ export class ShelfRenderer extends LibraryRenderer {
 		}
 		for (const item of section.items) {
 			if (item.kind === "book") {
-				this.standing(shelves, config, item.note);
+				const slot = this.standing(shelves, config, item.note);
+				// A lone volume of a series (often the next one, on the wishlist): say which series.
+				if ((item.note.series?.position ?? 0) > 1) seriesTag(slot, item.note);
 				continue;
 			}
 			const pileKey = `${key}\u0000${item.series}`;
@@ -128,7 +130,8 @@ export class ShelfRenderer extends LibraryRenderer {
 			const book = renderBook(slot, this.host, config, note, "shelf");
 			makeInteractive(book, this.host, config, note);
 			makeDraggable(book, this.containerEl, note);
-			slot.createDiv({ cls: `stacks-buy-tag is-${reason}`, text: reason === "starred" ? "★" : "next in series" });
+			if (reason === "starred") slot.createDiv({ cls: "stacks-buy-tag is-starred", text: "★" });
+			else if (note.series) seriesTag(slot, note);
 		}
 		this.pullHandle(bookcase, shelves, "\u0000buy-next", items.length, 1);
 	}
@@ -149,12 +152,13 @@ export class ShelfRenderer extends LibraryRenderer {
 		});
 	}
 
-	private standing(parent: HTMLElement, config: MediaTypeConfig, note: MediaNote): void {
+	private standing(parent: HTMLElement, config: MediaTypeConfig, note: MediaNote): HTMLElement {
 		const slot = parent.createDiv({ cls: "stacks-slot" });
 		slot.dataset.path = note.path;
 		const book = renderBook(slot, this.host, config, note, "shelf");
 		makeInteractive(book, this.host, config, note);
 		makeDraggable(book, this.containerEl, note);
+		return slot;
 	}
 
 	private moveTo(path: string, config: MediaTypeConfig, status: string, shelves: HTMLElement): void {
@@ -341,4 +345,14 @@ export class ShelfRenderer extends LibraryRenderer {
 		await this.host.saveSettings();
 	}
 
+}
+
+/** A brass tag under a book: its series and volume number. */
+function seriesTag(slot: HTMLElement, note: MediaNote): void {
+	const s = note.series;
+	if (!s) return;
+	const num = s.position === null ? "" : `#${s.position}${s.positionEnd && s.positionEnd !== s.position ? `–${s.positionEnd}` : ""}`;
+	const tag = slot.createDiv({ cls: "stacks-buy-tag is-series", attr: { title: `${s.name} ${num}`.trim() } });
+	tag.createSpan({ cls: "stacks-series-tag-name", text: s.name });
+	if (num) tag.createSpan({ cls: "stacks-series-tag-num", text: num });
 }

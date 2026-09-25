@@ -3438,6 +3438,22 @@ button.stacks-view-options svg {
 	pointer-events: none;
 }
 
+.stacks-buy-tag.is-series {
+	display: flex;
+	max-width: calc(var(--stacks-book-w) - 8px);
+}
+
+.stacks-series-tag-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.stacks-series-tag-num {
+	flex: none;
+	margin-left: 0.35em;
+}
+
 .stacks-buy-tag.is-starred {
 	font-size: var(--fs-3);
 	line-height: 1.1;
