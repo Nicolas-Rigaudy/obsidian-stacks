@@ -4,6 +4,7 @@
 import type {
 	LogSectionConfig,
 	MediaTypeConfig,
+	NewNoteDefaults,
 	ProgressConfig,
 	SeriesConfig,
 	StatusBucket,
@@ -64,6 +65,10 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 		finishedLine: "Finished [date:: {date}]",
 		progressLine: "(pages:: {value}) [date:: {date}]",
 	},
+	newNotes: {
+		book: { folder: "20 Personal/Hobbies/Reading/Books", extras: { type: "log", area: "personal", genre: [], tags: ["book"], shelf: "[[Reading]]" } },
+		bd: { folder: "20 Personal/Hobbies/Reading/BDs", extras: { type: "log", area: "personal", genre: [], tags: ["bd"], shelf: "[[Reading]]" } },
+	},
 };
 
 // Video games (106 notes, checked 2026-09-24). "played" = played but not
@@ -100,6 +105,9 @@ export const GAME_CONFIG: MediaTypeConfig = {
 	progress: null,
 	series: null,
 	logSection: null,
+	newNotes: {
+		game: { folder: "20 Personal/Hobbies/Video Games/Games", extras: { type: "log", area: "personal", hltb: null, played: null, tags: ["log", "game"], shelf: "[[Video Games]]" } },
+	},
 };
 
 // Films, series and anime in one library with filter chips (19 notes in Media/,
@@ -141,6 +149,11 @@ export const WATCHING_CONFIG: MediaTypeConfig = {
 	},
 	series: null,
 	logSection: null,
+	newNotes: {
+		movie: { folder: "20 Personal/Hobbies/Media", extras: { type: "log", area: "personal", tags: ["log", "movie"], shelf: "[[Media]]" } },
+		series: { folder: "20 Personal/Hobbies/Media", extras: { type: "log", area: "personal", tags: ["log", "series"], shelf: "[[Media]]" } },
+		anime: { folder: "20 Personal/Hobbies/Media", extras: { type: "log", area: "personal", tags: ["log", "anime"], shelf: "[[Media]]" } },
+	},
 };
 
 export const DEFAULT_SETTINGS: StacksSettings = {
@@ -194,6 +207,7 @@ export function blankMediaTypeConfig(label: string): MediaTypeConfig {
 		progress: null,
 		series: null,
 		logSection: null,
+		newNotes: {},
 	};
 }
 
@@ -252,6 +266,17 @@ function mergeConfig(base: MediaTypeConfig, over: unknown): MediaTypeConfig {
 			);
 		}
 		if (Array.isArray(over.progress.categories)) out.progress.categories = over.progress.categories.filter(isString);
+	}
+	if (isRecord(over.newNotes)) {
+		const merged: Record<string, NewNoteDefaults> = structuredClone(base.newNotes);
+		for (const [cat, v] of Object.entries(over.newNotes)) {
+			if (!isRecord(v)) continue;
+			merged[cat] = {
+				folder: isString(v.folder) ? v.folder : merged[cat]?.folder ?? "",
+				extras: isRecord(v.extras) ? structuredClone(v.extras) : merged[cat]?.extras ?? {},
+			};
+		}
+		out.newNotes = merged;
 	}
 	out.series = mergeGroup(base.series, over.series, DEFAULT_SERIES);
 	out.logSection = mergeGroup(base.logSection, over.logSection, DEFAULT_LOG_SECTION);

@@ -1,5 +1,6 @@
 import { ItemView, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
 import { VIEW_KINDS, VIEW_LABELS, type ViewKind } from "../logic/viewKinds.ts";
+import { QuickAddModal } from "./quickAdd.ts";
 import { createRenderer } from "./renderers/index.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 import { defaultLibraryId, emptyState, type LibraryRenderer, type StacksHost } from "./shared.ts";
@@ -129,6 +130,19 @@ export class StacksView extends ItemView {
 		// Libraries stay anchored on the left, filters and screens on the right,
 		// so nothing shifts under the pointer when switching.
 		bar.createDiv({ cls: "stacks-toolbar-spacer" });
+		if (id) {
+			const add = bar.createEl("button", { cls: "stacks-button is-primary stacks-add", attr: { "aria-label": "Add to library" } });
+			setIcon(add.createSpan({ cls: "stacks-seg-icon" }), "plus");
+			add.createSpan({ text: "Add" });
+			add.addEventListener("click", () => {
+				const config = this.host.settings.mediaTypes[id];
+				// Start on the chip that's selected: Games + Switch chip → a Switch game; Reading + BDs → a BD.
+				const cat = config.filterField ? undefined : this.filter ?? undefined;
+				const modal = new QuickAddModal(this.app, this.host, id, cat);
+				if (config.filterField && this.filter) modal.presetPlatform(this.filter);
+				modal.open();
+			});
+		}
 		const filters = id ? this.host.settings.mediaTypes[id].categoryFilters : [];
 		if (filters.length >= 2) {
 			const chips = bar.createDiv({ cls: "stacks-seg is-small", attr: { role: "radiogroup", "aria-label": "Filter" } });

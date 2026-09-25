@@ -1,0 +1,46 @@
+[
+  {
+    "score": 0.8992696,
+    "show": {
+      "id": 44933,
+      "name": "Severance",
+      "premiered": "2022-02-18",
+      "network": null,
+      "webChannel": {
+        "id": 310,
+        "name": "Apple TV",
+        "country": null,
+        "officialSite": "https://tv.apple.com/"
+      },
+      "image": {
+        "medium": "https://static.tvmaze.com/uploads/images/medium_portrait/548/1371406.jpg",
+        "original": "https://static.tvmaze.com/uploads/images/original_untouched/548/1371406.jpg"
+      },
+      "url": "https://www.tvmaze.com/shows/44933/severance"
+    }
+  },
+  {
+    "score": 0.20672137,
+    "show": {
+      "id": 85532,
+      "name": "Aligned Reverence",
+      "premiered": "2025-12-05",
+      "network": null,
+      "webChannel": {
+        "id": 104,
+        "name": "Tencent QQ",
+        "country": {
+          "name": "China",
+          "code": "CN",
+          "timezone": "Asia/Shanghai"
+        },
+        "officialSite": "https://v.qq.com/"
+      },
+      "image": {
+        "medium": "https://static.tvmaze.com/uploads/images/medium_portrait/603/1509559.jpg",
+        "original": "https://static.tvmaze.com/uploads/images/original_untouched/603/1509559.jpg"
+      },
+      "url": "https://www.tvmaze.com/shows/85532/aligned-reverence"
+    }
+  }
+]

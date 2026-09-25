@@ -50,6 +50,12 @@ export interface LogSectionConfig {
 	progressLine: string;
 }
 
+/** Where quick add puts a new note of one category, and the fixed fields it starts with. */
+export interface NewNoteDefaults {
+	folder: string;
+	extras: Record<string, unknown>;
+}
+
 export interface MediaTypeConfig {
 	enabled: boolean;
 	label: string;
@@ -79,4 +85,6 @@ export interface MediaTypeConfig {
 	progress: ProgressConfig | null;
 	series: SeriesConfig | null;
 	logSection: LogSectionConfig | null;
+	/** Quick add: per category (book, bd, game, movie...). */
+	newNotes: Record<string, NewNoteDefaults>;
 }

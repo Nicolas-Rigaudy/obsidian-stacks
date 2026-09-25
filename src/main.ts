@@ -5,7 +5,8 @@ import { LiveIndex } from "./data/liveIndex.ts";
 import { VIEW_KINDS, VIEW_LABELS, type ViewKind } from "./logic/viewKinds.ts";
 import { mergeSettings, type StacksSettings } from "./settings/settings.ts";
 import { StacksSettingTab } from "./settings/settingsTab.ts";
-import type { StacksHost } from "./views/shared.ts";
+import { QuickAddModal } from "./views/quickAdd.ts";
+import { defaultLibraryId, type StacksHost } from "./views/shared.ts";
 import { StacksView, VIEW_ICONS, VIEW_TYPES } from "./views/StacksView.ts";
 
 export default class StacksPlugin extends Plugin implements StacksHost {
@@ -35,6 +36,22 @@ export default class StacksPlugin extends Plugin implements StacksHost {
 			}
 			menu.showAtMouseEvent(evt);
 		});
+
+		this.addCommand({
+			id: "quick-add",
+			name: "Add to library…",
+			callback: () => {
+				const id = defaultLibraryId(this.settings);
+				if (id) new QuickAddModal(this.app, this, id).open();
+			},
+		});
+		for (const [id, config] of Object.entries(this.settings.mediaTypes)) {
+			this.addCommand({
+				id: `quick-add-${id}`,
+				name: `Add to ${config.label}…`,
+				callback: () => new QuickAddModal(this.app, this, id).open(),
+			});
+		}
 
 		registerCodeBlock(this, this);
 		this.addSettingTab(new StacksSettingTab(this.app, this));

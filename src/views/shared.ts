@@ -9,6 +9,7 @@ import { bucketOf } from "../logic/upNext.ts";
 import { slugify } from "../logic/values.ts";
 import type { ViewKind } from "../logic/viewKinds.ts";
 import type { StacksSettings } from "../settings/settings.ts";
+import { CoverPickerModal } from "./coverPicker.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
 
@@ -252,6 +253,7 @@ export function noteMenu(host: StacksHost, config: MediaTypeConfig, note: MediaN
 	const menu = new Menu();
 	menu.addItem((i) => i.setTitle("Open").setIcon("book-open").onClick(() => void host.app.workspace.openLinkText(note.path, "", false)));
 	menu.addItem((i) => i.setTitle("Open in new tab").setIcon("file-plus").onClick(() => void host.app.workspace.openLinkText(note.path, "", "tab")));
+	menu.addItem((i) => i.setTitle("Change cover…").setIcon("image").onClick(() => new CoverPickerModal(host.app, host, config, note).open()));
 	menu.addSeparator();
 	for (const s of config.statuses) {
 		menu.addItem((i) =>

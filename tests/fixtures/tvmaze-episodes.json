@@ -1,0 +1,26 @@
+[
+  {
+    "id": 2238231,
+    "season": 1,
+    "number": 1,
+    "airdate": "2022-02-18"
+  },
+  {
+    "id": 2238339,
+    "season": 1,
+    "number": 2,
+    "airdate": "2022-02-18"
+  },
+  {
+    "id": 2238340,
+    "season": 1,
+    "number": 3,
+    "airdate": "2022-02-25"
+  },
+  {
+    "id": 9,
+    "season": 3,
+    "number": 1,
+    "airdate": "2099-01-01"
+  }
+]

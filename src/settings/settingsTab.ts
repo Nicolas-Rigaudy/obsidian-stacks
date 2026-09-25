@@ -125,10 +125,31 @@ export class StacksSettingTab extends PluginSettingTab {
 		this.text(el, "Started date", "Stamped when moved to an active status. Empty = don't track.", config.startedField, (v) => (config.startedField = v));
 		this.text(el, "Finished date", "Stamped when moved to a done status. Empty = don't track.", config.finishedField, (v) => (config.finishedField = v));
 
+		this.renderNewNoteFolders(el, config);
 		this.renderStatuses(el, config);
 		this.renderProgress(el, config);
 		this.renderSeries(el, config);
 		this.renderLogSection(el, config);
+	}
+
+	private renderNewNoteFolders(el: HTMLElement, config: MediaTypeConfig): void {
+		const cats = config.categoryValues.length > 0 ? config.categoryValues : Object.keys(config.newNotes);
+		if (cats.length === 0) return;
+		el.createEl("h4", { text: "Quick add" });
+		for (const cat of cats) {
+			new Setting(el)
+				.setName(`Folder for new “${cat}” notes`)
+				.addText((t) => {
+					t.setValue(config.newNotes[cat]?.folder ?? config.folder).onChange((v) => {
+						config.newNotes[cat] = { folder: v.trim(), extras: config.newNotes[cat]?.extras ?? {} };
+						this.saveSoon();
+					});
+					new FolderSuggest(this.app, t.inputEl, (path) => {
+						config.newNotes[cat] = { folder: path, extras: config.newNotes[cat]?.extras ?? {} };
+						void this.saveNow();
+					});
+				});
+		}
 	}
 
 	private renderStatuses(el: HTMLElement, config: MediaTypeConfig): void {

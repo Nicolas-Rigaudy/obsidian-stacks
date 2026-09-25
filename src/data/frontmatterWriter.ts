@@ -27,10 +27,12 @@ export async function setStatus(
 	config: MediaTypeConfig,
 	status: string,
 	today: string = todayISO(),
+	before?: (fm: Fm) => void,
 ): Promise<string | null> {
 	const bucket = bucketOf(status, config);
 	let previous: string | null = null;
 	await app.fileManager.processFrontMatter(file, (fm: Fm) => {
+		before?.(fm);
 		previous = toStr(fm[config.statusField]);
 		if (previous === status) return;
 		fm[config.statusField] = status;

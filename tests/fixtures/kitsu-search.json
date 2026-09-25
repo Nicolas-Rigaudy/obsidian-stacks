@@ -1,0 +1,42 @@
+{
+  "data": [
+    {
+      "id": "48269",
+      "attributes": {
+        "canonicalTitle": "Dandadan",
+        "titles": {
+          "en": "DAN DA DAN",
+          "en_jp": "Dandadan",
+          "ja_jp": "ダンダダン"
+        },
+        "startDate": "2024-10-03",
+        "subtype": "TV",
+        "episodeCount": 12,
+        "posterImage": {
+          "large": "https://media.kitsu.app/anime/48269/poster_image/large-589c017798b98c69e3a615ca4191f49d.jpeg",
+          "original": "https://media.kitsu.app/anime/48269/poster_image/4ca623665992a9df00c5bb2a21063aaf.jpg"
+        },
+        "slug": "DAN-DA-DAN"
+      }
+    },
+    {
+      "id": "49425",
+      "attributes": {
+        "canonicalTitle": "Dandadan 2nd Season",
+        "titles": {
+          "en": "DAN DA DAN Season 2",
+          "en_jp": "Dandadan 2nd Season",
+          "ja_jp": "ダンダダン 第2期"
+        },
+        "startDate": "2025-07-03",
+        "subtype": "TV",
+        "episodeCount": 12,
+        "posterImage": {
+          "large": "https://media.kitsu.app/anime/49425/poster_image/large-6baf4d3b027c8d2cf7d61003ed0ac26d.jpeg",
+          "original": "https://media.kitsu.app/anime/49425/poster_image/9e543d689bbb3d28830d6e77f723a7e8.jpg"
+        },
+        "slug": "dandadan-2"
+      }
+    }
+  ]
+}

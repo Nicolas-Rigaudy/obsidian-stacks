@@ -1,0 +1,49 @@
+{
+  "docs": [
+    {
+      "author_name": [
+        "Brandon Sanderson"
+      ],
+      "cover_i": 14658160,
+      "first_publish_year": 2001,
+      "isbn": [
+        "9781484428627",
+        "8580448646",
+        "8374805536"
+      ],
+      "key": "/works/OL5738148W",
+      "number_of_pages_median": 669,
+      "title": "The Final Empire"
+    },
+    {
+      "author_name": [
+        "Brandon Sanderson"
+      ],
+      "cover_i": 14658341,
+      "first_publish_year": 2007,
+      "isbn": [
+        "9780575097759",
+        "9788490707821",
+        "9780575089938"
+      ],
+      "key": "/works/OL5738150W",
+      "number_of_pages_median": 784,
+      "title": "The Well of Ascension"
+    },
+    {
+      "author_name": [
+        "Brandon Sanderson"
+      ],
+      "cover_i": 14658081,
+      "first_publish_year": 2001,
+      "isbn": [
+        "0575105836",
+        "9788466651752",
+        "1429994894"
+      ],
+      "key": "/works/OL16597059W",
+      "number_of_pages_median": 360,
+      "title": "The Alloy of Law"
+    }
+  ]
+}

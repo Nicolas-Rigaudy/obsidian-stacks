@@ -17,9 +17,9 @@ export async function appendLog(
 	config: MediaTypeConfig,
 	event: LogEvent,
 	today: string = todayISO(),
-): Promise<void> {
+): Promise<string | null> {
 	const log = config.logSection;
-	if (!log) return;
+	if (!log) return null;
 
 	let line: string;
 	if (event.kind === "progress") {
@@ -34,4 +34,5 @@ export async function appendLog(
 	}
 
 	await app.vault.process(file, (content) => insertLogLine(content, log.heading, line));
+	return line;
 }
