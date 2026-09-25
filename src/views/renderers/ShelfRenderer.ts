@@ -5,7 +5,9 @@ import type { MediaTypeConfig } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
 import { renderStage } from "../stage.ts";
 import { SeriesPanel } from "../seriesPanel.ts";
-import { buyNext } from "../../logic/series.ts";
+import { buyNext, seriesView } from "../../logic/series.ts";
+import { QuickAddModal } from "../quickAdd.ts";
+import { Menu, setIcon } from "obsidian";
 import { acceptNoteDrops, emptyState, LibraryRenderer, makeDraggable, makeInteractive, renderBook } from "../shared.ts";
 
 type Pile = Extract<ShelfItem, { kind: "pile" }>;
@@ -197,9 +199,13 @@ export class ShelfRenderer extends LibraryRenderer {
 			more.style.setProperty("--stacks-wp", "96");
 		}
 
-		// A pile opens its series panel; "Stand them up" there spreads it on the shelf.
-		const open = () => new SeriesPanel(this.host.app, this.host, this.options.libraryId, pile.series, () => this.toggle(this.prefs.openPiles, key)).open();
+		// A pile stands up on the shelf; the full list is in the right-click menu.
+		const open = () => this.toggle(this.prefs.openPiles, key);
 		el.addEventListener("click", open);
+		el.addEventListener("contextmenu", (evt) => {
+			evt.preventDefault();
+			this.seriesMenu(pile.series, key, false).showAtMouseEvent(evt);
+		});
 		el.addEventListener("keydown", (evt) => {
 			if (evt.key === "Enter" || evt.key === " ") {
 				evt.preventDefault();
@@ -208,28 +214,105 @@ export class ShelfRenderer extends LibraryRenderer {
 		});
 	}
 
+	/**
+	 * A series stood up on the shelf: the left bookend is its nameplate (name,
+	 * "3/10 read", in-order switch; click the name to stack it again), the
+	 * volumes in order, ghost books for volumes not in the library, and a ghost
+	 * "next volume" at the end of the run.
+	 */
 	private spreadOut(parent: HTMLElement, config: MediaTypeConfig, pile: Pile, key: string): void {
+		const view = seriesView(this.host.index.get(this.options.libraryId), config, pile.series);
 		const start = parent.createDiv({ cls: "stacks-bookend is-start" });
-		const plate = start.createDiv({
-			cls: "stacks-bookend-plate",
+		const plate = start.createDiv({ cls: "stacks-series-plate" });
+		plate.addEventListener("contextmenu", (evt) => {
+			evt.preventDefault();
+			this.seriesMenu(pile.series, key, true).showAtMouseEvent(evt);
+		});
+
+		if (config.series) {
+			const verb = config.appearance === "games" ? "Played" : config.appearance === "films" ? "Watched" : "Read";
+			const order = plate.createEl("button", {
+				cls: `stacks-series-order${view.ordered ? " is-ordered" : ""}`,
+				attr: { "aria-label": view.ordered ? `${verb} in order (click: any order)` : `Any order (click: ${verb.toLowerCase()} in order)` },
+			});
+			setIcon(order, view.ordered ? "list-ordered" : "shuffle");
+			order.addEventListener("click", (evt) => {
+				evt.stopPropagation();
+				void this.setOrdered(pile.series, !view.ordered);
+			});
+		}
+		const name = plate.createDiv({
+			cls: "stacks-series-name",
 			text: pile.series,
 			attr: { role: "button", tabindex: "0", "aria-label": `Stack ${pile.series} back into a pile` },
 		});
+		const doneLabel = config.statuses.find((x) => x.bucket === "done")?.label.toLowerCase() ?? "done";
+		plate.createDiv({ cls: "stacks-series-count", text: `${view.counts.read}/${view.volumes.length} ${doneLabel}` });
 		const close = () => {
 			if (this.searching) return;
 			this.toggle(this.prefs.openPiles, key);
 		};
-		plate.addEventListener("click", close);
-		plate.addEventListener("keydown", (evt) => {
+		name.addEventListener("click", close);
+		name.addEventListener("keydown", (evt) => {
 			if (evt.key === "Enter" || evt.key === " ") {
 				evt.preventDefault();
 				close();
 			}
 		});
+		name.setAttr("title", pile.notes.map((n) => `${n.title} (${secondaryLine(n, config)})`).join("\n"));
 
-		for (const n of pile.notes) this.standing(parent, config, n);
+		// Volumes in order, with ghosts for positions no note covers.
+		const inVault = new Set<number>();
+		for (const v of view.volumes) {
+			const p = v.series?.position;
+			if (p === null || p === undefined) continue;
+			for (let i = p; i <= (v.series?.positionEnd ?? p); i++) inVault.add(i);
+		}
+		let prev: number | null = null;
+		for (const n of pile.notes) {
+			const p = n.series?.position ?? null;
+			if (p !== null && prev !== null && Number.isInteger(p) && Number.isInteger(prev)) {
+				for (let g = prev + 1; g < p; g++) if (!inVault.has(g)) this.ghost(parent, config, pile, g, false);
+			}
+			this.standing(parent, config, n);
+			if (p !== null) prev = n.series?.positionEnd ?? p;
+		}
+		// The next volume stands at the end of the run holding the series' last volume.
+		if (!this.searching && prev !== null && prev + 1 === view.next) this.ghost(parent, config, pile, view.next, true);
 		parent.createDiv({ cls: "stacks-bookend is-end" }).createDiv({ cls: "stacks-bookend-plate" });
-		// Keep the series readable on hover even when covers are unfamiliar.
-		plate.setAttr("title", pile.notes.map((n) => `${n.title} (${secondaryLine(n, config)})`).join("\n"));
 	}
+
+	/** A ghost book: a volume not in the library, or the next one. Click to add it. */
+	private ghost(parent: HTMLElement, config: MediaTypeConfig, pile: Pile, position: number, next: boolean): void {
+		const slot = parent.createDiv({ cls: "stacks-slot" });
+		const ghost = slot.createEl("button", {
+			cls: `stacks-ghost-book${next ? " is-next" : ""}`,
+			attr: { "aria-label": `${next ? "Add the next volume" : "Not in the library"}: ${pile.series} #${position}` },
+		});
+		ghost.createDiv({ cls: "stacks-ghost-num", text: `#${position}` });
+		ghost.createDiv({ cls: "stacks-ghost-label", text: next ? "+ next" : "missing" });
+		ghost.addEventListener("click", () => {
+			const sample = pile.notes[0];
+			const modal = new QuickAddModal(this.host.app, this.host, this.options.libraryId, sample?.category ?? undefined);
+			modal.presetSeries(pile.series, position);
+			if (config.appearance === "games" && sample?.facet) modal.presetPlatform(sample.facet);
+			modal.open();
+		});
+	}
+
+	private seriesMenu(series: string, key: string, open: boolean): Menu {
+		const menu = new Menu();
+		menu.addItem((i) => i.setTitle(open ? "Stack into a pile" : "Stand up on the shelf").setIcon(open ? "layers" : "book-open").onClick(() => this.toggle(this.prefs.openPiles, key)));
+		menu.addItem((i) => i.setTitle("Series overview…").setIcon("list").onClick(() => new SeriesPanel(this.host.app, this.host, this.options.libraryId, series, null).open()));
+		return menu;
+	}
+
+	private async setOrdered(series: string, ordered: boolean): Promise<void> {
+		const s = this.host.settings.mediaTypes[this.options.libraryId]?.series;
+		if (!s) return;
+		s.exceptions = s.exceptions.filter((x) => x !== series);
+		if (ordered !== s.orderedByDefault) s.exceptions.push(series);
+		await this.host.saveSettings();
+	}
+
 }

@@ -3519,3 +3519,120 @@ button.stacks-view-options svg {
 	padding: 0;
 	font-style: normal;
 }
+
+/* ==========================================================================
+   A series stood up on the shelf: nameplate bookend, ghost volumes
+   ========================================================================== */
+
+.stacks-series-plate {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	width: 30px;
+	height: calc(var(--stacks-book-h) * 0.92);
+	padding: 6px 0 8px;
+	border-radius: 4px 4px 0 0;
+	background: linear-gradient(90deg, var(--stacks-accent-2), var(--stacks-accent-1) 45%, var(--stacks-accent-2));
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.35), 5px 8px 12px rgba(0, 0, 0, 0.5);
+	color: var(--stacks-accent-ink);
+}
+
+button.stacks-series-order {
+	flex: none;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, 0.18);
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+	color: var(--stacks-accent-ink);
+	cursor: pointer;
+}
+
+button.stacks-series-order:hover {
+	background: rgba(0, 0, 0, 0.28);
+}
+
+button.stacks-series-order svg {
+	width: 13px;
+	height: 13px;
+}
+
+.stacks-series-name {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+	font-family: var(--stacks-ui-font);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	cursor: pointer;
+	outline: none;
+}
+
+.stacks-series-name:hover,
+.stacks-series-name:focus-visible {
+	text-decoration: underline;
+}
+
+.stacks-series-count {
+	flex: none;
+	writing-mode: vertical-rl;
+	transform: rotate(180deg);
+	font-family: var(--stacks-ui-font);
+	font-size: 9.5px;
+	opacity: 0.8;
+	white-space: nowrap;
+}
+
+/* ghost books: volumes not in the library, and the next one */
+button.stacks-ghost-book {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	width: calc(var(--stacks-book-w) * 0.8);
+	height: calc(var(--stacks-book-h) * 0.94);
+	padding: 0;
+	border: 2px dashed color-mix(in srgb, var(--stacks-accent-1) 45%, transparent);
+	border-radius: 2px 5px 5px 2px;
+	background: color-mix(in srgb, var(--stacks-accent-1) 6%, transparent);
+	box-shadow: none;
+	color: color-mix(in srgb, var(--stacks-accent-1) 75%, transparent);
+	font-family: var(--stacks-ui-font);
+	cursor: pointer;
+	transition: transform var(--ease), background var(--ease), border-color var(--ease);
+}
+
+button.stacks-ghost-book:hover,
+button.stacks-ghost-book:focus-visible {
+	transform: translateY(-6px);
+	border-color: var(--stacks-accent-1);
+	background: color-mix(in srgb, var(--stacks-accent-1) 14%, transparent);
+	color: var(--stacks-accent-1);
+}
+
+button.stacks-ghost-book.is-next {
+	border-style: solid;
+	border-color: color-mix(in srgb, var(--stacks-accent-1) 60%, transparent);
+	background: color-mix(in srgb, var(--stacks-accent-1) 12%, transparent);
+}
+
+.stacks-ghost-num {
+	font-size: 20px;
+	font-weight: 700;
+	font-variant-numeric: lining-nums;
+}
+
+.stacks-ghost-label {
+	font-size: var(--fs-1);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
