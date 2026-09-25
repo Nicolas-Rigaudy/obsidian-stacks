@@ -4,6 +4,7 @@ import type { LiveIndex } from "../data/liveIndex.ts";
 import { creatorOf, secondaryLine, seriesLabel } from "../logic/cardText.ts";
 import { parseCoverRef } from "../logic/cover.ts";
 import { bindingHue } from "../logic/placeholder.ts";
+import { cartridgeKind, type CartridgeKind } from "../logic/stage.ts";
 import { bucketOf } from "../logic/upNext.ts";
 import { slugify } from "../logic/values.ts";
 import type { ViewKind } from "../logic/viewKinds.ts";
@@ -142,7 +143,15 @@ function renderCase(parent: HTMLElement, host: StacksHost, config: MediaTypeConf
 			? creatorOf(note, config)
 			: (config.categoryFilters.find((f) => f.value === note.category)?.label ?? note.category);
 	box.dataset.kind = label ? slugify(label) : "other";
-	box.createDiv({ cls: "stacks-case-band", text: label ?? "" });
+	const cart = config.appearance === "games" ? cartridgeKind(label) : null;
+	if (cart) box.dataset.cart = cart;
+	const band = box.createDiv({ cls: "stacks-case-band" });
+	renderBandText(band, cart, label);
+	// Real depth for boxes (PC big box, series box set): a lit top face and a shaded side.
+	box.createDiv({ cls: "stacks-case-top" });
+	box.createDiv({ cls: "stacks-case-side" });
+	// The ▼ insert arrow moulded under a cartridge's label.
+	if (cart) box.createDiv({ cls: "stacks-case-foot" });
 	// Japanese releases wrap an obi strip down the spine side (shown for anime).
 	if (config.appearance === "films") box.createDiv({ cls: "stacks-case-obi", text: note.title });
 
@@ -178,6 +187,26 @@ function renderCaption(el: HTMLElement, config: MediaTypeConfig, note: MediaNote
 	const cap = el.createDiv({ cls: "stacks-caption" });
 	cap.createDiv({ cls: "stacks-caption-title", text: note.title });
 	if (sub) cap.createDiv({ cls: "stacks-caption-sub", text: sub });
+}
+
+/** The printed header of a cartridge label (red Nintendo Switch band, embossed Game Boy top...). */
+function renderBandText(band: HTMLElement, cart: CartridgeKind | null, label: string | null): void {
+	if (cart === "switch") {
+		band.createSpan({ cls: "stacks-switch-logo" });
+		const words = band.createSpan({ cls: "stacks-switch-words" });
+		words.createSpan({ cls: "stacks-switch-small", text: "NINTENDO" });
+		words.createSpan({ text: "SWITCH" });
+	} else if (cart === "gba") {
+		band.setText("GAME BOY ADVANCE");
+	} else if (cart === "gb") {
+		band.createSpan({ cls: "stacks-gb-nintendo", text: "Nintendo" });
+		band.createSpan({ text: "GAME BOY" });
+	} else if (cart === "ds" || cart === "3ds") {
+		band.createSpan({ cls: "stacks-switch-small", text: "NINTENDO " });
+		band.createSpan({ text: cart === "3ds" ? "3DS" : "DS" });
+	} else {
+		band.setText(label ?? "");
+	}
 }
 
 /** The printed insert of a case without cover art: title on a coloured sleeve. */

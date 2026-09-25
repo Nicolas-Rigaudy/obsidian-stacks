@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { deviceKind, stageDevices } from "../src/logic/stage.ts";
+import { cartridgeKind, deviceKind, stageDevices } from "../src/logic/stage.ts";
 import { GAME_CONFIG } from "../src/settings/settings.ts";
 import type { MediaNote } from "../src/types/mediaNote.ts";
 import { note } from "./helpers.ts";
@@ -21,6 +21,25 @@ describe("deviceKind", () => {
 		assert.equal(deviceKind("Anbernic RG35XX"), "handheld");
 		assert.equal(deviceKind("PS5"), "console");
 		assert.equal(deviceKind(null), "console");
+	});
+});
+
+describe("cartridgeKind", () => {
+	test("real cartridges per platform; boxed platforms get none", () => {
+		assert.equal(cartridgeKind("Switch"), "switch");
+		assert.equal(cartridgeKind("Nintendo Switch 2"), "switch");
+		assert.equal(cartridgeKind("Miyoo"), "gba");
+		assert.equal(cartridgeKind("Game Boy Advance"), "gba");
+		assert.equal(cartridgeKind("GBA"), "gba");
+		assert.equal(cartridgeKind("Game Boy"), "gb");
+		assert.equal(cartridgeKind("GBC"), "gb");
+		assert.equal(cartridgeKind("DS"), "ds");
+		assert.equal(cartridgeKind("Nintendo DS"), "ds");
+		assert.equal(cartridgeKind("3DS"), "3ds");
+		assert.equal(cartridgeKind("New 3DS XL"), "3ds");
+		assert.equal(cartridgeKind("PC"), null);
+		assert.equal(cartridgeKind("PS5"), null);
+		assert.equal(cartridgeKind(null), null);
 	});
 });
 

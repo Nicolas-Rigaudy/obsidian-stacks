@@ -199,9 +199,6 @@ function renderTv(section: HTMLElement, host: StacksHost, config: MediaTypeConfi
 	const feet = tv.createDiv({ cls: "stacks-tv-feet" });
 	feet.createDiv();
 	feet.createDiv();
-	// The media cabinet the TV stands on: top, two doors with handles.
-	const cabinet = room.createDiv({ cls: "stacks-tv-cabinet" });
-	for (let i = 0; i < 2; i++) cabinet.createDiv({ cls: "stacks-tv-door" });
 	if (current) {
 		const remote = room.createDiv({ cls: "stacks-remote" });
 		remote.createDiv({ cls: "stacks-remote-dot" });

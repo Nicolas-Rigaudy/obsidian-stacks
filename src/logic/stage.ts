@@ -19,6 +19,23 @@ export function deviceKind(platform: string | null): DeviceKind {
 	return "console";
 }
 
+export type CartridgeKind = "switch" | "gba" | "gb" | "ds" | "3ds";
+
+/**
+ * Which real cartridge a platform's games are drawn as on the shelf, or null
+ * for boxed platforms (PC, consoles). Retro handhelds like the Miyoo mostly
+ * play Game Boy Advance games, so they default to GBA cartridges.
+ */
+export function cartridgeKind(platform: string | null): CartridgeKind | null {
+	const s = slugify(platform ?? "");
+	if (/switch/.test(s)) return "switch";
+	if (/(^|-)3ds|new-3ds|2ds/.test(s)) return "3ds";
+	if (/(^|-)n?ds(-|$)|nintendo-ds/.test(s)) return "ds";
+	if (/advance|(^|-)gba(-|$)|miyoo|anbernic|retroid|rg-?\d/.test(s)) return "gba";
+	if (/game-?boy|(^|-)gbc?(-|$)/.test(s)) return "gb";
+	return null;
+}
+
 export interface DeviceSlot {
 	platform: string;
 	kind: DeviceKind;
