@@ -3416,3 +3416,106 @@ button.stacks-view-options svg {
 		--stacks-row: 214px;
 	}
 }
+
+/* ==========================================================================
+   Phase 6: Buy next shelf, series panel
+   ========================================================================== */
+
+.stacks-buy-tag {
+	position: absolute;
+	left: 50%;
+	bottom: 2px;
+	z-index: 5;
+	transform: translateX(-50%);
+	padding: 1px 8px;
+	border-radius: var(--r-pill);
+	background: linear-gradient(180deg, var(--stacks-accent-1), var(--stacks-accent-2));
+	box-shadow: var(--shadow-1);
+	color: var(--stacks-accent-ink);
+	font-family: var(--stacks-ui-font);
+	font-size: var(--fs-1);
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+.stacks-buy-tag.is-starred {
+	font-size: var(--fs-3);
+	line-height: 1.1;
+}
+
+.stacks-series-summary {
+	color: var(--text-muted);
+}
+
+.stacks-series-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.stacks-series-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 8px;
+	max-height: 60vh;
+	overflow-y: auto;
+	padding: 2px;
+}
+
+.stacks-series-vol {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	padding: 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	background: var(--background-primary);
+}
+
+.stacks-series-vol.is-gap {
+	border-style: dashed;
+	background: transparent;
+}
+
+.stacks-series-gapnum {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 66px;
+	border: 1px dashed var(--background-modifier-border);
+	border-radius: 3px;
+	color: var(--text-muted);
+	font-weight: 600;
+}
+
+.stacks-series-text {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.stacks-series-title {
+	font-weight: 600;
+	line-height: 1.25;
+}
+
+.stacks-series-sub {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small, 13px);
+}
+
+.stacks-series-text select.stacks-select {
+	align-self: flex-start;
+	--stacks-ink: var(--text-normal);
+	--stacks-ctl-bg: var(--background-modifier-hover);
+	--stacks-ctl-border: var(--background-modifier-border);
+}
+
+.stacks-modal-hint.is-inline {
+	padding: 0;
+	font-style: normal;
+}

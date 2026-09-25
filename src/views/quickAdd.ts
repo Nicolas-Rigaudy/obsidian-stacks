@@ -32,9 +32,17 @@ export class QuickAddModal extends Modal {
 		this.platform = config.appearance === "games" ? config.categoryFilters[0]?.value ?? "PC" : "";
 	}
 
+	private series: { name: string; position: number } | null = null;
+
 	/** Start on this platform (games opened from a platform chip). */
 	presetPlatform(platform: string): void {
 		this.platform = platform;
+	}
+
+	/** Adding a volume from a series panel: prefill the search and record series + position on the note. */
+	presetSeries(name: string, position: number): void {
+		this.series = { name, position };
+		this.query = `${name} ${position}`;
 	}
 
 	private get config(): MediaTypeConfig {
@@ -61,10 +69,12 @@ export class QuickAddModal extends Modal {
 		const starts = this.config.statuses.filter((s) => s.bucket === "backlog" || s.bucket === "other" || s.bucket === "active");
 		this.segmented(controls, "Add as", starts.map((s) => ({ value: s.value, label: s.label || s.value })), () => this.status, (v) => (this.status = v));
 
+		if (this.series) contentEl.createDiv({ cls: "stacks-modal-hint is-inline", text: `Adds ${this.series.name} #${this.series.position}: the note gets that series and position.` });
 		const input = contentEl.createEl("input", {
 			cls: "stacks-modal-search",
 			attr: { type: "search", placeholder: this.placeholder(), "aria-label": "Search" },
 		});
+		input.value = this.query;
 		const run = debounce(() => this.search(), 350, true);
 		input.addEventListener("input", () => {
 			this.query = input.value;
@@ -76,6 +86,7 @@ export class QuickAddModal extends Modal {
 		this.results = contentEl.createDiv({ cls: "stacks-modal-results" });
 		this.hint("Type a title, an author or an ISBN.");
 		window.setTimeout(() => input.focus(), 30);
+		if (this.query) void this.search();
 	}
 
 	onClose(): void {
@@ -167,7 +178,7 @@ export class QuickAddModal extends Modal {
 			const folder = config.newNotes[this.category]?.folder ?? config.folder;
 			const taken = (name: string) => this.app.vault.getFileByPath(`${folder}/${name}.md`) !== null;
 			const fileName = uniqueFileName(full.title, full.year, taken);
-			const content = buildNewNote({ config, category: this.category, candidate: full, status: this.status, platform: this.platform || null, cover });
+			const content = buildNewNote({ config, category: this.category, candidate: full, status: this.status, platform: this.platform || null, cover, series: this.series });
 			const file = await this.host.actions.createNote(folder, fileName, content);
 			if (file) this.close();
 		} finally {

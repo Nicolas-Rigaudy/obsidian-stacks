@@ -17,6 +17,13 @@ function isPositioned(n: MediaNote): n is Positioned {
 	return n.series !== null && n.series.position !== null;
 }
 
+/** Mirrors series.ts's isOrderedSeries (kept here to avoid an import cycle). */
+function orderedSeries(config: MediaTypeConfig, name: string): boolean {
+	const s = config.series;
+	if (!s) return false;
+	return s.exceptions.includes(name) ? !s.orderedByDefault : s.orderedByDefault;
+}
+
 export function bucketOf(status: string | null, config: MediaTypeConfig): StatusBucket {
 	if (status === null) return "other";
 	return config.statuses.find((s) => s.value === status)?.bucket ?? "other";
@@ -36,6 +43,8 @@ export function firstStatusOf(config: MediaTypeConfig, bucket: StatusBucket): st
 export function isEligible(note: MediaNote, all: readonly MediaNote[], config: MediaTypeConfig): boolean {
 	if (!config.series || !isPositioned(note)) return true;
 	const { name, position } = note.series;
+	// Loose series (one universe, any order): nothing holds anything back.
+	if (!orderedSeries(config, name)) return true;
 
 	const siblings = all.filter(
 		(o): o is Positioned => o.path !== note.path && isPositioned(o) && o.series.name === name,

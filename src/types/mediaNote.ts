@@ -15,6 +15,8 @@ export interface MediaNote {
 	progress: { current: number; total: number | null } | null;
 	/** Null when the library has no series config or the note isn't in a series. */
 	series: { name: string; position: number | null; positionEnd: number | null } | null;
+	/** Starred for "buy next". */
+	starred: boolean;
 	/** When the note was created (ms), for "recently added". Null outside the vault reader. */
 	added: number | null;
 	/** Raw frontmatter, for display fields the engine doesn't model (author, genre...). */

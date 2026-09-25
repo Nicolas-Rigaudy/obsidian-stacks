@@ -39,6 +39,10 @@ export interface SeriesConfig {
 	positionField: string;
 	/** Omnibus editions: a note covering `position` through `positionEnd`. Empty string = unused. */
 	positionEndField: string;
+	/** Whether a series is read/played in order unless listed in `exceptions` (books yes, games no). */
+	orderedByDefault: boolean;
+	/** Series names that go the other way from the default. */
+	exceptions: string[];
 }
 
 export interface LogSectionConfig {
@@ -85,6 +89,10 @@ export interface MediaTypeConfig {
 	progress: ProgressConfig | null;
 	series: SeriesConfig | null;
 	logSection: LogSectionConfig | null;
+	/** Frontmatter flag for "buy next" stars (`buy_next: true`). Empty = no stars. */
+	starField: string;
+	/** The status meaning "don't own it yet" (buy-next candidates). Empty = none. */
+	wishlistStatus: string;
 	/** Quick add: per category (book, bd, game, movie...). */
 	newNotes: Record<string, NewNoteDefaults>;
 }

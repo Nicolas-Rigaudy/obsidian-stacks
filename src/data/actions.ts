@@ -46,6 +46,17 @@ export class LibraryActions {
 		});
 	}
 
+	/** Star or unstar for "buy next". */
+	async setStar(path: string, config: MediaTypeConfig, on: boolean): Promise<void> {
+		if (!config.starField) return;
+		await this.run(path, "update the star", async (file) => {
+			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
+				if (on) fm[config.starField] = true;
+				else delete fm[config.starField];
+			});
+		});
+	}
+
 	/** Set the cover (a verified URL or vault path); offers Undo. */
 	async setCover(path: string, config: MediaTypeConfig, cover: string): Promise<void> {
 		await this.run(path, "change the cover", async (file) => {

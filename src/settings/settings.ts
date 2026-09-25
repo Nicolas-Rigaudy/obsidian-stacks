@@ -75,7 +75,11 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 		seriesField: "series",
 		positionField: "position",
 		positionEndField: "position_end",
+		orderedByDefault: true,
+		exceptions: [],
 	},
+	starField: "buy_next",
+	wishlistStatus: "wishlist",
 	logSection: {
 		heading: "Reading log",
 		startedLine: "Started [date:: {date}]",
@@ -120,7 +124,10 @@ export const GAME_CONFIG: MediaTypeConfig = {
 	startedField: "started",
 	finishedField: "finished",
 	progress: null,
-	series: null,
+	// Franchises like Assassin's Creed: grouped, but each game stands alone.
+	series: { seriesField: "series", positionField: "position", positionEndField: "", orderedByDefault: false, exceptions: [] },
+	starField: "buy_next",
+	wishlistStatus: "",
 	logSection: null,
 	newNotes: {
 		game: { folder: "20 Personal/Hobbies/Video Games/Games", extras: { type: "log", area: "personal", hltb: null, played: null, tags: ["log", "game"], shelf: "[[Video Games]]" } },
@@ -164,7 +171,9 @@ export const WATCHING_CONFIG: MediaTypeConfig = {
 		unitLabel: "episodes",
 		quickIncrements: [1],
 	},
-	series: null,
+	series: { seriesField: "series", positionField: "position", positionEndField: "", orderedByDefault: true, exceptions: [] },
+	starField: "buy_next",
+	wishlistStatus: "",
 	logSection: null,
 	newNotes: {
 		movie: { folder: "20 Personal/Hobbies/Media", extras: { type: "log", area: "personal", tags: ["log", "movie"], shelf: "[[Media]]" } },
@@ -204,6 +213,8 @@ export const DEFAULT_SERIES: SeriesConfig = {
 	seriesField: "series",
 	positionField: "position",
 	positionEndField: "",
+	orderedByDefault: true,
+	exceptions: [],
 };
 export const DEFAULT_LOG_SECTION: LogSectionConfig = {
 	heading: "Log",
@@ -238,6 +249,8 @@ export function blankMediaTypeConfig(label: string): MediaTypeConfig {
 		finishedField: "",
 		progress: null,
 		series: null,
+		starField: "buy_next",
+		wishlistStatus: "",
 		logSection: null,
 		newNotes: {},
 	};
@@ -311,6 +324,10 @@ function mergeConfig(base: MediaTypeConfig, over: unknown): MediaTypeConfig {
 		out.newNotes = merged;
 	}
 	out.series = mergeGroup(base.series, over.series, DEFAULT_SERIES);
+	if (out.series && isRecord(over.series)) {
+		if (typeof over.series.orderedByDefault === "boolean") out.series.orderedByDefault = over.series.orderedByDefault;
+		if (Array.isArray(over.series.exceptions)) out.series.exceptions = over.series.exceptions.filter(isString);
+	}
 	out.logSection = mergeGroup(base.logSection, over.logSection, DEFAULT_LOG_SECTION);
 	return out;
 }

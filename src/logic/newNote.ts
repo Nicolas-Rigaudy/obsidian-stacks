@@ -24,6 +24,8 @@ export interface NewNoteInput {
 	platform?: string | null;
 	/** The cover actually verified (may differ from candidate.covers[0]). */
 	cover: string | null;
+	/** Adding a volume from a series panel: its series and position. */
+	series?: { name: string; position: number } | null;
 }
 
 const HEADING_ICON: Record<string, string> = { book: "📖", bd: "📗", game: "🎮", movie: "🎬", series: "📺", anime: "🍥" };
@@ -77,9 +79,9 @@ export function buildNewNote(input: NewNoteInput): string {
 	}
 	put("year", c.year);
 	if (c.isbn) put("isbn", c.isbn);
-	if (config.series && catalogKind(category) === "book") {
-		put(config.series.seriesField, null);
-		put(config.series.positionField, null);
+	if (config.series && (input.series || catalogKind(category) === "book")) {
+		put(config.series.seriesField, input.series?.name ?? null);
+		put(config.series.positionField, input.series?.position ?? null);
 	}
 	for (const [k, v] of Object.entries(extras)) if (k !== "type" && k !== "area") put(k, v);
 

@@ -74,6 +74,7 @@ export function parseNote(
 		rating: toNum(fm[config.ratingField]),
 		progress,
 		series,
+		starred: config.starField ? fm[config.starField] === true || fm[config.starField] === "true" : false,
 		added: null,
 		frontmatter: fm,
 	};

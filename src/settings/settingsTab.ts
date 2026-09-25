@@ -124,6 +124,8 @@ export class StacksSettingTab extends PluginSettingTab {
 		this.text(el, "Rating", "", config.ratingField, (v) => (config.ratingField = v));
 		this.text(el, "Started date", "Stamped when moved to an active status. Empty = don't track.", config.startedField, (v) => (config.startedField = v));
 		this.text(el, "Finished date", "Stamped when moved to a done status. Empty = don't track.", config.finishedField, (v) => (config.finishedField = v));
+		this.text(el, "Buy-next star field", "Frontmatter flag set by “Star for Buy next”. Empty = no stars.", config.starField, (v) => (config.starField = v));
+		this.text(el, "Wishlist status", "The status meaning “don't own it yet”: series follow-ups in Buy next come from it. Empty = none.", config.wishlistStatus, (v) => (config.wishlistStatus = v));
 
 		this.renderNewNoteFolders(el, config);
 		this.renderStatuses(el, config);
@@ -291,6 +293,20 @@ export class StacksSettingTab extends PluginSettingTab {
 		this.text(el, "Series field", "", s.seriesField, (v) => (s.seriesField = v));
 		this.text(el, "Position field", "", s.positionField, (v) => (s.positionField = v));
 		this.text(el, "Position end field", "For omnibus editions covering several volumes. Empty = unused.", s.positionEndField, (v) => (s.positionEndField = v));
+		new Setting(el)
+			.setName("Series are in order by default")
+			.setDesc("On: later volumes wait for earlier ones (books). Off: one universe, any order (games like Assassin's Creed).")
+			.addToggle((t) => t.setValue(s.orderedByDefault).onChange(async (v) => {
+				s.orderedByDefault = v;
+				await this.saveNow();
+			}));
+		new Setting(el)
+			.setName("Exceptions")
+			.setDesc("Series names that go the other way, comma-separated. Also set from a series panel.")
+			.addTextArea((t) => t.setValue(s.exceptions.join(", ")).onChange((v) => {
+				s.exceptions = splitList(v);
+				this.saveSoon();
+			}));
 	}
 
 	private renderLogSection(el: HTMLElement, config: MediaTypeConfig): void {

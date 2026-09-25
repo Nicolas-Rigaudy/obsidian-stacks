@@ -25,6 +25,8 @@ export interface StacksHost {
 	prefs(libraryId: string): LibraryPrefs;
 	/** Save preferences soon (doesn't re-index). */
 	savePrefs(): void;
+	/** Save library settings (re-indexes). */
+	saveSettings(): Promise<void>;
 }
 
 export interface RenderOptions {
@@ -275,6 +277,12 @@ export function noteMenu(host: StacksHost, config: MediaTypeConfig, note: MediaN
 	menu.addItem((i) => i.setTitle("Open").setIcon("book-open").onClick(() => void host.app.workspace.openLinkText(note.path, "", false)));
 	menu.addItem((i) => i.setTitle("Open in new tab").setIcon("file-plus").onClick(() => void host.app.workspace.openLinkText(note.path, "", "tab")));
 	menu.addItem((i) => i.setTitle("Change cover…").setIcon("image").onClick(() => new CoverPickerModal(host.app, host, config, note).open()));
+	if (config.starField) {
+		menu.addItem((i) =>
+			i.setTitle(note.starred ? "Unstar (remove from Buy next)" : "Star for Buy next").setIcon("star")
+				.onClick(() => void host.actions.setStar(note.path, config, !note.starred)),
+		);
+	}
 	menu.addSeparator();
 	for (const s of config.statuses) {
 		menu.addItem((i) =>

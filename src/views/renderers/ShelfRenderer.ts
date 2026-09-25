@@ -4,6 +4,8 @@ import { orderForShelf, shelfSections, type ShelfItem, type ShelfSection } from 
 import type { MediaTypeConfig } from "../../types/mediaConfig.ts";
 import type { MediaNote } from "../../types/mediaNote.ts";
 import { renderStage } from "../stage.ts";
+import { SeriesPanel } from "../seriesPanel.ts";
+import { buyNext } from "../../logic/series.ts";
 import { acceptNoteDrops, emptyState, LibraryRenderer, makeDraggable, makeInteractive, renderBook } from "../shared.ts";
 
 type Pile = Extract<ShelfItem, { kind: "pile" }>;
@@ -61,6 +63,7 @@ export class ShelfRenderer extends LibraryRenderer {
 				refresh: () => this.refresh(),
 			});
 		}
+		if (!this.searching) this.buyNextShelf(room, config, notes);
 		for (const section of orderForShelf(sections)) {
 			if (section.status?.bucket === "active") continue;
 			this.bookcase(room, config, section);
@@ -103,6 +106,42 @@ export class ShelfRenderer extends LibraryRenderer {
 			if (this.searching) return; // everything is shown while searching
 			if (expanded || shelves.scrollHeight > shelves.clientHeight + 2) {
 				handle.setText(expanded ? "Show fewer ▴" : `Show all ${section.count} ▾`);
+				handle.show();
+			}
+		});
+	}
+
+	/** Starred items, then the next volume of series you own part of. Hidden when empty. */
+	private buyNextShelf(room: HTMLElement, config: MediaTypeConfig, notes: readonly MediaNote[]): void {
+		const items = buyNext(notes, config);
+		if (items.length === 0) return;
+		const bookcase = room.createDiv({ cls: "stacks-bookcase is-single is-buynext" });
+		const plaque = bookcase.createDiv({ cls: "stacks-plaque" });
+		plaque.createSpan({ cls: "stacks-plaque-label", text: "Buy next" });
+		plaque.createSpan({ cls: "stacks-plaque-count", text: String(items.length) });
+		const shelves = bookcase.createDiv({ cls: "stacks-shelves" });
+		for (const { note, reason } of items) {
+			const slot = shelves.createDiv({ cls: "stacks-slot" });
+			slot.dataset.path = note.path;
+			const book = renderBook(slot, this.host, config, note, "shelf");
+			makeInteractive(book, this.host, config, note);
+			makeDraggable(book, this.containerEl, note);
+			slot.createDiv({ cls: `stacks-buy-tag is-${reason}`, text: reason === "starred" ? "★" : "next in series" });
+		}
+		this.pullHandle(bookcase, shelves, "\u0000buy-next", items.length, 1);
+	}
+
+	/** The brass handle under a bookcase: shows the rest when it holds more than `rows` shelves. */
+	private pullHandle(bookcase: HTMLElement, shelves: HTMLElement, key: string, count: number, rows: number): void {
+		const expanded = this.prefs.openCases.includes(key);
+		shelves.toggleClass("is-limited", !expanded);
+		if (!expanded) shelves.style.setProperty("max-height", `calc(var(--stacks-row) * ${rows})`);
+		const handle = bookcase.createEl("button", { cls: "stacks-button is-primary stacks-bookcase-more" });
+		handle.hide();
+		handle.addEventListener("click", () => this.toggle(this.prefs.openCases, key));
+		window.requestAnimationFrame(() => {
+			if (expanded || shelves.scrollHeight > shelves.clientHeight + 2) {
+				handle.setText(expanded ? "Show fewer ▴" : `Show all ${count} ▾`);
 				handle.show();
 			}
 		});
@@ -158,7 +197,8 @@ export class ShelfRenderer extends LibraryRenderer {
 			more.style.setProperty("--stacks-wp", "96");
 		}
 
-		const open = () => this.toggle(this.prefs.openPiles, key);
+		// A pile opens its series panel; "Stand them up" there spreads it on the shelf.
+		const open = () => new SeriesPanel(this.host.app, this.host, this.options.libraryId, pile.series, () => this.toggle(this.prefs.openPiles, key)).open();
 		el.addEventListener("click", open);
 		el.addEventListener("keydown", (evt) => {
 			if (evt.key === "Enter" || evt.key === " ") {
