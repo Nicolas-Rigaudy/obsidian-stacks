@@ -7,3 +7,10 @@ node_modules/
 
 # misc
 .DS_Store
+
+# preview harness: data snapshots and outputs
+tools/preview/*.json
+tools/preview/*.js
+!tools/preview/shot.js
+tools/preview/*.png
+tools/preview/styles.css
