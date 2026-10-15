@@ -6,6 +6,7 @@
 > Related task: (none yet)
 > Related architecture: (none yet)
 > Reminder: Update status, linked refs, scope, decisions, success signals, and open questions when you edit this doc.
+> Indicators reviewed: 2026-10-16 00:53:06
 
 # Overview
 Stacks turns the notes you already keep about books, comics, games, films and series into a library you can see and use: a shelf of covers, a board by status, a list, and an "Up next" queue that respects series order. Everything lives in your notes' frontmatter, so nothing is locked in a database and the plugin can be removed without losing data. It is built on Obsidian's stable view API (ItemView, metadata cache, processFrontMatter), not on Dataview or the Bases extension surface, so it stays fast and does not go stale after bulk edits.
@@ -24,7 +25,7 @@ flowchart LR
 ```
 
 # Goals
-- Any user can map Stacks onto their own folders, fields and status values from the settings tab, starting from a preset (books, comics, games, films and series), with no JSON editing.
+- Any user can map Stacks onto their own folders, fields and status values from the settings tab, starting from a preset (1.0: books, video games, films and series; comics and anime when cheap), with no JSON editing.
 - The existing books flow (shelf, board, list, up next, progress, quick add, cover picker, undo, series) is correct under real use: external edits, rapid clicks, startup before the metadata cache is ready, catalogue failures.
 - Every write goes through processFrontMatter and is undoable; notes stay readable without the plugin.
 - Stacks is listed in the Obsidian community plugin directory with a README that shows what it does and how to set it up.
@@ -38,15 +39,20 @@ flowchart LR
 - Localisation of the UI in 1.0.
 
 # Scope and guardrails
-- In: correctness of the current flows, library presets and field mapping in settings, neutral defaults, self-contained new-note templates, first-run experience, theme and mobile checks, guidelines compliance, public README, release workflow, versions.json, directory submission.
-- Out: recommendations, non-media boards, new device drawings beyond those already shipped, localisation (all post-1.0).
+- In: correctness of the current flows, library presets and field mapping in settings, neutral defaults, self-contained new-note templates, first-run experience, theme checks, desktop-only declaration, guidelines compliance, public README, release workflow, versions.json, directory submission.
+- Out: mobile support (1.1), recommendations, non-media boards, new device drawings beyond those already shipped, localisation (all post-1.0).
 - Guardrail: correctness before polish, polish before distribution; new ideas go to 1.1 or later unless they block a 1.0 exit signal.
 - Guardrail: the public repo and README never reference the owner's private vault or its notes.
 
 # Key product decisions
 - 2026-09-24: standalone ItemViews instead of a Bases extension; shelf and board both ship.
 - 2026-09-24: config-driven engine from day one; libraries are configuration, not code.
-- 2026-10-16 (proposed, owner to confirm): the 1.0 bar is "works for a stranger's vault from a preset", not feature parity with the owner's setup.
+- 2026-10-16: the 1.0 bar is "works for a stranger's vault from a preset", not feature parity with the owner's setup. Headline: install, point at a folder, get a shelf and a board.
+- 2026-10-16: 1.0 ships at least three presets: books, one game library (video games) and one screen-media library (films and series). Comics and anime presets follow when cheap, otherwise 1.1.
+- 2026-10-16: 1.0 is desktop only (`isDesktopOnly: true`); mobile support moves to 1.1.
+- 2026-10-16: the per-medium stages and the device drawings already shipped are part of 1.0; new drawings stay post-1.0.
+- 2026-10-16: the `view: now` embed stays in 0.4 and faceted filters in 1.1.
+- 2026-10-16: catalogue lookups for quick add are on by default, disclosed in the README and the settings tab; nothing is queried without a user action.
 
 # Success signals
 - A fresh vault with sample notes reaches a working shelf and board from a preset in under five minutes, following only the README.

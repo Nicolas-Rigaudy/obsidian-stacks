@@ -8,6 +8,7 @@
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-16 00:53:06
 
 # AI Context
 - Summary: Make the first five minutes and everyday look work for users other than the owner: onboarding, empty states, theme compatibility and mobile.
@@ -23,7 +24,7 @@
   - First-run screen in the view: explain Stacks in two lines and offer "Add a library from a preset" leading to settings.
   - Empty states per screen and per bookcase/column, with a next action.
   - Theme pass: default light and dark plus two or three popular community themes; colours from CSS variables where possible.
-  - Mobile pass: views usable on phone and tablet (touch drag, toolbar layout); confirm `isDesktopOnly: false` holds, or flip it.
+  - Desktop only for 1.0 (owner decision 2026-10-16): set `isDesktopOnly: true` and give the reason in the README; the mobile pass moves to 1.1.
   - Keyboard and screen-reader basics: focusable controls, labels on icon buttons.
   - Performance check with about 1,000 notes in a library.
   - A generic `view: now` embed showing in-progress items across libraries.
@@ -34,7 +35,7 @@
 # Acceptance criteria
 - AC1: A fresh vault shows a first-run screen that leads to a working library in under five minutes.
 - AC2: Every screen is legible in default light and dark themes and in the chosen community themes.
-- AC3: Shelf, board and list are usable on Obsidian mobile, or the manifest declares desktop only with a reason in the README.
+- AC3: The manifest declares `isDesktopOnly: true` and the README gives the reason (mobile is planned for 1.1).
 - AC4: A 1,000-note library opens in under a second on the dev machine and scrolls without visible jank.
 
 # AC Traceability

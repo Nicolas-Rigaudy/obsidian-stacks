@@ -8,6 +8,7 @@
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-16 00:53:06
 
 # AI Context
 - Summary: Replace the owner-specific default settings with neutral defaults and selectable library presets so any vault can be configured from the settings tab.
@@ -21,7 +22,7 @@
 # Scope
 - In:
   - Neutral defaults: no folder preset, no library enabled until the user picks one.
-  - Presets for books, comics, games, and films/series/anime, each defining category, status vocabulary (with board column order), progress field and total, series fields, and cover field.
+  - Presets for books, video games and films/series (required for 1.0, owner decision 2026-10-16), plus comics and anime if cheap, each defining category, status vocabulary (with board column order), progress field and total, series fields, and cover field.
   - Settings tab flow: add a library from a preset, choose its folder(s) with folder suggest, rename statuses and fields, remove it.
   - Validation and inline hints when a folder is empty or a field is missing from the notes found.
   - Migration of existing saved settings so the owner's current setup keeps working unchanged.
