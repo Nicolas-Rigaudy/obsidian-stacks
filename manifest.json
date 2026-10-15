@@ -4,6 +4,7 @@
 	"version": "0.1.0",
 	"minAppVersion": "1.13.0",
 	"description": "Config-driven gallery + kanban board engine for media libraries (books, comics, games, movies).",
-	"author": "corvus",
-	"isDesktopOnly": false
+	"author": "Nicolas Rigaudy",
+	"isDesktopOnly": false,
+	"authorUrl": "https://github.com/Nicolas-Rigaudy"
 }
