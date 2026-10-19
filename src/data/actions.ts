@@ -3,6 +3,7 @@
 // the previous click left (the stale-button bug can't come back from the UI side).
 // Progress clicks write at once but are logged and offered for undo per burst:
 // ten quick clicks give one log line and one Undo back to before the first.
+// A typed correction is logged and offered for undo at once, with the same toast.
 
 import { Notice, normalizePath, type App, type TFile } from "obsidian";
 import { Bursts } from "../logic/bursts.ts";
@@ -11,7 +12,7 @@ import { SerialQueue } from "../logic/serialQueue.ts";
 import { bucketOf, firstStatusOf } from "../logic/upNext.ts";
 import type { MediaTypeConfig, StatusBucket } from "../types/mediaConfig.ts";
 import { appendLog } from "./activityLog.ts";
-import { bumpProgress, setProgress, setStatus, type ProgressChange } from "./frontmatterWriter.ts";
+import { bumpProgress, setProgress, setStatus } from "./frontmatterWriter.ts";
 
 interface UndoEntry {
 	path: string;
@@ -26,6 +27,12 @@ interface BurstStart {
 	config: MediaTypeConfig;
 	snap: FieldSnapshot;
 	previous: number;
+}
+
+/** Toast text for a progress change, e.g. "Mistborn: 140 pages". */
+function progressMessage(basename: string, config: MediaTypeConfig, value: number): string {
+	const unit = config.progress?.unitLabel ?? "";
+	return `${basename}: ${value}${unit ? ` ${unit}` : ""}`;
 }
 
 /** Quiet time after the last progress click before the burst is logged and Undo is offered. */
@@ -160,8 +167,7 @@ export class LibraryActions {
 		if (value === start.previous) return; // +10 then −10: nothing to log or undo
 		await this.run(path, "log progress", async (file) => {
 			const line = await appendLog(this.app, file, start.config, { kind: "progress", value });
-			const unit = start.config.progress?.unitLabel ?? "";
-			this.offerUndo(`${file.basename}: ${value}${unit ? ` ${unit}` : ""}`, { path, snap: start.snap, line });
+			this.offerUndo(progressMessage(file.basename, start.config, value), { path, snap: start.snap, line });
 		});
 	}
 
@@ -170,25 +176,20 @@ export class LibraryActions {
 		this.bursts.flushAll();
 	}
 
-	/** Set an exact value (the typed correction). */
+	/** Set an exact value (the typed correction); logs it and offers Undo like a burst of clicks. */
 	correct(path: string, config: MediaTypeConfig, value: number): Promise<number | null> {
+		const field = config.progress?.currentField ?? "";
 		this.bursts.flush(path);
-		return this.run(path, "update progress", async (file) =>
-			this.logProgress(file, config, await setProgress(this.app, file, config, value), "corrected"),
-		);
-	}
-
-	private async logProgress(
-		file: TFile,
-		config: MediaTypeConfig,
-		change: ProgressChange | null,
-		note?: string,
-	): Promise<number | null> {
-		if (!change) return null;
-		if (change.value !== change.previous) {
-			await appendLog(this.app, file, config, { kind: "progress", value: change.value, note });
-		}
-		return change.value;
+		return this.run(path, "update progress", async (file) => {
+			let snap: FieldSnapshot | null = null;
+			const change = await setProgress(this.app, file, config, value, (fm) => (snap = snapshotFields(fm, [field])));
+			if (!change || !snap) return null;
+			if (change.value !== change.previous) {
+				const line = await appendLog(this.app, file, config, { kind: "progress", value: change.value, note: "corrected" });
+				this.offerUndo(progressMessage(file.basename, config, change.value), { path, snap, line });
+			}
+			return change.value;
+		});
 	}
 
 	private toBucket(path: string, config: MediaTypeConfig, bucket: StatusBucket): Promise<void> {

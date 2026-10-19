@@ -78,11 +78,13 @@ export async function setProgress(
 	file: TFile,
 	config: MediaTypeConfig,
 	value: number,
+	before?: (fm: Fm) => void,
 ): Promise<ProgressChange | null> {
 	const p = config.progress;
 	if (!p) return null;
 	let result: ProgressChange | null = null;
 	await app.fileManager.processFrontMatter(file, (fm: Fm) => {
+		before?.(fm);
 		const previous = toNum(fm[p.currentField]) ?? 0;
 		const next = clampProgress(value, fm[p.totalField]);
 		fm[p.currentField] = next;
