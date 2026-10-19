@@ -131,7 +131,10 @@ export class QuickAddModal extends Modal {
 			else this.renderResults(list);
 			this.renderManual(q);
 		} catch (err) {
-			if (mine === this.seq) this.hint(`Search failed: ${err instanceof Error ? err.message : String(err)}`);
+			if (mine !== this.seq) return;
+			this.hint(`Search failed: ${err instanceof Error ? err.message : String(err)}`);
+			// Offline or the catalogue is down: the note can still be made by hand.
+			this.renderManual(q);
 		}
 	}
 
