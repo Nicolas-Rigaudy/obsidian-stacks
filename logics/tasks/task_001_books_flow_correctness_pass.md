@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 80%
+> Progress: 90%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -39,6 +39,7 @@
 
 # Validation
 - 2026-10-19: `npm run build` (tsc + esbuild) and `npm test` pass (150 tests, 15 new); `logics-manager lint` OK. No ESLint is configured in the repo.
+- 2026-10-19 (after owner decisions): `npm run build` and `npm test` pass (155 tests, 5 new in `tests/correction.test.ts`); `logics-manager lint` OK. ESLint moved to item_004.
 - Manual checks in Obsidian still needed for AC1-AC4 (no GUI in the implementing session).
 
 # Report
@@ -49,7 +50,13 @@
 - 2bb55c6 Loading state until the metadata cache has resolved at startup, with a 5 s fallback after layout ready (`ReadyGate`, tested) (AC2).
 - 6c577d1 Progress clicks: one log line and one Undo per burst, restoring the value from before the first click (`Bursts`, tested) (AC3).
 - AC1: code review found no gap (metadata `changed`, vault `delete`/`rename` all mark libraries dirty; tabs, embeds and the series panel re-render on `changed`); needs the manual check.
-- Left: manual checks for AC1-AC4 in Obsidian, then closeout.
+- fc665c2 Typed page correction: same toast and Undo as clicks; Undo restores the value from before the correction; settles any open click burst first, so each keeps its own Undo (tested).
+- Left: manual checks for AC1-AC4 in Obsidian by the owner, then closeout.
+
+# Decisions
+- 2026-10-19 (owner): one log line and one Undo per burst of progress clicks (1.2 s quiet period), Undo back to before the first click. Commit 6c577d1 stays.
+- 2026-10-19 (owner): a typed page correction gets the same toast and Undo as clicks (fc665c2). Its log line keeps the "corrected" note.
+- 2026-10-19 (owner): ESLint is added as part of item_004 (Obsidian plugin guidelines), not in this task.
 
 # Links
 - Request: `req_000_stacks_1_0_in_the_obsidian_community_plugin_directory`

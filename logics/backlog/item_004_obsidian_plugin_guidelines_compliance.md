@@ -8,6 +8,7 @@
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-19 15:51:55
 
 # AI Context
 - Summary: Bring code, manifest and repo in line with the Obsidian plugin guidelines and the directory's automated review.
@@ -20,7 +21,8 @@
 
 # Scope
 - In:
-  - Run the official Obsidian ESLint plugin and fix its findings.
+  - Add ESLint to the repo (config, dev dependencies, `npm run lint` script) with the official Obsidian plugin (`eslint-plugin-obsidianmd`); the repo has no ESLint today. Owner decision 2026-10-19: ESLint lands with this item, not with task_001.
+  - Run it and fix its findings.
   - Manifest: description wording per the guidelines (short, no "Obsidian", ends with a period), correct `minAppVersion`, `isDesktopOnly` decided in item_003, `fundingUrl` only if wanted.
   - Code review against the guidelines: no default hotkeys, command names without the plugin name, sentence case in UI text, settings headings via `setHeading`, no `innerHTML` with user data, no global `app`, no leaked listeners (register* helpers), views not detached on unload, `requestUrl` for network, no console noise, styles in `styles.css` rather than inline.
   - Network disclosure: list every external service queried (Open Library, Steam, Wikipedia, TVmaze, Kitsu) and when, as the developer policies require.
@@ -29,7 +31,7 @@
   - README writing (item_005) and release automation (item_006).
 
 # Acceptance criteria
-- AC1: The Obsidian ESLint plugin reports no errors.
+- AC1: `npm run lint` exists, runs the Obsidian ESLint plugin, and reports no errors.
 - AC2: A checklist of the plugin guidelines is ticked in this item's notes with the commit that fixed each finding.
 - AC3: The README and settings tab disclose every network request and that nothing is sent without a user action.
 
