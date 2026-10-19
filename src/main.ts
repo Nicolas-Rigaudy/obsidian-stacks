@@ -1,4 +1,4 @@
-import { debounce, Menu, Plugin } from "obsidian";
+import { debounce, Menu, Notice, Plugin } from "obsidian";
 import { registerCodeBlock } from "./codeBlock/registerCodeBlock.ts";
 import { LibraryActions } from "./data/actions.ts";
 import { LiveIndex } from "./data/liveIndex.ts";
@@ -52,6 +52,15 @@ export default class StacksPlugin extends Plugin implements StacksHost {
 				callback: () => new QuickAddModal(this.app, this, id).open(),
 			});
 		}
+
+		this.addCommand({
+			id: "rescan-libraries",
+			name: "Rescan libraries",
+			callback: () => {
+				this.index.rescan();
+				new Notice("Stacks: libraries rescanned.");
+			},
+		});
 
 		registerCodeBlock(this, this);
 		this.addSettingTab(new StacksSettingTab(this.app, this));

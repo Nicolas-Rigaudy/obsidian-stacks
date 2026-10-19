@@ -53,6 +53,12 @@ export class LiveIndex extends Events {
 		return this.on("changed", (...data: unknown[]) => callback(data[0] as string[]));
 	}
 
+	/** Rebuild every library from the metadata cache now (the "Rescan libraries" command). */
+	rescan(): void {
+		this.lists.clear();
+		this.markAll();
+	}
+
 	/** Call after settings are saved: folders, fields or statuses may have changed. */
 	settingsChanged(): void {
 		for (const id of this.lists.keys()) {
