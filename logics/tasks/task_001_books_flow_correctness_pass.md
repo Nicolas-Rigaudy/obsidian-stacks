@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 80%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -38,10 +38,18 @@
 - [ ] Run `python3 -m logics_manager flow finish task task_001_books_flow_correctness_pass.md` after implementation.
 
 # Validation
-- (no validation recorded yet)
+- 2026-10-19: `npm run build` (tsc + esbuild) and `npm test` pass (150 tests, 15 new); `logics-manager lint` OK. No ESLint is configured in the repo.
+- Manual checks in Obsidian still needed for AC1-AC4 (no GUI in the implementing session).
 
 # Report
-- Not started.
+- 2085394 Quick add keeps "Create without a match" when the search fails (AC4).
+- 8bee46d Games/films search reports a failure when every catalogue is unreachable instead of "Nothing found" (`mergeSettled`, tested) (AC4).
+- 825d32c Catalogue failures explained in words (offline, rate limit, server error, unreadable answer) in quick add and the cover picker (`catalogErrorMessage`, tested) (AC4).
+- 1786e02 "Rescan libraries" command.
+- 2bb55c6 Loading state until the metadata cache has resolved at startup, with a 5 s fallback after layout ready (`ReadyGate`, tested) (AC2).
+- 6c577d1 Progress clicks: one log line and one Undo per burst, restoring the value from before the first click (`Bursts`, tested) (AC3).
+- AC1: code review found no gap (metadata `changed`, vault `delete`/`rename` all mark libraries dirty; tabs, embeds and the series panel re-render on `changed`); needs the manual check.
+- Left: manual checks for AC1-AC4 in Obsidian, then closeout.
 
 # Links
 - Request: `req_000_stacks_1_0_in_the_obsidian_community_plugin_directory`
