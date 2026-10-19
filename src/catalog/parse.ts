@@ -227,3 +227,18 @@ export function mergeSettled(results: readonly PromiseSettledResult<Candidate[]>
 	if (results.length > 0 && failed.length === results.length) throw failed[0].reason;
 	return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 }
+
+/** A catalogue failure in words a reader can act on (offline, rate limit, server down, odd answer). */
+export function catalogErrorMessage(err: unknown): string {
+	const raw = err instanceof Error ? err.message : String(err);
+	if (/net::ERR_|ENOTFOUND|EAI_AGAIN|ECONN(REFUSED|RESET)|ETIMEDOUT|Failed to fetch|NetworkError/i.test(raw)) {
+		return "Couldn't reach the catalogue. Check the connection and try again.";
+	}
+	const http = /^(\S+) answered (\d{3})$/.exec(raw);
+	if (http) {
+		const [, host, code] = http;
+		if (code === "429") return `${host} is limiting requests. Wait a minute and try again.`;
+		if (code.startsWith("5")) return `${host} is having trouble (${code}). Try again later.`;
+	}
+	return raw;
+}

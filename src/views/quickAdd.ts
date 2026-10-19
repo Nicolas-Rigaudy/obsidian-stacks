@@ -1,6 +1,6 @@
 import { debounce, Modal, type App } from "obsidian";
 import { checkImage, enrichCandidate, searchCatalog } from "../catalog/providers.ts";
-import { manualCandidate, type Candidate } from "../catalog/parse.ts";
+import { catalogErrorMessage, manualCandidate, type Candidate } from "../catalog/parse.ts";
 import { buildNewNote, catalogKind, uniqueFileName } from "../logic/newNote.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 import type { StacksHost } from "./shared.ts";
@@ -132,7 +132,7 @@ export class QuickAddModal extends Modal {
 			this.renderManual(q);
 		} catch (err) {
 			if (mine !== this.seq) return;
-			this.hint(`Search failed: ${err instanceof Error ? err.message : String(err)}`);
+			this.hint(`Search failed. ${catalogErrorMessage(err)}`);
 			// Offline or the catalogue is down: the note can still be made by hand.
 			this.renderManual(q);
 		}

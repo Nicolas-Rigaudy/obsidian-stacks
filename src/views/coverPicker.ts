@@ -1,5 +1,6 @@
 import { FuzzySuggestModal, Modal, Notice, type App, type TFile } from "obsidian";
 import { checkImage, editionCovers, enrichCandidate, searchCatalog } from "../catalog/providers.ts";
+import { catalogErrorMessage } from "../catalog/parse.ts";
 import { catalogKind } from "../logic/newNote.ts";
 import { creatorOf } from "../logic/cardText.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
@@ -98,7 +99,7 @@ export class CoverPickerModal extends Modal {
 				}, 1500),
 			);
 		} catch (err) {
-			status.setText(`Search failed: ${err instanceof Error ? err.message : String(err)}`);
+			status.setText(`Search failed. ${catalogErrorMessage(err)} You can still paste an image URL or pick an image from the vault.`);
 		}
 	}
 

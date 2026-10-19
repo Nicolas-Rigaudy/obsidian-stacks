@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
 	countAiredEpisodes,
+	catalogErrorMessage,
 	infoboxImage,
 	manualCandidate,
 	mergeSettled,
@@ -122,5 +123,23 @@ describe("mergeSettled", () => {
 
 	test("sources that answer with nothing are a real empty result", () => {
 		assert.deepEqual(mergeSettled([ok([]), ok([])]), []);
+	});
+});
+
+describe("catalogErrorMessage", () => {
+	test("offline errors become a connection hint", () => {
+		for (const raw of ["net::ERR_INTERNET_DISCONNECTED", "getaddrinfo ENOTFOUND openlibrary.org", "Failed to fetch"]) {
+			assert.match(catalogErrorMessage(new Error(raw)), /Couldn't reach the catalogue/);
+		}
+	});
+
+	test("rate limits and server errors name the service", () => {
+		assert.match(catalogErrorMessage(new Error("openlibrary.org answered 429")), /^openlibrary\.org is limiting requests/);
+		assert.match(catalogErrorMessage(new Error("api.tvmaze.com answered 503")), /^api\.tvmaze\.com is having trouble \(503\)/);
+	});
+
+	test("anything else is passed through", () => {
+		assert.equal(catalogErrorMessage(new Error("kitsu.io sent an answer Stacks couldn't read")), "kitsu.io sent an answer Stacks couldn't read");
+		assert.equal(catalogErrorMessage("boom"), "boom");
 	});
 });

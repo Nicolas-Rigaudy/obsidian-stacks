@@ -22,8 +22,14 @@ const HEADERS = { "Api-User-Agent": "Stacks Obsidian plugin (personal library)" 
 
 async function getJson(url: string, headers: Record<string, string> = {}): Promise<unknown> {
 	const r = await requestUrl({ url, headers: { ...HEADERS, ...headers }, throw: false });
-	if (r.status >= 400) throw new Error(`${new URL(url).hostname} answered ${r.status}`);
-	return r.json;
+	const host = new URL(url).hostname;
+	if (r.status >= 400) throw new Error(`${host} answered ${r.status}`);
+	try {
+		return r.json;
+	} catch {
+		// An HTML error page or a changed API: say which service, not "Unexpected token <".
+		throw new Error(`${host} sent an answer Stacks couldn't read`);
+	}
 }
 
 /** A real image: 200, an image type, and more than a placeholder pixel's worth of bytes. */
