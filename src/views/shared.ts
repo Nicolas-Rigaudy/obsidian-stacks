@@ -86,6 +86,11 @@ export abstract class LibraryRenderer extends MarkdownRenderChild {
 			el.createDiv({ cls: "stacks-empty", text: `Library "${this.options.libraryId}" isn't set up or is disabled. See Settings → Stacks.` });
 			return;
 		}
+		if (!this.host.index.ready) {
+			// The cache is still filling in at startup: a partial shelf would look like lost notes.
+			el.createDiv({ cls: "stacks-empty stacks-loading", text: `Loading ${config.label}…` });
+			return;
+		}
 		let notes = inFilter(this.host.index.get(this.options.libraryId), this.options.filter);
 		const only = this.options.statuses;
 		if (only) notes = notes.filter((n) => n.status !== null && only.includes(n.status));

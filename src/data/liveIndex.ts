@@ -1,8 +1,12 @@
 import { debounce, Events, type EventRef, type Plugin } from "obsidian";
 import { isInFolder } from "../logic/parseNote.ts";
+import { ReadyGate } from "../logic/readyGate.ts";
 import type { StacksSettings } from "../settings/settings.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
 import { listNotes } from "./vaultReader.ts";
+
+/** Show the library anyway this long after the layout is ready, if "resolved" never came. */
+const READY_FALLBACK_MS = 5000;
 
 /**
  * Per-library note lists, kept in sync with the vault.
@@ -12,6 +16,9 @@ import { listNotes } from "./vaultReader.ts";
  * rebuilt from the metadata cache after a short quiet period, then "changed"
  * fires. Consumers call get() on each change instead of keeping a copy, so
  * nobody holds a stale snapshot (the Dataview staleness problem).
+ *
+ * At startup the cache fills in over a moment: until it has resolved once,
+ * `ready` is false and views show a loading state instead of a partial shelf.
  */
 export class LiveIndex extends Events {
 	private readonly plugin: Plugin;
@@ -19,6 +26,8 @@ export class LiveIndex extends Events {
 	private readonly lists = new Map<string, MediaNote[]>();
 	private readonly dirty = new Set<string>();
 	private readonly scheduleRebuild: () => void;
+	/** Opens when the cache has resolved once (or the fallback/rescan says so); rebuilds everything. */
+	private readonly gate = new ReadyGate(() => this.markAll());
 
 	constructor(plugin: Plugin, getSettings: () => StacksSettings) {
 		super();
@@ -37,9 +46,24 @@ export class LiveIndex extends Events {
 		// Until the cache finishes its first full pass, early reads may be partial.
 		const firstResolve = app.metadataCache.on("resolved", () => {
 			app.metadataCache.offref(firstResolve);
-			this.markAll();
+			this.gate.open();
 		});
 		this.plugin.registerEvent(firstResolve);
+		if (app.workspace.layoutReady) {
+			// Enabled mid-session: the cache is already complete.
+			this.gate.open();
+		} else {
+			// "resolved" may have fired before we listened: don't wait forever.
+			app.workspace.onLayoutReady(() => {
+				const timer = window.setTimeout(() => this.gate.open(), READY_FALLBACK_MS);
+				this.plugin.register(() => window.clearTimeout(timer));
+			});
+		}
+	}
+
+	/** False until the metadata cache has resolved once after startup. */
+	get ready(): boolean {
+		return this.gate.isOpen;
 	}
 
 	/** Current notes of a library (built on first use). Treat as read-only. */
@@ -56,7 +80,7 @@ export class LiveIndex extends Events {
 	/** Rebuild every library from the metadata cache now (the "Rescan libraries" command). */
 	rescan(): void {
 		this.lists.clear();
-		this.markAll();
+		if (!this.gate.open()) this.markAll();
 	}
 
 	/** Call after settings are saved: folders, fields or statuses may have changed. */
