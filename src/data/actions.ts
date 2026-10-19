@@ -1,8 +1,11 @@
 // What the views' buttons, drags and menus do. Every write to a note goes
 // through one queue per note, so rapid clicks apply in order against the value
 // the previous click left (the stale-button bug can't come back from the UI side).
+// Progress clicks write at once but are logged and offered for undo per burst:
+// ten quick clicks give one log line and one Undo back to before the first.
 
 import { Notice, normalizePath, type App, type TFile } from "obsidian";
+import { Bursts } from "../logic/bursts.ts";
 import { removeLastLogLine, restoreFields, snapshotFields, type FieldSnapshot } from "../logic/undo.ts";
 import { SerialQueue } from "../logic/serialQueue.ts";
 import { bucketOf, firstStatusOf } from "../logic/upNext.ts";
@@ -18,9 +21,20 @@ interface UndoEntry {
 	line: string | null;
 }
 
+/** A progress burst: what the first click overwrote, and the library it belongs to. */
+interface BurstStart {
+	config: MediaTypeConfig;
+	snap: FieldSnapshot;
+	previous: number;
+}
+
+/** Quiet time after the last progress click before the burst is logged and Undo is offered. */
+const BURST_QUIET_MS = 1200;
+
 export class LibraryActions {
 	private readonly app: App;
 	private readonly queue = new SerialQueue();
+	private readonly bursts = new Bursts<BurstStart, number>(BURST_QUIET_MS, (path, start, value) => void this.settleProgress(path, start, value));
 
 	constructor(app: App) {
 		this.app = app;
@@ -32,6 +46,7 @@ export class LibraryActions {
 	 */
 	async changeStatus(path: string, config: MediaTypeConfig, status: string): Promise<void> {
 		const keys = [config.statusField, config.startedField, config.finishedField, config.progress?.currentField ?? ""];
+		this.bursts.flush(path);
 		await this.run(path, "change the status", async (file) => {
 			let snap: FieldSnapshot | null = null;
 			const previous = await setStatus(this.app, file, config, status, undefined, (fm) => (snap = snapshotFields(fm, keys)));
@@ -49,6 +64,7 @@ export class LibraryActions {
 	/** Star or unstar for "buy next". */
 	async setStar(path: string, config: MediaTypeConfig, on: boolean): Promise<void> {
 		if (!config.starField) return;
+		this.bursts.flush(path);
 		await this.run(path, "update the star", async (file) => {
 			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 				if (on) fm[config.starField] = true;
@@ -59,6 +75,7 @@ export class LibraryActions {
 
 	/** Set the cover (a verified URL or vault path); offers Undo. */
 	async setCover(path: string, config: MediaTypeConfig, cover: string): Promise<void> {
+		this.bursts.flush(path);
 		await this.run(path, "change the cover", async (file) => {
 			let snap: FieldSnapshot | null = null;
 			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
@@ -107,6 +124,7 @@ export class LibraryActions {
 	}
 
 	private async undo(entry: UndoEntry): Promise<void> {
+		this.bursts.flush(entry.path);
 		await this.run(entry.path, "undo", async (file) => {
 			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => restoreFields(fm, entry.snap));
 			if (entry.line) {
@@ -126,13 +144,35 @@ export class LibraryActions {
 
 	/** Add pages (negative to go back). Resolves to the new value, or null on failure. */
 	bump(path: string, config: MediaTypeConfig, delta: number): Promise<number | null> {
-		return this.run(path, "update progress", async (file) =>
-			this.logProgress(file, config, await bumpProgress(this.app, file, config, delta)),
-		);
+		const field = config.progress?.currentField ?? "";
+		return this.run(path, "update progress", async (file) => {
+			let snap: FieldSnapshot | null = null;
+			const change = await bumpProgress(this.app, file, config, delta, (fm) => (snap = snapshotFields(fm, [field])));
+			if (!change || !snap) return null;
+			// Logged and offered for undo once the clicks stop (see settleProgress).
+			this.bursts.add(path, { config, snap, previous: change.previous }, change.value);
+			return change.value;
+		});
+	}
+
+	/** Write the log line and offer Undo for a finished burst of progress clicks. */
+	private async settleProgress(path: string, start: BurstStart, value: number): Promise<void> {
+		if (value === start.previous) return; // +10 then −10: nothing to log or undo
+		await this.run(path, "log progress", async (file) => {
+			const line = await appendLog(this.app, file, start.config, { kind: "progress", value });
+			const unit = start.config.progress?.unitLabel ?? "";
+			this.offerUndo(`${file.basename}: ${value}${unit ? ` ${unit}` : ""}`, { path, snap: start.snap, line });
+		});
+	}
+
+	/** Log pending progress bursts now (plugin unload). */
+	flushProgress(): void {
+		this.bursts.flushAll();
 	}
 
 	/** Set an exact value (the typed correction). */
 	correct(path: string, config: MediaTypeConfig, value: number): Promise<number | null> {
+		this.bursts.flush(path);
 		return this.run(path, "update progress", async (file) =>
 			this.logProgress(file, config, await setProgress(this.app, file, config, value), "corrected"),
 		);

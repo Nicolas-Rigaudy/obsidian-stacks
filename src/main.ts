@@ -66,6 +66,11 @@ export default class StacksPlugin extends Plugin implements StacksHost {
 		this.addSettingTab(new StacksSettingTab(this.app, this));
 	}
 
+	onunload(): void {
+		// Progress clicks from the last second still get their log line.
+		this.actions?.flushProgress();
+	}
+
 	prefs(libraryId: string): LibraryPrefs {
 		return (this.settings.prefs[libraryId] ??= mergePrefs(undefined));
 	}
