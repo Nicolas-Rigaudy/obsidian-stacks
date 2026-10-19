@@ -216,3 +216,14 @@ export function rankCandidates(query: string, list: Candidate[]): Candidate[] {
 		.sort((a, b) => b.s - a.s || Number(b.c.covers.length > 0) - Number(a.c.covers.length > 0) || a.i - b.i)
 		.map(({ c }) => c);
 }
+
+/**
+ * Merge the results of several catalogues searched at once. One failing source
+ * is fine (the others still answer), but if every source failed, rethrow the
+ * first error: "Nothing found" would hide that the network is down.
+ */
+export function mergeSettled(results: readonly PromiseSettledResult<Candidate[]>[]): Candidate[] {
+	const failed = results.filter((r): r is PromiseRejectedResult => r.status === "rejected");
+	if (results.length > 0 && failed.length === results.length) throw failed[0].reason;
+	return results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+}

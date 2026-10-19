@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 import {
 	countAiredEpisodes,
 	infoboxImage,
+	manualCandidate,
+	mergeSettled,
 	parseKitsu,
 	parseOpenLibrary,
 	parseSteamSearch,
@@ -102,5 +104,23 @@ describe("matching", () => {
 		const list = parseSteamSearch(fixture("steam-search.json"));
 		assert.equal(rankCandidates("Hades", list)[0].title, "Hades");
 		assert.equal(rankCandidates("hades 2", list)[0].title, "Hades II");
+	});
+});
+
+describe("mergeSettled", () => {
+	const hit = manualCandidate("Hades");
+	const ok = (v: typeof hit[]): PromiseSettledResult<typeof hit[]> => ({ status: "fulfilled", value: v });
+	const ko = (msg: string): PromiseSettledResult<typeof hit[]> => ({ status: "rejected", reason: new Error(msg) });
+
+	test("one source down: the others' results still come back", () => {
+		assert.deepEqual(mergeSettled([ko("offline"), ok([hit])]), [hit]);
+	});
+
+	test("every source down: the error surfaces instead of an empty list", () => {
+		assert.throws(() => mergeSettled([ko("first"), ko("second")]), /first/);
+	});
+
+	test("sources that answer with nothing are a real empty result", () => {
+		assert.deepEqual(mergeSettled([ok([]), ok([])]), []);
 	});
 });

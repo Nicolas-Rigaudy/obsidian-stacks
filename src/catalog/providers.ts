@@ -7,6 +7,7 @@ import { todayISO } from "../logic/values.ts";
 import {
 	countAiredEpisodes,
 	infoboxImage,
+	mergeSettled,
 	parseKitsu,
 	parseOpenLibrary,
 	parseSteamSearch,
@@ -42,8 +43,7 @@ const q = encodeURIComponent;
 export async function searchCatalog(kind: CatalogKind, query: string): Promise<Candidate[]> {
 	const term = query.trim();
 	if (term.length < 2) return [];
-	const settle = async (jobs: Promise<Candidate[]>[]) =>
-		(await Promise.allSettled(jobs)).flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+	const settle = async (jobs: Promise<Candidate[]>[]) => mergeSettled(await Promise.allSettled(jobs));
 
 	let list: Candidate[] = [];
 	if (kind === "book") {
