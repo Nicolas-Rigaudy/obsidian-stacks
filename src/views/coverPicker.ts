@@ -1,4 +1,5 @@
 import { FuzzySuggestModal, Modal, Notice, type App, type TFile } from "obsidian";
+import { catalogOptionsFor } from "../catalog/sources.ts";
 import { checkImage, editionCovers, enrichCandidate, searchCatalog } from "../catalog/providers.ts";
 import { catalogErrorMessage } from "../catalog/parse.ts";
 import { catalogKind } from "../logic/newNote.ts";
@@ -74,9 +75,10 @@ export class CoverPickerModal extends Modal {
 		const status = grid.createDiv({ cls: "stacks-modal-hint", text: "Looking for covers…" });
 		try {
 			const kind = catalogKind(this.note.category ?? "");
-			let list = await searchCatalog(kind, query);
+			const options = catalogOptionsFor(kind, this.config.disabledCatalogs, this.host.settings.catalog);
+			let list = await searchCatalog(kind, query, options);
 			// Title + author finds nothing? Try the title alone.
-			if (list.length === 0 && query.trim() !== this.note.title) list = await searchCatalog(kind, this.note.title);
+			if (list.length === 0 && query.trim() !== this.note.title) list = await searchCatalog(kind, this.note.title, options);
 			status.remove();
 			if (list.length === 0) {
 				this.showEmpty();
@@ -87,7 +89,7 @@ export class CoverPickerModal extends Modal {
 			const lookups: Promise<void>[] = [];
 			for (const c of list.slice(0, 6)) {
 				if (c.source === "steam" || c.source === "wikipedia") {
-					lookups.push(enrichCandidate(c).then((full) => full.covers.forEach((u) => this.tile(u, `${c.title} · ${SOURCE_LABELS[c.source]}`))));
+					lookups.push(enrichCandidate(c, options).then((full) => full.covers.forEach((u) => this.tile(u, `${c.title} · ${SOURCE_LABELS[c.source]}`))));
 				}
 			}
 			const work = list.find((c) => c.source === "openlibrary");

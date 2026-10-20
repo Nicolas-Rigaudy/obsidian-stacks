@@ -1,6 +1,7 @@
 import { type App, debounce, type Plugin, PluginSettingTab, Setting } from "obsidian";
 import { STATUS_BUCKETS, type MediaTypeConfig, type StatusBucket } from "../types/mediaConfig.ts";
 import { FolderSuggest } from "./folderSuggest.ts";
+import { CATALOG_SOURCES } from "../catalog/sources.ts";
 import { TEMPLATE_PLACEHOLDERS } from "../logic/newNote.ts";
 import { libraryHints } from "./hints.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
@@ -47,12 +48,68 @@ export class StacksSettingTab extends PluginSettingTab {
 			cls: "setting-item-description",
 			text: "Each library maps a folder of notes to gallery, board and up-next views. Field names refer to note frontmatter.",
 		});
+		this.renderCatalogSettings(containerEl);
 		const libraries = Object.entries(this.host.settings.mediaTypes);
 		if (libraries.length === 0) {
 			containerEl.createEl("p", { text: "No library yet. Add one from a preset below, then choose the folder that holds its notes." });
 		}
 		for (const [id, config] of libraries) this.renderLibrary(containerEl, id, config);
 		this.renderAddLibrary(containerEl);
+	}
+
+	private renderCatalogSettings(el: HTMLElement): void {
+		const store = this.host.settings.catalog;
+		new Setting(el).setName("Catalogue lookups").setHeading();
+		el.createEl("p", {
+			cls: "setting-item-description",
+			text: "Quick add and the cover picker send what you type to Open Library, Steam, Wikipedia, TVmaze and Kitsu, only while you search. Each library can switch sources off below.",
+		});
+		new Setting(el)
+			.setName("Steam store region")
+			.setDesc("Two-letter country code, e.g. US, FR, DE.")
+			.addText((t) =>
+				t.setValue(store.steamRegion).onChange((v) => {
+					if (/^[A-Za-z]{2}$/.test(v.trim())) {
+						store.steamRegion = v.trim().toUpperCase();
+						this.saveSoon();
+					}
+				}),
+			);
+		new Setting(el)
+			.setName("Steam language")
+			.setDesc("Language of game titles and descriptions, e.g. english, french, german.")
+			.addText((t) =>
+				t.setValue(store.steamLanguage).onChange((v) => {
+					if (/^[a-z]+$/i.test(v.trim())) {
+						store.steamLanguage = v.trim().toLowerCase();
+						this.saveSoon();
+					}
+				}),
+			);
+	}
+
+	private renderCatalogChoices(el: HTMLElement, config: MediaTypeConfig): void {
+		el.createEl("h4", { text: "Catalogues" });
+		for (const source of CATALOG_SOURCES) {
+			new Setting(el).setName(source.label).setDesc(`Looks up ${source.covers}.`).addToggle((t) =>
+				t.setValue(!config.disabledCatalogs.includes(source.id)).onChange(async (on) => {
+					const rest = config.disabledCatalogs.filter((id) => id !== source.id);
+					config.disabledCatalogs = on ? rest : [...rest, source.id];
+					await this.saveNow();
+				}),
+			);
+		}
+		new Setting(el)
+			.setName("Status for new items")
+			.setDesc("What quick add starts with. Automatic = the wishlist, else the first backlog status.")
+			.addDropdown((d) => {
+				d.addOption("", "Automatic");
+				for (const st of config.statuses) if (st.value !== "") d.addOption(st.value, st.label || st.value);
+				d.setValue(config.defaultStatus).onChange(async (v) => {
+					config.defaultStatus = v;
+					await this.saveNow();
+				});
+			});
 	}
 
 	private renderAddLibrary(el: HTMLElement): void {
@@ -157,6 +214,7 @@ export class StacksSettingTab extends PluginSettingTab {
 
 		this.renderNewNoteFolders(el, config);
 		this.text(el, "Note template", `Optional vault path of a template for new notes, e.g. Templates/Book. Placeholders: ${TEMPLATE_PLACEHOLDERS.map((p) => `{{${p}}}`).join(" ")}. Empty = a plain note with the cover shown.`, config.templatePath, (v) => (config.templatePath = v));
+		this.renderCatalogChoices(el, config);
 		this.renderStatuses(el, config);
 		this.renderProgress(el, config);
 		this.renderSeries(el, config);

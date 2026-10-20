@@ -11,6 +11,7 @@ import type {
 	StatusDef,
 } from "../types/mediaConfig.ts";
 import { APPEARANCES, STATUS_BUCKETS } from "../types/mediaConfig.ts";
+import { DEFAULT_LANGUAGE, DEFAULT_REGION } from "../catalog/sources.ts";
 import type { ShelfSort } from "../logic/shelf.ts";
 import { BOOK_CONFIG, GAME_CONFIG, WATCHING_CONFIG } from "./legacy.ts";
 
@@ -30,8 +31,17 @@ export interface LibraryPrefs {
 
 export const DEFAULT_PREFS: LibraryPrefs = { sort: "library", density: "medium", openPiles: [], openCases: [] };
 
+/** Choices that apply to every library's catalogue lookups. */
+export interface CatalogSettings {
+	/** Steam store region (two letters): decides prices and availability in results. */
+	steamRegion: string;
+	/** Steam language name ("english", "french"...). */
+	steamLanguage: string;
+}
+
 export interface StacksSettings {
 	version: number;
+	catalog: CatalogSettings;
 	/** Keyed by a stable id ("book"). Key order = display order. */
 	mediaTypes: Record<string, MediaTypeConfig>;
 	/** View preferences per library id. */
@@ -42,8 +52,11 @@ export interface StacksSettings {
 export const SETTINGS_VERSION = 2;
 
 /** A fresh install has no library: the user adds one from a preset. */
+export const DEFAULT_CATALOG: CatalogSettings = { steamRegion: DEFAULT_REGION, steamLanguage: DEFAULT_LANGUAGE };
+
 export const DEFAULT_SETTINGS: StacksSettings = {
 	version: SETTINGS_VERSION,
+	catalog: DEFAULT_CATALOG,
 	mediaTypes: {},
 	prefs: {},
 };
@@ -114,6 +127,8 @@ export function blankMediaTypeConfig(label: string): MediaTypeConfig {
 		wishlistStatus: "",
 		logSection: null,
 		templatePath: "",
+		disabledCatalogs: [],
+		defaultStatus: "",
 	newNotes: {},
 	};
 }
@@ -157,6 +172,7 @@ function mergeConfig(base: MediaTypeConfig, over: unknown): MediaTypeConfig {
 	Object.assign(out, mergeStrings(out, over));
 	if (!APPEARANCES.includes(out.appearance)) out.appearance = base.appearance;
 	if (typeof over.enabled === "boolean") out.enabled = over.enabled;
+	if (Array.isArray(over.disabledCatalogs)) out.disabledCatalogs = over.disabledCatalogs.filter(isString);
 	if (Array.isArray(over.categoryValues)) out.categoryValues = over.categoryValues.filter(isString);
 	if (Array.isArray(over.statuses)) out.statuses = over.statuses.flatMap(parseStatus);
 	if (Array.isArray(over.categoryFilters)) {
@@ -220,6 +236,14 @@ function migrate(savedTypes: Rec): Rec {
 	return { ...savedTypes, book: next };
 }
 
+function mergeCatalog(base: CatalogSettings, saved: unknown): CatalogSettings {
+	const out = { ...base };
+	if (!isRecord(saved)) return out;
+	if (isString(saved.steamRegion) && /^[A-Za-z]{2}$/.test(saved.steamRegion.trim())) out.steamRegion = saved.steamRegion.trim().toUpperCase();
+	if (isString(saved.steamLanguage) && /^[a-z]+$/i.test(saved.steamLanguage.trim())) out.steamLanguage = saved.steamLanguage.trim().toLowerCase();
+	return out;
+}
+
 /**
  * Data saved before 0.3 has no `version`: the three libraries it relied on
  * (never stored in full) come from the legacy defaults, so nothing changes for
@@ -242,7 +266,10 @@ export function mergeSettings(saved: unknown): StacksSettings {
 	if (hasSaved && isRecord(saved.prefs)) {
 		for (const [id, p] of Object.entries(saved.prefs)) prefs[id] = mergePrefs(p);
 	}
-	return { version: SETTINGS_VERSION, mediaTypes, prefs };
+	// Data from before the setting existed used the French store: keep it for them.
+	const base: CatalogSettings = legacy ? { ...DEFAULT_CATALOG, steamRegion: "FR" } : DEFAULT_CATALOG;
+	const catalog = mergeCatalog(base, hasSaved ? saved.catalog : undefined);
+	return { version: SETTINGS_VERSION, catalog, mediaTypes, prefs };
 }
 
 /** Saved data from before 0.3 that still needs writing back at the current version. */

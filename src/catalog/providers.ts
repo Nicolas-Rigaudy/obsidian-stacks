@@ -4,6 +4,7 @@
 import { requestUrl } from "obsidian";
 import type { CatalogKind } from "../logic/newNote.ts";
 import { todayISO } from "../logic/values.ts";
+import { DEFAULT_LANGUAGE, DEFAULT_REGION, type CatalogOptions } from "./sources.ts";
 import {
 	countAiredEpisodes,
 	infoboxImage,
@@ -16,6 +17,7 @@ import {
 	rankCandidates,
 	steamPortrait,
 	type Candidate,
+	type CatalogSource,
 } from "./parse.ts";
 
 const HEADERS = { "Api-User-Agent": "Stacks Obsidian plugin (personal library)" };
@@ -46,13 +48,17 @@ export async function checkImage(url: string): Promise<boolean> {
 const q = encodeURIComponent;
 
 /** Search the catalogue that fits the kind; results ranked by title match. */
-export async function searchCatalog(kind: CatalogKind, query: string): Promise<Candidate[]> {
+export async function searchCatalog(kind: CatalogKind, query: string, options: Partial<CatalogOptions> = {}): Promise<Candidate[]> {
 	const term = query.trim();
 	if (term.length < 2) return [];
+	const region = options.region ?? DEFAULT_REGION;
+	const language = options.language ?? DEFAULT_LANGUAGE;
+	const allowed = (source: CatalogSource) => !options.sources || options.sources.includes(source);
 	const settle = async (jobs: Promise<Candidate[]>[]) => mergeSettled(await Promise.allSettled(jobs));
 
 	let list: Candidate[] = [];
 	if (kind === "book") {
+		if (!allowed("openlibrary")) return [];
 		const fields = "key,title,author_name,first_publish_year,cover_i,number_of_pages_median,isbn";
 		const isbn = term.replace(/[^0-9Xx]/g, "");
 		const url = /^(\d{9}[\dXx]|\d{13})$/.test(isbn)
@@ -61,17 +67,19 @@ export async function searchCatalog(kind: CatalogKind, query: string): Promise<C
 		list = parseOpenLibrary(await getJson(url));
 	} else if (kind === "game") {
 		list = await settle([
-			getJson(`https://store.steampowered.com/api/storesearch/?term=${q(term)}&cc=FR&l=english`).then(parseSteamSearch),
-			wikiSearch(`${term} video game`),
+			...(allowed("steam") ? [getJson(`https://store.steampowered.com/api/storesearch/?term=${q(term)}&cc=${q(region)}&l=${q(language)}`).then(parseSteamSearch)] : []),
+			...(allowed("wikipedia") ? [wikiSearch(`${term} video game`)] : []),
 		]);
 	} else if (kind === "series") {
+		if (!allowed("tvmaze")) return [];
 		list = parseTvmazeSearch(await getJson(`https://api.tvmaze.com/search/shows?q=${q(term)}`));
 	} else if (kind === "anime") {
+		if (!allowed("kitsu")) return [];
 		list = parseKitsu(await getJson(`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${q(term)}&page%5Blimit%5D=12`, { Accept: "application/vnd.api+json" }));
 	} else {
 		list = await settle([
-			wikiSearch(`${term} film`),
-			getJson(`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${q(term)}&filter%5Bsubtype%5D=movie&page%5Blimit%5D=5`, { Accept: "application/vnd.api+json" }).then(parseKitsu),
+			...(allowed("wikipedia") ? [wikiSearch(`${term} film`)] : []),
+			...(allowed("kitsu") ? [getJson(`https://kitsu.io/api/edge/anime?filter%5Btext%5D=${q(term)}&filter%5Bsubtype%5D=movie&page%5Blimit%5D=5`, { Accept: "application/vnd.api+json" }).then(parseKitsu)] : []),
 		]);
 	}
 	return rankCandidates(term, list).slice(0, 18);
@@ -92,10 +100,10 @@ export async function wikipediaBoxArt(article: string): Promise<string | null> {
 }
 
 /** Steam portrait art: the standard path, or the exact file from the store's asset list. */
-async function steamCover(appId: string): Promise<string | null> {
+async function steamCover(appId: string, region: string, language: string): Promise<string | null> {
 	const plain = steamPortrait(appId);
 	if (await checkImage(plain)) return plain;
-	const input = JSON.stringify({ ids: [{ appid: Number(appId) }], context: { language: "english", country_code: "FR" }, data_request: { include_assets: true } });
+	const input = JSON.stringify({ ids: [{ appid: Number(appId) }], context: { language, country_code: region }, data_request: { include_assets: true } });
 	const d = (await getJson(`https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json=${q(input)}`)) as { response?: { store_items?: Array<{ assets?: { asset_url_format?: string; library_capsule_2x?: string } }> } };
 	const a = d.response?.store_items?.[0]?.assets;
 	if (!a?.asset_url_format || !a.library_capsule_2x) return null;
@@ -107,11 +115,11 @@ async function steamCover(appId: string): Promise<string | null> {
  * Fill in what search results don't carry: verified cover (Steam portrait,
  * Wikipedia box art), aired episode count (TVmaze).
  */
-export async function enrichCandidate(c: Candidate): Promise<Candidate> {
+export async function enrichCandidate(c: Candidate, options: Partial<CatalogOptions> = {}): Promise<Candidate> {
 	const out = { ...c, covers: [...c.covers] };
 	try {
 		if (c.source === "steam") {
-			const cover = await steamCover(c.id);
+			const cover = await steamCover(c.id, options.region ?? DEFAULT_REGION, options.language ?? DEFAULT_LANGUAGE);
 			out.covers = cover ? [cover] : [];
 		} else if (c.source === "wikipedia") {
 			const cover = await wikipediaBoxArt(c.id);

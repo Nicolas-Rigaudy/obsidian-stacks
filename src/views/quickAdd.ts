@@ -1,7 +1,8 @@
 import { debounce, Modal, normalizePath, Notice, type App } from "obsidian";
+import { catalogOptionsFor } from "../catalog/sources.ts";
 import { checkImage, enrichCandidate, searchCatalog } from "../catalog/providers.ts";
 import { catalogErrorMessage, manualCandidate, type Candidate } from "../catalog/parse.ts";
-import { buildNewNote, catalogKind, uniqueFileName } from "../logic/newNote.ts";
+import { buildNewNote, catalogKind, startingStatus, uniqueFileName } from "../logic/newNote.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
 import type { StacksHost } from "./shared.ts";
 
@@ -28,7 +29,7 @@ export class QuickAddModal extends Modal {
 		this.libraryId = libraryId;
 		const config = this.config;
 		this.category = category && config.categoryValues.includes(category) ? category : config.categoryValues[0] ?? "book";
-		this.status = config.statuses.find((s) => s.bucket === "other" && /wish/i.test(s.value))?.value ?? config.statuses.find((s) => s.bucket === "backlog")?.value ?? config.statuses[0]?.value ?? "";
+		this.status = startingStatus(config);
 		this.platform = config.appearance === "games" ? config.categoryFilters[0]?.value ?? "PC" : "";
 	}
 
@@ -125,7 +126,7 @@ export class QuickAddModal extends Modal {
 		const mine = ++this.seq;
 		this.hint("Searching…");
 		try {
-			const list = await searchCatalog(catalogKind(this.category), q);
+			const list = await searchCatalog(catalogKind(this.category), q, this.catalogOptions());
 			if (mine !== this.seq) return; // a newer search is running
 			if (list.length === 0) this.hint("Nothing found. Try another spelling, the original title, or an ISBN, or create it as typed below.");
 			else this.renderResults(list);
@@ -169,6 +170,10 @@ export class QuickAddModal extends Modal {
 		card.addEventListener("click", () => void this.pick(manualCandidate(title), card));
 	}
 
+	private catalogOptions() {
+		return catalogOptionsFor(catalogKind(this.category), this.config.disabledCatalogs, this.host.settings.catalog);
+	}
+
 	/** The library's template file, or null (none set, or not found: the built-in body is used). */
 	private async readTemplate(path: string): Promise<string | null> {
 		const p = path.trim();
@@ -186,7 +191,7 @@ export class QuickAddModal extends Modal {
 		this.busy = true;
 		card.addClass("is-busy");
 		try {
-			const full = await enrichCandidate(c);
+			const full = await enrichCandidate(c, this.catalogOptions());
 			let cover: string | null = null;
 			for (const url of full.covers) if (await checkImage(url)) { cover = url; break; }
 			const config = this.config;

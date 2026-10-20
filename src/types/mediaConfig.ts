@@ -95,6 +95,10 @@ export interface MediaTypeConfig {
 	wishlistStatus: string;
 	/** Vault path of a note template for new notes (`{{title}}` placeholders). Empty = the built-in plain body. */
 	templatePath: string;
+	/** Catalogue sources this library never queries (ids from catalog/sources.ts). Empty = all that fit. */
+	disabledCatalogs: string[];
+	/** Status given to a new note from quick add. Empty = the wishlist or first backlog status. */
+	defaultStatus: string;
 	/** Quick add: per category (book, bd, game, movie...). */
 	newNotes: Record<string, NewNoteDefaults>;
 }

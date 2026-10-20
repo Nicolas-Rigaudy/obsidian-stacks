@@ -54,6 +54,18 @@ export function splitTemplate(text: string): { fields: Array<{ key: string; line
 	return { fields, body: text.slice(m[0].length) };
 }
 
+/** The status a quick-add note starts with: the library's choice, else a wishlist, else the first backlog status. */
+export function startingStatus(config: MediaTypeConfig): string {
+	const { statuses, defaultStatus } = config;
+	if (defaultStatus !== "" && statuses.some((s) => s.value === defaultStatus)) return defaultStatus;
+	return (
+		statuses.find((s) => s.bucket === "other" && /wish/i.test(s.value))?.value ??
+		statuses.find((s) => s.bucket === "backlog")?.value ??
+		statuses[0]?.value ??
+		""
+	);
+}
+
 const HEADING_ICON: Record<string, string> = { book: "📖", bd: "📗", game: "🎮", movie: "🎬", series: "📺", anime: "🍥" };
 
 const yaml = (v: unknown): string => {
