@@ -1,6 +1,8 @@
 import { type App, debounce, type Plugin, PluginSettingTab, Setting } from "obsidian";
 import { STATUS_BUCKETS, type MediaTypeConfig, type StatusBucket } from "../types/mediaConfig.ts";
 import { FolderSuggest } from "./folderSuggest.ts";
+import { libraryHints } from "./hints.ts";
+import type { MediaNote } from "../types/mediaNote.ts";
 import { addLibraryFromPreset, PRESETS, removeLibrary } from "./presets.ts";
 import {
 	DEFAULT_LOG_SECTION,
@@ -13,6 +15,7 @@ import {
 export interface SettingsHost extends Plugin {
 	settings: StacksSettings;
 	saveSettings(): Promise<void>;
+	index: { get(id: string): readonly MediaNote[] };
 }
 
 const BUCKET_LABELS: Record<StatusBucket, string> = {
@@ -126,6 +129,7 @@ export class StacksSettingTab extends PluginSettingTab {
 				});
 			});
 
+		this.renderHints(el, id, config);
 		this.text(el, "Category field", "", config.categoryField, (v) => (config.categoryField = v));
 		new Setting(el)
 			.setName("Category values")
@@ -166,6 +170,15 @@ export class StacksSettingTab extends PluginSettingTab {
 					await this.saveAndRedraw();
 				}),
 			);
+	}
+
+	/** What this library finds right now, in words (empty folder, missing fields). */
+	private renderHints(el: HTMLElement, id: string, config: MediaTypeConfig): void {
+		const folderExists = config.folder === "" || this.app.vault.getFolderByPath(config.folder.replace(/^\/+|\/+$/g, "")) !== null;
+		const hints = libraryHints(config, this.host.index.get(id), folderExists);
+		if (hints.length === 0) return;
+		const box = el.createDiv({ cls: "stacks-settings-hints" });
+		for (const h of hints) box.createEl("p", { cls: "setting-item-description mod-warning", text: h });
 	}
 
 	private renderNewNoteFolders(el: HTMLElement, config: MediaTypeConfig): void {
