@@ -3,8 +3,8 @@
 	"name": "Stacks",
 	"version": "0.1.0",
 	"minAppVersion": "1.13.0",
-	"description": "Config-driven gallery + kanban board engine for media libraries (books, comics, games, movies).",
+	"description": "Turn a folder of notes into a shelf and a board for your books, games, films and series.",
 	"author": "Nicolas Rigaudy",
-	"isDesktopOnly": false,
+	"isDesktopOnly": true,
 	"authorUrl": "https://github.com/Nicolas-Rigaudy"
 }
