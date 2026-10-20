@@ -1,6 +1,7 @@
 import { type App, debounce, type Plugin, PluginSettingTab, Setting } from "obsidian";
 import { STATUS_BUCKETS, type MediaTypeConfig, type StatusBucket } from "../types/mediaConfig.ts";
 import { FolderSuggest } from "./folderSuggest.ts";
+import { TEMPLATE_PLACEHOLDERS } from "../logic/newNote.ts";
 import { libraryHints } from "./hints.ts";
 import type { MediaNote } from "../types/mediaNote.ts";
 import { addLibraryFromPreset, PRESETS, removeLibrary } from "./presets.ts";
@@ -155,6 +156,7 @@ export class StacksSettingTab extends PluginSettingTab {
 		this.text(el, "Wishlist status", "The status meaning “don't own it yet”: series follow-ups in Buy next come from it. Empty = none.", config.wishlistStatus, (v) => (config.wishlistStatus = v));
 
 		this.renderNewNoteFolders(el, config);
+		this.text(el, "Note template", `Optional vault path of a template for new notes, e.g. Templates/Book. Placeholders: ${TEMPLATE_PLACEHOLDERS.map((p) => `{{${p}}}`).join(" ")}. Empty = a plain note with the cover shown.`, config.templatePath, (v) => (config.templatePath = v));
 		this.renderStatuses(el, config);
 		this.renderProgress(el, config);
 		this.renderSeries(el, config);

@@ -113,7 +113,8 @@ export function blankMediaTypeConfig(label: string): MediaTypeConfig {
 		starField: "buy_next",
 		wishlistStatus: "",
 		logSection: null,
-		newNotes: {},
+		templatePath: "",
+	newNotes: {},
 	};
 }
 

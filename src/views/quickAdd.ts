@@ -1,4 +1,4 @@
-import { debounce, Modal, type App } from "obsidian";
+import { debounce, Modal, normalizePath, Notice, type App } from "obsidian";
 import { checkImage, enrichCandidate, searchCatalog } from "../catalog/providers.ts";
 import { catalogErrorMessage, manualCandidate, type Candidate } from "../catalog/parse.ts";
 import { buildNewNote, catalogKind, uniqueFileName } from "../logic/newNote.ts";
@@ -169,6 +169,18 @@ export class QuickAddModal extends Modal {
 		card.addEventListener("click", () => void this.pick(manualCandidate(title), card));
 	}
 
+	/** The library's template file, or null (none set, or not found: the built-in body is used). */
+	private async readTemplate(path: string): Promise<string | null> {
+		const p = path.trim();
+		if (p === "") return null;
+		const file = this.app.vault.getFileByPath(normalizePath(p.endsWith(".md") ? p : `${p}.md`));
+		if (!file) {
+			new Notice(`Stacks: template “${p}” not found, using the built-in note.`);
+			return null;
+		}
+		return this.app.vault.cachedRead(file);
+	}
+
 	private async pick(c: Candidate, card: HTMLElement): Promise<void> {
 		if (this.busy) return;
 		this.busy = true;
@@ -181,7 +193,8 @@ export class QuickAddModal extends Modal {
 			const folder = config.newNotes[this.category]?.folder ?? config.folder;
 			const taken = (name: string) => this.app.vault.getFileByPath(`${folder}/${name}.md`) !== null;
 			const fileName = uniqueFileName(full.title, full.year, taken);
-			const content = buildNewNote({ config, category: this.category, candidate: full, status: this.status, platform: this.platform || null, cover, series: this.series });
+			const template = await this.readTemplate(config.templatePath);
+			const content = buildNewNote({ config, category: this.category, candidate: full, status: this.status, platform: this.platform || null, cover, series: this.series, template });
 			const file = await this.host.actions.createNote(folder, fileName, content);
 			if (file) this.close();
 		} finally {

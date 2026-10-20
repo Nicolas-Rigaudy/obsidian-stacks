@@ -26,6 +26,48 @@ describe("catalogKind", () => {
 	});
 });
 
+describe("buildNewNote body and template", () => {
+	const books = PRESETS.find((p) => p.id === "books")!.build();
+	const make = (over: Record<string, unknown> = {}) =>
+		buildNewNote({ config: books, category: "book", candidate: cand(), status: "backlog", cover: "https://c/1.jpg", today: "2026-10-20", ...over });
+
+	test("the default body is plain Markdown: a cover embed, no dataviewjs, no code block", () => {
+		for (const text of [make(), buildNewNote({ config: BOOK_CONFIG, category: "book", candidate: cand(), status: "wishlist", cover: "https://c/1.jpg" })]) {
+			assert.doesNotMatch(text, /dataview/i);
+			assert.doesNotMatch(text, /```/);
+			assert.match(text, /\n!\[cover\|240\]\(https:\/\/c\/1\.jpg\)\n/);
+		}
+	});
+
+	test("no cover, no embed", () => {
+		assert.doesNotMatch(make({ cover: null }), /!\[/);
+	});
+
+	test("a template body is used and its placeholders filled", () => {
+		const text = make({ template: "## {{title}} by {{creator}}\n\n![]({{cover}})\nAdded {{date}}, {{year}}, {{ TOTAL }} pages. {{unknown}}\n" });
+		assert.match(text, /\n## The Final Empire by Brandon Sanderson\n/);
+		assert.match(text, /!\[\]\(https:\/\/c\/1\.jpg\)\nAdded 2026-10-20, 2006, 541 pages\. \{\{unknown\}\}\n$/);
+		assert.doesNotMatch(text, /# 📖/);
+		const fm = fmOf(text);
+		assert.equal(fm.category, "book");
+		assert.equal(fm.status, "backlog");
+	});
+
+	test("template frontmatter adds fields Stacks doesn't set, never overrides its own", () => {
+		const text = make({ template: "---\nstatus: wrong\naliases: [\"{{title}}\"]\ntopic:\n  - book\n  - read-later\n---\nBody\n" });
+		const head = text.split("---")[1];
+		assert.equal((head.match(/^status:/gm) ?? []).length, 1);
+		assert.match(head, /^status: backlog$/m);
+		assert.match(head, /^aliases: \["The Final Empire"\]$/m);
+		assert.match(head, /^topic:\n  - book\n  - read-later$/m);
+		assert.match(text, /---\n\nBody\n$/);
+	});
+
+	test("an empty template falls back to the built-in body", () => {
+		assert.match(make({ template: "" }), /# 📖 The Final Empire/);
+	});
+});
+
 describe("buildNewNote", () => {
 	test("a preset library's note assumes no vault convention (no type, area or shelf link)", () => {
 		const config = PRESETS.find((p) => p.id === "books")!.build();

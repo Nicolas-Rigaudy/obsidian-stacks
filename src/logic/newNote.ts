@@ -3,6 +3,7 @@
 
 import type { Candidate } from "../catalog/parse.ts";
 import type { MediaTypeConfig } from "../types/mediaConfig.ts";
+import { todayISO } from "./values.ts";
 
 /** Which catalogue fits a category. */
 export type CatalogKind = "book" | "game" | "series" | "anime" | "film";
@@ -26,6 +27,31 @@ export interface NewNoteInput {
 	cover: string | null;
 	/** Adding a volume from a series panel: its series and position. */
 	series?: { name: string; position: number } | null;
+	/** Text of the library's template file, when it has one and it could be read. */
+	template?: string | null;
+	/** Today as YYYY-MM-DD (the {{date}} placeholder). */
+	today?: string;
+}
+
+/** `{{name}}` placeholders a template may use. */
+export const TEMPLATE_PLACEHOLDERS = ["title", "creator", "category", "status", "cover", "year", "isbn", "link", "platform", "total", "date"] as const;
+
+/** Fill `{{name}}` (any case, spaces allowed); unknown names are left as typed. */
+export function fillTemplate(text: string, vars: Record<string, string>): string {
+	return text.replace(/\{\{\s*([A-Za-z]+)\s*\}\}/g, (whole, name: string) => vars[name.toLowerCase()] ?? whole);
+}
+
+/** A template's own frontmatter (raw lines, grouped by top-level key) and its body. */
+export function splitTemplate(text: string): { fields: Array<{ key: string; lines: string[] }>; body: string } {
+	const m = /^---\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(text);
+	if (!m) return { fields: [], body: text };
+	const fields: Array<{ key: string; lines: string[] }> = [];
+	for (const line of m[1].split(/\r?\n/)) {
+		const k = /^([A-Za-z0-9_-]+):/.exec(line);
+		if (k) fields.push({ key: k[1], lines: [line] });
+		else if (fields.length > 0) fields[fields.length - 1].lines.push(line);
+	}
+	return { fields, body: text.slice(m[0].length) };
 }
 
 const HEADING_ICON: Record<string, string> = { book: "📖", bd: "📗", game: "🎮", movie: "🎬", series: "📺", anime: "🍥" };
@@ -88,10 +114,33 @@ export function buildNewNote(input: NewNoteInput): string {
 
 	// Simple lowercase words are bare in the vault's notes (`type: log`, `status: backlog`); titles and the rest quoted.
 	const value = (k: string, v: unknown) => (k !== config.titleField && typeof v === "string" && /^[a-z][a-z0-9_-]*$/.test(v) ? v : yaml(v));
-	const lines = ["---", ...fm.map(([k, v]) => `${k}: ${value(k, v)}`), "---", ""];
-	lines.push(`# ${HEADING_ICON[category] ?? "📄"} ${c.title}`, "");
-	lines.push("```dataviewjs", `const c = dv.current().${config.coverField}; if (c) { const i = dv.container.createEl("img",{attr:{src:c}}); i.style.cssText="max-height:240px;border-radius:8px;margin:4px 0 14px"; }`, "```", "");
 	const creator = config.appearance === "games" ? input.platform : c.creators.join(", ");
+	const vars: Record<string, string> = {
+		title: c.title,
+		creator: creator ?? "",
+		category,
+		status,
+		cover: input.cover ?? "",
+		year: c.year === null ? "" : String(c.year),
+		isbn: c.isbn ?? "",
+		link: c.link ?? "",
+		platform: input.platform ?? "",
+		total: c.total === null ? "" : String(c.total),
+		date: input.today ?? todayISO(),
+	};
+
+	const tpl = input.template ? splitTemplate(input.template) : null;
+	const lines = ["---", ...fm.map(([k, v]) => `${k}: ${value(k, v)}`)];
+	// Fields only the template names (its own tags, aliases...) are kept after ours.
+	for (const f of tpl?.fields ?? []) if (!fm.some(([k]) => k === f.key)) lines.push(...f.lines.map((l) => fillTemplate(l, vars)));
+	lines.push("---", "");
+	if (tpl) {
+		lines.push(fillTemplate(tpl.body, vars).replace(/^\s*\n/, "").replace(/\s*$/, ""), "");
+		return lines.join("\n");
+	}
+
+	lines.push(`# ${HEADING_ICON[category] ?? "📄"} ${c.title}`, "");
+	if (input.cover) lines.push(`![cover|240](${input.cover})`, "");
 	if (creator && config.creatorLabel) lines.push(`**${config.creatorLabel}:** ${creator}`);
 	if (c.link) lines.push(`**Source:** ${c.link}`);
 	lines.push("");

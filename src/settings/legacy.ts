@@ -57,6 +57,7 @@ export const BOOK_CONFIG: MediaTypeConfig = {
 		finishedLine: "Finished [date:: {date}]",
 		progressLine: "(pages:: {value}) [date:: {date}]",
 	},
+	templatePath: "",
 	newNotes: {
 		book: { folder: "20 Personal/Hobbies/Reading/Books", extras: { type: "log", area: "personal", genre: [], tags: ["book"], shelf: "[[Reading]]" } },
 		bd: { folder: "20 Personal/Hobbies/Reading/BDs", extras: { type: "log", area: "personal", genre: [], tags: ["bd"], shelf: "[[Reading]]" } },
@@ -100,6 +101,7 @@ export const GAME_CONFIG: MediaTypeConfig = {
 	starField: "buy_next",
 	wishlistStatus: "",
 	logSection: null,
+	templatePath: "",
 	newNotes: {
 		game: { folder: "20 Personal/Hobbies/Video Games/Games", extras: { type: "log", area: "personal", hltb: null, played: null, tags: ["log", "game"], shelf: "[[Video Games]]" } },
 	},
@@ -146,6 +148,7 @@ export const WATCHING_CONFIG: MediaTypeConfig = {
 	starField: "buy_next",
 	wishlistStatus: "",
 	logSection: null,
+	templatePath: "",
 	newNotes: {
 		movie: { folder: "20 Personal/Hobbies/Media", extras: { type: "log", area: "personal", tags: ["log", "movie"], shelf: "[[Media]]" } },
 		series: { folder: "20 Personal/Hobbies/Media", extras: { type: "log", area: "personal", tags: ["log", "series"], shelf: "[[Media]]" } },

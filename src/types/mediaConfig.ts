@@ -93,6 +93,8 @@ export interface MediaTypeConfig {
 	starField: string;
 	/** The status meaning "don't own it yet" (buy-next candidates). Empty = none. */
 	wishlistStatus: string;
+	/** Vault path of a note template for new notes (`{{title}}` placeholders). Empty = the built-in plain body. */
+	templatePath: string;
 	/** Quick add: per category (book, bd, game, movie...). */
 	newNotes: Record<string, NewNoteDefaults>;
 }
