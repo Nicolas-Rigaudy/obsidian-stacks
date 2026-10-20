@@ -1,14 +1,14 @@
 ## item_001_neutral_defaults_and_library_presets - Neutral defaults and library presets
 > From version: 0.1.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-10-16 00:53:06
+> Indicators reviewed: 2026-10-20 18:06:32
 
 # AI Context
 - Summary: Replace the owner-specific default settings with neutral defaults and selectable library presets so any vault can be configured from the settings tab.
@@ -58,3 +58,6 @@
 
 # Notes
 - Roadmap milestone: 0.3 - Libraries via config (`road_001_stacks_to_1_0`).
+
+# Tasks
+- `task_002_neutral_defaults_and_library_presets`
