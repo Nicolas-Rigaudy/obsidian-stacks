@@ -1,16 +1,11 @@
 // Groups rapid changes to the same key into one burst that settles after a
 // quiet period: ten quick +10 clicks on a note give one log line and one Undo
-// back to where the first click started. Pure (timers are injectable).
+// back to where the first click started. Pure: the caller supplies the timers.
 
 export interface Timers {
 	set(fn: () => void, ms: number): unknown;
 	clear(handle: unknown): void;
 }
-
-const realTimers: Timers = {
-	set: (fn, ms) => setTimeout(fn, ms),
-	clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
-};
 
 interface Open<F, L> {
 	first: F;
@@ -24,7 +19,7 @@ export class Bursts<F, L> {
 	private readonly onSettle: (key: string, first: F, last: L) => void;
 	private readonly timers: Timers;
 
-	constructor(quietMs: number, onSettle: (key: string, first: F, last: L) => void, timers: Timers = realTimers) {
+	constructor(quietMs: number, onSettle: (key: string, first: F, last: L) => void, timers: Timers) {
 		this.quietMs = quietMs;
 		this.onSettle = onSettle;
 		this.timers = timers;

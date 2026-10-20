@@ -138,7 +138,7 @@ export function parseKitsu(json: unknown): Candidate[] {
 		const slug = str(a.slug);
 		return [{
 			source: "kitsu" as const,
-			id: String(d.id ?? title),
+			id: typeof d.id === "string" || typeof d.id === "number" ? String(d.id) : title,
 			title,
 			creators: [],
 			year: yearOf(a.startDate),

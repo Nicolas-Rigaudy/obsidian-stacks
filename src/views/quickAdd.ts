@@ -60,7 +60,7 @@ export class QuickAddModal extends Modal {
 		if (this.config.categoryValues.length > 1) {
 			this.segmented(controls, "Kind", this.config.categoryValues.map((v) => ({ value: v, label: CATEGORY_LABELS[v] ?? v })), () => this.category, (v) => {
 				this.category = v;
-				this.search();
+				void this.search();
 			});
 		}
 		if (this.config.appearance === "games") {
@@ -82,7 +82,7 @@ export class QuickAddModal extends Modal {
 			run();
 		});
 		input.addEventListener("keydown", (evt) => {
-			if (evt.key === "Enter") this.search();
+			if (evt.key === "Enter") void this.search();
 		});
 		this.results = contentEl.createDiv({ cls: "stacks-modal-results" });
 		this.hint("Type a title, an author or an ISBN.");

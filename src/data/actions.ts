@@ -41,7 +41,10 @@ const BURST_QUIET_MS = 1200;
 export class LibraryActions {
 	private readonly app: App;
 	private readonly queue = new SerialQueue();
-	private readonly bursts = new Bursts<BurstStart, number>(BURST_QUIET_MS, (path, start, value) => void this.settleProgress(path, start, value));
+	private readonly bursts = new Bursts<BurstStart, number>(BURST_QUIET_MS, (path, start, value) => void this.settleProgress(path, start, value), {
+		set: (fn, ms) => window.setTimeout(fn, ms),
+		clear: (handle) => window.clearTimeout(handle as number),
+	});
 
 	constructor(app: App) {
 		this.app = app;

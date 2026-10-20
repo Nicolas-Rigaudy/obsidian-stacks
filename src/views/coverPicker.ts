@@ -138,7 +138,7 @@ export class CoverPickerModal extends Modal {
 			return;
 		}
 		if (/covers\.openlibrary\.org\/b\/isbn\//i.test(url)) {
-			new Notice("Stacks: Open Library limits covers requested by ISBN; pick a cover shown here instead.");
+			new Notice("Stacks: the catalogue limits covers requested by ISBN. Pick a cover shown here instead.");
 			return;
 		}
 		if (!(await checkImage(url))) {

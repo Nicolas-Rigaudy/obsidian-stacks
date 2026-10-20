@@ -199,8 +199,7 @@ export class ShelfRenderer extends LibraryRenderer {
 		}
 		if (hidden > 0) {
 			const more = el.createDiv({ cls: "stacks-spine is-more", text: `+${hidden} more` });
-			more.style.setProperty("--stacks-hue", String(bindingHue(pile.series)));
-			more.style.setProperty("--stacks-wp", "96");
+			more.setCssProps({ "--stacks-hue": String(bindingHue(pile.series)), "--stacks-wp": "96" });
 		}
 
 		// A pile stands up on the shelf; the full list is in the right-click menu.

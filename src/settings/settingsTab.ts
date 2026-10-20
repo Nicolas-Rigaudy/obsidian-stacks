@@ -89,7 +89,7 @@ export class StacksSettingTab extends PluginSettingTab {
 	}
 
 	private renderCatalogChoices(el: HTMLElement, config: MediaTypeConfig): void {
-		el.createEl("h4", { text: "Catalogues" });
+		new Setting(el).setName("Catalogues").setHeading();
 		for (const source of CATALOG_SOURCES) {
 			new Setting(el).setName(source.label).setDesc(`Looks up ${source.covers}.`).addToggle((t) =>
 				t.setValue(!config.disabledCatalogs.includes(source.id)).onChange(async (on) => {
@@ -177,7 +177,7 @@ export class StacksSettingTab extends PluginSettingTab {
 			.setName("Folder")
 			.setDesc("Notes in this folder and its subfolders. Empty = whole vault.")
 			.addText((t) => {
-				t.setPlaceholder("Library/Books").setValue(config.folder).onChange((v) => {
+				t.setPlaceholder("Library/books").setValue(config.folder).onChange((v) => {
 					config.folder = v.trim();
 					this.saveSoon();
 				});
@@ -201,7 +201,7 @@ export class StacksSettingTab extends PluginSettingTab {
 
 		this.renderFilters(el, config);
 
-		el.createEl("h4", { text: "Fields" });
+		new Setting(el).setName("Fields").setHeading();
 		this.text(el, "Title", "Falls back to the file name.", config.titleField, (v) => (config.titleField = v));
 		this.text(el, "Creator", "Shown on cards after the series, e.g. author or platform. Empty = none.", config.creatorField, (v) => (config.creatorField = v));
 		this.text(el, "Creator label", "Column name in the list, e.g. Author, Platform.", config.creatorLabel, (v) => (config.creatorLabel = v));
@@ -224,7 +224,7 @@ export class StacksSettingTab extends PluginSettingTab {
 			.setName("Remove library")
 			.setDesc("Forgets this library's settings and view state. Your notes are not touched.")
 			.addButton((b) =>
-				b.setButtonText("Remove").setWarning().onClick(async () => {
+				b.setButtonText("Remove").setDestructive().onClick(async () => {
 					removeLibrary(this.host.settings, id);
 					this.open.delete(id);
 					await this.saveAndRedraw();
@@ -244,7 +244,7 @@ export class StacksSettingTab extends PluginSettingTab {
 	private renderNewNoteFolders(el: HTMLElement, config: MediaTypeConfig): void {
 		const cats = config.categoryValues.length > 0 ? config.categoryValues : Object.keys(config.newNotes);
 		if (cats.length === 0) return;
-		el.createEl("h4", { text: "Quick add" });
+		new Setting(el).setName("Quick add").setHeading();
 		for (const cat of cats) {
 			new Setting(el)
 				.setName(`Folder for new “${cat}” notes`)
@@ -262,7 +262,7 @@ export class StacksSettingTab extends PluginSettingTab {
 	}
 
 	private renderStatuses(el: HTMLElement, config: MediaTypeConfig): void {
-		el.createEl("h4", { text: "Statuses" });
+		new Setting(el).setName("Statuses").setHeading();
 		this.text(el, "Status field", "", config.statusField, (v) => (config.statusField = v));
 		el.createEl("p", {
 			cls: "setting-item-description",
@@ -272,19 +272,19 @@ export class StacksSettingTab extends PluginSettingTab {
 		config.statuses.forEach((status, i) => {
 			const row = new Setting(el).setClass("stacks-status-row");
 			row.addText((t) =>
-				t.setPlaceholder("value").setValue(status.value).onChange((v) => {
+				t.setPlaceholder("Value").setValue(status.value).onChange((v) => {
 					status.value = v.trim();
 					this.saveSoon();
 				}),
 			);
 			row.addText((t) =>
-				t.setPlaceholder("label").setValue(status.label).onChange((v) => {
+				t.setPlaceholder("Label").setValue(status.label).onChange((v) => {
 					status.label = v;
 					this.saveSoon();
 				}),
 			);
 			row.addText((t) =>
-				t.setPlaceholder("what it means (optional)").setValue(status.hint ?? "").onChange((v) => {
+				t.setPlaceholder("What it means (optional)").setValue(status.hint ?? "").onChange((v) => {
 					if (v.trim()) status.hint = v.trim();
 					else delete status.hint;
 					this.saveSoon();
@@ -340,13 +340,13 @@ export class StacksSettingTab extends PluginSettingTab {
 			new Setting(el)
 				.setClass("stacks-status-row")
 				.addText((t) =>
-					t.setPlaceholder("category value").setValue(f.value).onChange((v) => {
+					t.setPlaceholder("Category value").setValue(f.value).onChange((v) => {
 						f.value = v.trim();
 						this.saveSoon();
 					}),
 				)
 				.addText((t) =>
-					t.setPlaceholder("label").setValue(f.label).onChange((v) => {
+					t.setPlaceholder("Label").setValue(f.label).onChange((v) => {
 						f.label = v;
 						this.saveSoon();
 					}),
@@ -361,7 +361,7 @@ export class StacksSettingTab extends PluginSettingTab {
 	}
 
 	private renderProgress(el: HTMLElement, config: MediaTypeConfig): void {
-		el.createEl("h4", { text: "Progress" });
+		new Setting(el).setName("Progress").setHeading();
 		this.groupToggle(el, "Track progress", "Adds +N buttons and a progress bar.", config.progress !== null, (on) => {
 			config.progress = on ? structuredClone(DEFAULT_PROGRESS) : null;
 		});
@@ -391,7 +391,7 @@ export class StacksSettingTab extends PluginSettingTab {
 	}
 
 	private renderSeries(el: HTMLElement, config: MediaTypeConfig): void {
-		el.createEl("h4", { text: "Series" });
+		new Setting(el).setName("Series").setHeading();
 		this.groupToggle(el, "Series sequencing", "Hide later volumes from up next until earlier ones are done.", config.series !== null, (on) => {
 			config.series = on ? structuredClone(DEFAULT_SERIES) : null;
 		});
@@ -417,7 +417,7 @@ export class StacksSettingTab extends PluginSettingTab {
 	}
 
 	private renderLogSection(el: HTMLElement, config: MediaTypeConfig): void {
-		el.createEl("h4", { text: "Activity log" });
+		new Setting(el).setName("Activity log").setHeading();
 		this.groupToggle(el, "Write log lines", "Append dated lines to a section of the note on start, finish and progress.", config.logSection !== null, (on) => {
 			config.logSection = on ? structuredClone(DEFAULT_LOG_SECTION) : null;
 		});

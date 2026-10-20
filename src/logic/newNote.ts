@@ -68,11 +68,13 @@ export function startingStatus(config: MediaTypeConfig): string {
 
 const HEADING_ICON: Record<string, string> = { book: "📖", bd: "📗", game: "🎮", movie: "🎬", series: "📺", anime: "🍥" };
 
+const plain = (v: unknown): string => (typeof v === "string" ? v : typeof v === "number" || typeof v === "boolean" ? String(v) : JSON.stringify(v));
+
 const yaml = (v: unknown): string => {
 	if (v === null || v === undefined || v === "") return "";
-	if (Array.isArray(v)) return `[${v.map((x) => JSON.stringify(String(x))).join(", ")}]`;
+	if (Array.isArray(v)) return `[${v.map((x) => JSON.stringify(plain(x))).join(", ")}]`;
 	if (typeof v === "number" || typeof v === "boolean") return String(v);
-	return JSON.stringify(String(v));
+	return JSON.stringify(plain(v));
 };
 
 /** Unsafe file-name characters out, colons as " -" (matches the vault's existing names). */
