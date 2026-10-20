@@ -2,8 +2,12 @@
 set -euo pipefail
 
 # Copies the built plugin into the Obsidian vault's plugin folder.
-# Override the vault path with STACKS_VAULT if it ever moves.
-VAULT="${STACKS_VAULT:-/home/corvus/Documents/Obsidian Vault}"
+# Usage: STACKS_VAULT=/path/to/vault npm run deploy
+if [ -z "${STACKS_VAULT:-}" ]; then
+	echo "error: set STACKS_VAULT to the path of the vault to deploy into." >&2
+	exit 1
+fi
+VAULT="$STACKS_VAULT"
 PLUGIN_DIR="$VAULT/.obsidian/plugins/stacks"
 
 if [ ! -f main.js ]; then
