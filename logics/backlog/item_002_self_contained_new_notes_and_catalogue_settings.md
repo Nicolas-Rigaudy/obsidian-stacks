@@ -1,13 +1,14 @@
 ## item_002_self_contained_new_notes_and_catalogue_settings - Self-contained new notes and catalogue settings
 > From version: 0.1.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 90%
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-20 18:09:22
 
 # AI Context
 - Summary: Make notes created by quick add independent of other plugins, and expose the catalogue choices that are currently hardcoded.
@@ -55,3 +56,6 @@
 
 # Notes
 - Roadmap milestone: 0.3 - Libraries via config (`road_001_stacks_to_1_0`).
+
+# Tasks
+- `task_003_self_contained_new_notes_and_catalogue_settings`
