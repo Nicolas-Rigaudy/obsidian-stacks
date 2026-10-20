@@ -1,13 +1,14 @@
 ## item_005_public_readme_with_screenshots_install_and_configure - Public README with screenshots, install and configure
 > From version: 0.1.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 60%
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
+> Indicators reviewed: 2026-10-20 18:13:33
 
 # AI Context
 - Summary: Replace the developer README with a user-facing one: what Stacks is, screenshots, install, configure, network use, and a short contributing section.
@@ -56,3 +57,6 @@
 
 # Notes
 - Roadmap milestone: 1.0 - Community release (`road_001_stacks_to_1_0`).
+
+# Tasks
+- `task_005_public_readme_with_screenshots_install_and_configure`

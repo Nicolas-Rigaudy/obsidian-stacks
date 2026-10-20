@@ -1,14 +1,14 @@
 ## item_004_obsidian_plugin_guidelines_compliance - Obsidian plugin guidelines compliance
 > From version: 0.1.0
 > Schema version: 1.0
-> Status: Ready
+> Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 0%
+> Progress: 80%
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
-> Indicators reviewed: 2026-10-19 15:51:55
+> Indicators reviewed: 2026-10-20 18:13:33
 
 # AI Context
 - Summary: Bring code, manifest and repo in line with the Obsidian plugin guidelines and the directory's automated review.
@@ -57,3 +57,6 @@
 
 # Notes
 - Roadmap milestone: 1.0 - Community release (`road_001_stacks_to_1_0`).
+
+# Tasks
+- `task_004_obsidian_plugin_guidelines_compliance`
