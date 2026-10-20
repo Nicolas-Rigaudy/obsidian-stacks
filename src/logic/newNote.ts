@@ -59,8 +59,9 @@ export function buildNewNote(input: NewNoteInput): string {
 		fm.push([k, v]);
 	};
 
-	put("type", extras.type ?? "log");
-	put("area", extras.area ?? "personal");
+	// Only what the library's own extras name: nothing assumes a vault convention.
+	if ("type" in extras) put("type", extras.type);
+	if ("area" in extras) put("area", extras.area);
 	put(config.categoryField, category);
 	put(config.titleField, c.title);
 	if (config.creatorField) {
