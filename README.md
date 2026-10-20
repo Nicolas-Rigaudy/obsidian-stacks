@@ -4,7 +4,7 @@ Turn a folder of notes into a shelf and a board for your books, games, films and
 
 Stacks reads the frontmatter of your notes and shows them as a bookcase-style shelf, a kanban board, a sortable list and an "up next" suggestion list. Your notes stay plain Markdown files: Stacks changes a status or a page count by editing the note's properties, and it works without Dataview or any other plugin.
 
-Desktop only for now. Mobile support is planned for after 1.0.
+Desktop only for now (`isDesktopOnly`): the shelf and the board are built for mouse dragging and a wide toolbar, and have not been laid out for touch. Mobile support is planned for 1.1.
 
 ## What you get
 
