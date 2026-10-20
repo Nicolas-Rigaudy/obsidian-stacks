@@ -1,6 +1,8 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { BOOK_CONFIG, DEFAULT_SETTINGS, mergeSettings } from "../src/settings/settings.ts";
+import { BOOK_CONFIG } from "../src/settings/legacy.ts";
+import { DEFAULT_SETTINGS, mergePrefs, mergeSettings, needsMigration } from "../src/settings/settings.ts";
+import { addLibraryFromPreset, PRESETS, removeLibrary } from "../src/settings/presets.ts";
 
 describe("mergeSettings", () => {
 	test("no saved data gives the defaults", () => {
@@ -9,7 +11,7 @@ describe("mergeSettings", () => {
 	});
 
 	test("result is a copy: editing it doesn't touch the defaults", () => {
-		const s = mergeSettings(null);
+		const s = mergeSettings({ mediaTypes: {} });
 		s.mediaTypes.book.statuses.push({ value: "x", label: "X", bucket: "other" });
 		s.mediaTypes.book.progress!.quickIncrements.push(100);
 		assert.equal(BOOK_CONFIG.statuses.length, 4);
@@ -82,12 +84,12 @@ describe("mergeSettings", () => {
 	});
 
 	test("episodes for series and anime, not films", () => {
-		const p = mergeSettings(null).mediaTypes.watching.progress!;
+		const p = mergeSettings({ mediaTypes: {} }).mediaTypes.watching.progress!;
 		assert.deepEqual([p.currentField, p.totalField, p.categories], ["episodes_watched", "episodes_total", ["series", "anime"]]);
 	});
 
 	test("defaults ship Games and Watching with the agreed statuses", () => {
-		const s = mergeSettings(null);
+		const s = mergeSettings({ mediaTypes: {} });
 		const bucket = (id: string, v: string) => s.mediaTypes[id].statuses.find((x) => x.value === v)?.bucket;
 		assert.equal(bucket("game", "played"), "other"); // played but not finished: not done
 		assert.equal(bucket("game", "finished"), "done");
@@ -139,5 +141,77 @@ describe("mergeSettings", () => {
 		assert.equal(s.mediaTypes.comics.folder, "Reading/BDs");
 		assert.equal(s.mediaTypes.comics.statusField, "status");
 		assert.equal(s.mediaTypes.comics.progress, null);
+	});
+});
+
+describe("neutral defaults and presets", () => {
+	test("a fresh install has no library and no vault-specific path", () => {
+		for (const saved of [null, undefined, "garbage", {}, { version: 2 }]) {
+			const s = mergeSettings(saved);
+			assert.deepEqual(s.mediaTypes, {});
+		}
+		assert.doesNotMatch(JSON.stringify(DEFAULT_SETTINGS), /Personal|Hobbies/);
+	});
+
+	test("no preset carries a folder or a vault-specific value", () => {
+		for (const p of PRESETS) {
+			const c = p.build();
+			assert.equal(c.folder, "", p.id);
+			assert.doesNotMatch(JSON.stringify(c), /Personal|Hobbies|\[\[|"area"|dataview/i, p.id);
+			for (const n of Object.values(c.newNotes)) assert.equal(n.folder, "", p.id);
+		}
+	});
+
+	test("books, video games and films & series presets exist and each has a board column order", () => {
+		const ids = PRESETS.map((p) => p.id);
+		for (const id of ["books", "games", "watching"]) assert.ok(ids.includes(id), id);
+		for (const p of PRESETS) {
+			const c = p.build();
+			assert.ok(c.statuses.some((s) => s.bucket === "backlog"), p.id);
+			assert.ok(c.statuses.some((s) => s.bucket === "active"), p.id);
+			assert.ok(c.statuses.some((s) => s.bucket === "done"), p.id);
+			assert.ok(c.categoryValues.length > 0, p.id);
+		}
+	});
+
+	test("adding a library from a preset survives a save and reload unchanged", () => {
+		const s = mergeSettings(null);
+		const id = addLibraryFromPreset(s, "books")!;
+		s.mediaTypes[id].folder = "Library/Books";
+		const again = mergeSettings(JSON.parse(JSON.stringify(s)));
+		assert.deepEqual(again, s);
+	});
+
+	test("the same preset twice gets distinct ids; unknown preset adds nothing", () => {
+		const s = mergeSettings(null);
+		assert.equal(addLibraryFromPreset(s, "books"), "books");
+		assert.equal(addLibraryFromPreset(s, "books"), "books-2");
+		assert.equal(addLibraryFromPreset(s, "nope"), null);
+		assert.deepEqual(Object.keys(s.mediaTypes), ["books", "books-2"]);
+	});
+
+	test("removing a library drops its view state too", () => {
+		const s = mergeSettings(null);
+		const id = addLibraryFromPreset(s, "games")!;
+		s.prefs[id] = mergePrefs({ sort: "title" });
+		removeLibrary(s, id);
+		assert.deepEqual([s.mediaTypes, s.prefs], [{}, {}]);
+	});
+
+	test("data saved before versioning keeps the old libraries; versioned data does not get them back", () => {
+		assert.deepEqual(Object.keys(mergeSettings({ mediaTypes: {} }).mediaTypes), ["book", "game", "watching"]);
+		assert.equal(needsMigration({ mediaTypes: {}, prefs: {} }), true);
+		const kept = mergeSettings({ version: 2, mediaTypes: { game: { label: "Games" } } });
+		assert.deepEqual(Object.keys(kept.mediaTypes), ["game"]);
+		assert.equal(needsMigration(kept), false);
+		assert.equal(needsMigration(null), false);
+	});
+
+	test("a migrated setup, once saved, reloads identical without the legacy defaults", () => {
+		const old = mergeSettings({ mediaTypes: { book: { folder: "Mine" } }, prefs: { book: { sort: "title" } } });
+		const reloaded = mergeSettings(JSON.parse(JSON.stringify(old)));
+		assert.deepEqual(reloaded, old);
+		assert.equal(reloaded.mediaTypes.book.folder, "Mine");
+		assert.equal(reloaded.prefs.book.sort, "title");
 	});
 });

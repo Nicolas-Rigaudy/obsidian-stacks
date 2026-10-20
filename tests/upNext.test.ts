@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { bucketOf, isEligible, rankCandidates } from "../src/logic/upNext.ts";
-import { BOOK_CONFIG } from "../src/settings/settings.ts";
+import { BOOK_CONFIG } from "../src/settings/legacy.ts";
 import type { MediaTypeConfig } from "../src/types/mediaConfig.ts";
 import { note, titles } from "./helpers.ts";
 

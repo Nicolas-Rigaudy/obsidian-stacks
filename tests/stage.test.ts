@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { cartridgeKind, deviceKind, stageDevices } from "../src/logic/stage.ts";
-import { GAME_CONFIG } from "../src/settings/settings.ts";
+import { GAME_CONFIG } from "../src/settings/legacy.ts";
 import type { MediaNote } from "../src/types/mediaNote.ts";
 import { note } from "./helpers.ts";
 

@@ -2,7 +2,8 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { matchesSearch } from "../src/logic/search.ts";
 import { comparatorFor, shelfSections } from "../src/logic/shelf.ts";
-import { BOOK_CONFIG, GAME_CONFIG, mergePrefs, mergeSettings } from "../src/settings/settings.ts";
+import { BOOK_CONFIG, GAME_CONFIG } from "../src/settings/legacy.ts";
+import { mergePrefs, mergeSettings } from "../src/settings/settings.ts";
 import type { MediaNote } from "../src/types/mediaNote.ts";
 import { note, titles } from "./helpers.ts";
 

@@ -9,7 +9,7 @@ import { orderForShelf, shelfSections } from "../src/logic/shelf.ts";
 import { firstStatusOf } from "../src/logic/upNext.ts";
 import { slugify } from "../src/logic/values.ts";
 import { parseBlockParams } from "../src/logic/viewKinds.ts";
-import { BOOK_CONFIG } from "../src/settings/settings.ts";
+import { BOOK_CONFIG } from "../src/settings/legacy.ts";
 import type { MediaNote } from "../src/types/mediaNote.ts";
 import { note, titles } from "./helpers.ts";
 

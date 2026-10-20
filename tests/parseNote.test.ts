@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { isInFolder, parseNote } from "../src/logic/parseNote.ts";
-import { BOOK_CONFIG, GAME_CONFIG } from "../src/settings/settings.ts";
+import { BOOK_CONFIG, GAME_CONFIG } from "../src/settings/legacy.ts";
 
 const BOOKS = "20 Personal/Hobbies/Reading/Books";
 const path = (name: string) => `${BOOKS}/${name}.md`;

@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import type { Candidate } from "../src/catalog/parse.ts";
 import { buildNewNote, catalogKind, safeFileName, uniqueFileName } from "../src/logic/newNote.ts";
 import { removeLastLogLine, restoreFields, snapshotFields } from "../src/logic/undo.ts";
-import { BOOK_CONFIG, GAME_CONFIG, WATCHING_CONFIG } from "../src/settings/settings.ts";
+import { PRESETS } from "../src/settings/presets.ts";
+import { BOOK_CONFIG, GAME_CONFIG, WATCHING_CONFIG } from "../src/settings/legacy.ts";
 
 const cand = (over: Partial<Candidate> = {}): Candidate => ({
 	source: "openlibrary", id: "/works/X", title: "The Final Empire", creators: ["Brandon Sanderson"], year: 2006,
@@ -26,6 +27,16 @@ describe("catalogKind", () => {
 });
 
 describe("buildNewNote", () => {
+	test("a preset library's note assumes no vault convention (no type, area or shelf link)", () => {
+		const config = PRESETS.find((p) => p.id === "books")!.build();
+		const fm = fmOf(buildNewNote({ config, category: "book", candidate: cand(), status: "backlog", cover: null }));
+		assert.equal(fm.type, undefined);
+		assert.equal(fm.area, undefined);
+		assert.equal(fm.shelf, undefined);
+		assert.equal(fm.category, "book");
+		assert.equal(fm.status, "backlog");
+	});
+
 	test("a book in the vault's book format", () => {
 		const text = buildNewNote({ config: BOOK_CONFIG, category: "book", candidate: cand(), status: "wishlist", cover: "https://c/1.jpg" });
 		const fm = fmOf(text);

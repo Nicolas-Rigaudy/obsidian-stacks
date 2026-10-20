@@ -1,6 +1,7 @@
 import { type App, debounce, type Plugin, PluginSettingTab, Setting } from "obsidian";
 import { STATUS_BUCKETS, type MediaTypeConfig, type StatusBucket } from "../types/mediaConfig.ts";
 import { FolderSuggest } from "./folderSuggest.ts";
+import { addLibraryFromPreset, PRESETS, removeLibrary } from "./presets.ts";
 import {
 	DEFAULT_LOG_SECTION,
 	DEFAULT_PROGRESS,
@@ -26,7 +27,7 @@ const splitList = (s: string) => s.split(",").map((x) => x.trim()).filter((x) =>
 export class StacksSettingTab extends PluginSettingTab {
 	private readonly host: SettingsHost;
 	/** Library sections left open across re-renders. */
-	private readonly open = new Set<string>(["book"]);
+	private readonly open = new Set<string>();
 	/** Text edits save after typing pauses; structural edits save immediately. */
 	private readonly saveSoon = debounce(() => void this.host.saveSettings(), 500, true);
 
@@ -42,9 +43,31 @@ export class StacksSettingTab extends PluginSettingTab {
 			cls: "setting-item-description",
 			text: "Each library maps a folder of notes to gallery, board and up-next views. Field names refer to note frontmatter.",
 		});
-		for (const [id, config] of Object.entries(this.host.settings.mediaTypes)) {
-			this.renderLibrary(containerEl, id, config);
+		const libraries = Object.entries(this.host.settings.mediaTypes);
+		if (libraries.length === 0) {
+			containerEl.createEl("p", { text: "No library yet. Add one from a preset below, then choose the folder that holds its notes." });
 		}
+		for (const [id, config] of libraries) this.renderLibrary(containerEl, id, config);
+		this.renderAddLibrary(containerEl);
+	}
+
+	private renderAddLibrary(el: HTMLElement): void {
+		let choice = PRESETS[0].id;
+		new Setting(el)
+			.setName("Add a library")
+			.setDesc("Starts from a preset; folder, fields and statuses can all be changed afterwards.")
+			.addDropdown((d) => {
+				for (const p of PRESETS) d.addOption(p.id, `${p.label}: ${p.description}`);
+				d.setValue(choice).onChange((v) => (choice = v));
+			})
+			.addButton((b) =>
+				b.setButtonText("Add").setCta().onClick(async () => {
+					const id = addLibraryFromPreset(this.host.settings, choice);
+					if (!id) return;
+					this.open.add(id);
+					await this.saveAndRedraw();
+				}),
+			);
 	}
 
 	private async saveNow(): Promise<void> {
@@ -93,7 +116,7 @@ export class StacksSettingTab extends PluginSettingTab {
 			.setName("Folder")
 			.setDesc("Notes in this folder and its subfolders. Empty = whole vault.")
 			.addText((t) => {
-				t.setPlaceholder("20 Personal/Hobbies/Reading/Books").setValue(config.folder).onChange((v) => {
+				t.setPlaceholder("Library/Books").setValue(config.folder).onChange((v) => {
 					config.folder = v.trim();
 					this.saveSoon();
 				});
@@ -132,6 +155,17 @@ export class StacksSettingTab extends PluginSettingTab {
 		this.renderProgress(el, config);
 		this.renderSeries(el, config);
 		this.renderLogSection(el, config);
+
+		new Setting(el)
+			.setName("Remove library")
+			.setDesc("Forgets this library's settings and view state. Your notes are not touched.")
+			.addButton((b) =>
+				b.setButtonText("Remove").setWarning().onClick(async () => {
+					removeLibrary(this.host.settings, id);
+					this.open.delete(id);
+					await this.saveAndRedraw();
+				}),
+			);
 	}
 
 	private renderNewNoteFolders(el: HTMLElement, config: MediaTypeConfig): void {

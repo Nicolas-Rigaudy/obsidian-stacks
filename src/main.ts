@@ -3,7 +3,7 @@ import { registerCodeBlock } from "./codeBlock/registerCodeBlock.ts";
 import { LibraryActions } from "./data/actions.ts";
 import { LiveIndex } from "./data/liveIndex.ts";
 import { VIEW_KINDS, VIEW_LABELS, type ViewKind } from "./logic/viewKinds.ts";
-import { mergePrefs, mergeSettings, type LibraryPrefs, type StacksSettings } from "./settings/settings.ts";
+import { mergePrefs, mergeSettings, needsMigration, type LibraryPrefs, type StacksSettings } from "./settings/settings.ts";
 import { StacksSettingTab } from "./settings/settingsTab.ts";
 import { QuickAddModal } from "./views/quickAdd.ts";
 import { defaultLibraryId, type StacksHost } from "./views/shared.ts";
@@ -15,7 +15,10 @@ export default class StacksPlugin extends Plugin implements StacksHost {
 	actions!: LibraryActions;
 
 	async onload(): Promise<void> {
-		this.settings = mergeSettings(await this.loadData());
+		const saved: unknown = await this.loadData();
+		this.settings = mergeSettings(saved);
+		// Pre-0.3 data relied on built-in libraries: write them out in full once.
+		if (needsMigration(saved)) await this.saveData(this.settings);
 		this.index = new LiveIndex(this, () => this.settings);
 		this.index.start();
 		this.actions = new LibraryActions(this.app);

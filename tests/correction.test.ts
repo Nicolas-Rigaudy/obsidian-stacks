@@ -4,7 +4,7 @@ import type { App, TFile } from "obsidian";
 import { bumpProgress, setProgress } from "../src/data/frontmatterWriter.ts";
 import { Bursts, type Timers } from "../src/logic/bursts.ts";
 import { restoreFields, snapshotFields, type FieldSnapshot } from "../src/logic/undo.ts";
-import { BOOK_CONFIG } from "../src/settings/settings.ts";
+import { BOOK_CONFIG } from "../src/settings/legacy.ts";
 
 /** An App whose processFrontMatter edits one in-memory frontmatter object. */
 function fakeApp(fm: Record<string, unknown>): App {
