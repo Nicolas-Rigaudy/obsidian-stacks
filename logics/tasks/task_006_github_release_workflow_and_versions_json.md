@@ -2,9 +2,9 @@
 > From version: 0.1.0
 > Schema version: 1.0
 > Status: In progress
-> Understanding: 90%
-> Confidence: 85%
-> Progress: 85%
+> Understanding: 95%
+> Confidence: 90%
+> Progress: 95%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -40,6 +40,7 @@
 
 # Report
 - 76dcb76 `.github/workflows/ci.yml` (tests and build on push to master and every pull request, AC3; lint added in b75aa29) and `.github/workflows/release.yml` (tag `x.y.z`: consistency check, tests, build, draft release with the three assets, AC1). `.npmrc` sets an empty tag prefix so `npm version` tags `x.y.z`; `version-bump.mjs` keeps `manifest.json` and `versions.json` in step; `scripts/check-release.mjs` and its tests fail when tag, package, manifest and last `versions.json` entry differ (AC2).
+- 3b2688d `npm run release:dry-run` rehearses the workflow locally (consistency check, build, the three assets present and non-empty); `tests/release.test.ts` now also pins the workflow files (bare tag trigger, exactly three assets, check then test then build then release order, CI lint/test/build on pull requests). Verified locally 2026-10-21: dry run ok, 212 tests pass.
 - Left, for the owner: AC1 needs a real tag push to see the draft release (publishing is a release action, not done); check the first CI run on GitHub.
 
 # Links

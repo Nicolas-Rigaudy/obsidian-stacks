@@ -1,10 +1,10 @@
 ## item_004_obsidian_plugin_guidelines_compliance - Obsidian plugin guidelines compliance
 > From version: 0.1.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 80%
+> Progress: 100%
 > Complexity: Medium
 > Theme: General
 > Reminder: Update status/understanding/confidence/progress and linked request/task references when you edit this doc.
@@ -57,6 +57,7 @@
 
 # Notes
 - Roadmap milestone: 1.0 - Community release (`road_001_stacks_to_1_0`).
+- Task `task_004_obsidian_plugin_guidelines_compliance` was finished via `logics-manager flow finish task` on 2026-10-21.
 
 # Tasks
 - `task_004_obsidian_plugin_guidelines_compliance`
