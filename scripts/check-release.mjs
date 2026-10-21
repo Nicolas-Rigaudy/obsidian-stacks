@@ -3,6 +3,9 @@
 
 import { readFileSync } from "node:fs";
 
+/** The files a release carries; the workflow attaches exactly these. */
+export const RELEASE_ASSETS = ["main.js", "manifest.json", "styles.css"];
+
 /**
  * Problems with how the release files line up (empty list = consistent).
  * @param {{ tag?: string, pkg: any, manifest: any, versions: Record<string, string> }} files
