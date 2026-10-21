@@ -4,7 +4,7 @@ import { LibraryActions } from "./data/actions.ts";
 import { LiveIndex } from "./data/liveIndex.ts";
 import { VIEW_KINDS, VIEW_LABELS, type ViewKind } from "./logic/viewKinds.ts";
 import { mergePrefs, mergeSettings, needsMigration, type LibraryPrefs, type StacksSettings } from "./settings/settings.ts";
-import { StacksSettingTab } from "./settings/settingsTab.ts";
+import { StacksSettingTab } from "./settings/definitionsTab.ts";
 import { QuickAddModal } from "./views/quickAdd.ts";
 import { defaultLibraryId, type StacksHost } from "./views/shared.ts";
 import { StacksView, VIEW_ICONS, VIEW_TYPES } from "./views/StacksView.ts";
