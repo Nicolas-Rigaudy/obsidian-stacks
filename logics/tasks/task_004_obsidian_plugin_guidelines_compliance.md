@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: Corvus
-> Indicators reviewed: 2026-10-20 18:13:33
+> Indicators reviewed: 2026-10-21 20:00:52
 
 # AI Context
 - Summary: Bring Stacks in line with the Obsidian developer policies and plugin guidelines: ESLint with the official plugin, manifest wording, UI text, network disclosure.
