@@ -44,7 +44,7 @@
 - Guidelines checklist (AC2): [x] no default hotkeys (none registered); [x] command names without the plugin name; [x] no `innerHTML`/`outerHTML`; [x] no global `app` (it is passed in); [x] `requestUrl` only for network (no `fetch`/XHR); [x] listeners through `register*`; [x] no default `console` noise (two `console.error` in failure paths only); [x] styles in `styles.css`, dynamic values through `setCssProps`/`style.setProperty` of CSS variables; [x] settings headings via `setHeading` (b75aa29); [x] popout-safe timers in the plugin (`window.setTimeout`, b75aa29).
 - Network disclosure (AC3): the settings tab lists the five services and that lookups happen only while searching (`Catalogue lookups` section, 9234907); the README has a table of every host and what is sent (cfa01e6).
 - Open warnings, left on purpose: 7 `ui/sentence-case` on proper nouns (Steam, Wikipedia...) and examples (heuristic false positives); `prefer-setting-definitions` and `display()` deprecation: migrating the settings tab to the declarative `getSettingDefinitions` API (1.13) is a rewrite of the tab and is worth a separate item; `this.update()` follows from it.
-- Left: the owner may want the declarative settings API before submission; confirm the final network wording.
+- Left: declarative settings API done in task_007; confirm the final network wording.
 
 # Links
 - Request: `req_000_stacks_1_0_in_the_obsidian_community_plugin_directory`
