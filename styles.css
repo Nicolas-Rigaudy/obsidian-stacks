@@ -2590,19 +2590,6 @@ button.stacks-screen-tile img {
 
 /* ---------- settings tab ---------- */
 
-.stacks-settings-library {
-	margin-bottom: 1rem;
-	padding: 0.5rem 1rem;
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-m);
-}
-
-.stacks-settings-library > summary {
-	padding: 0.25rem 0;
-	font-weight: var(--font-semibold);
-	cursor: pointer;
-}
-
 .stacks-status-row .setting-item-control {
 	flex-wrap: wrap;
 	justify-content: flex-start;
