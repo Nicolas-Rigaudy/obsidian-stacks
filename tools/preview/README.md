@@ -8,18 +8,20 @@ Renders Stacks views with real library data in Electron, offscreen, to PNG. Chec
   - `qa.*`: quick add.
   - `cp.*`, `cp2.*`: cover picker.
   - `sp.*`: series panel.
-- Data: `books.json`, `games.json`, `media.json` (+ `*-demo.json`) are snapshots of the vault notes (`{ path, basename, fm }`). They're gitignored and go stale. In `books.json`, `Ekhö monde miroir 03` was removed on purpose so a "missing" ghost shows.
+- Data: `harness.ts` gives the pages their settings and notes. By default they show the sample vault: `node sample.mts` writes `sample.json` from `sample-vault/`, and the libraries are the Books, Video games and Films & series presets. With `data=vault` in the query they use the pre-0.3 libraries and `books.json`, `games.json`, `media.json` (+ `*-demo.json`), snapshots of a private vault (`{ path, basename, fm }`). All snapshots are gitignored.
 
 ```sh
 cd tools/preview
+node sample.mts
 cp ../../styles.css .
 npx esbuild preview.ts --bundle --outfile=preview.js --alias:obsidian=./obsidian-shim.ts --format=iife
-SHOTS='[{"query":{"lib":"book","view":"shelf","theme":"dark","filter":"bd","open":"backlog|Ekhö monde miroir","scroll":"760"},"w":1440,"h":700,"out":"shot.png","wait":2500}]' \
+SHOTS='[{"query":{"lib":"book","view":"shelf","theme":"dark"},"w":1280,"h":720,"out":"shot.png","wait":800}]' \
   electron43 shot.js --no-sandbox
 ```
 
 Query keys:
-- `lib`: book | game | media.
+- `lib`: book | game | watching.
+- `data`: vault for the private snapshots; the sample vault otherwise.
 - `view`: shelf | board | list | upnext.
 - `theme`: light | dark.
 - `filter`: a category chip.

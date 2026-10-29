@@ -1,11 +1,11 @@
 import "./obsidian-shim.ts";
 import { QuickAddModal } from "../../src/views/quickAdd.ts";
-import { DEFAULT_SETTINGS } from "../../src/settings/settings.ts";
+import { settings } from "./harness.ts";
 const q = new URLSearchParams(location.search);
 document.body.classList.add("theme-dark");
 const created: string[] = [];
 const host: any = {
-	settings: DEFAULT_SETTINGS,
+	settings,
 	app: { vault: { getFileByPath: () => null } },
 	actions: { createNote: async (folder: string, name: string, content: string) => { created.push(folder + "/" + name + ".md\n" + content); return { basename: name }; } },
 };

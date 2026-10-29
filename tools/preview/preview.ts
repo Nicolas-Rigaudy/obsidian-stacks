@@ -1,10 +1,5 @@
-import books from "./books.json";
-import games from "./games.json";
-import gamesDemo from "./games-demo.json";
-import mediaDemo from "./media-demo.json";
-import media from "./media.json";
 import { parseNote } from "../../src/logic/parseNote.ts";
-import { DEFAULT_SETTINGS } from "../../src/settings/settings.ts";
+import { settings, snapshots } from "./harness.ts";
 import { VIEW_KINDS, VIEW_LABELS, type ViewKind } from "../../src/logic/viewKinds.ts";
 import { createRenderer } from "../../src/views/renderers/index.ts";
 import { setIcon } from "obsidian";
@@ -15,15 +10,13 @@ const q = new URLSearchParams(location.search);
 const kind = (q.get("view") ?? "shelf") as ViewKind;
 document.body.classList.add("theme-" + (q.get("theme") ?? "dark"));
 const lib = q.get("lib") ?? "book";
-const config = DEFAULT_SETTINGS.mediaTypes[lib];
-const demo = q.get("demo") === "1";
-const data = ({ book: books, game: demo ? gamesDemo : games, watching: demo ? mediaDemo : media } as any)[lib];
-const notes = (data as any[]).map((d) => parseNote(d.path, d.basename, d.fm, config)).filter((n): n is MediaNote => n !== null);
+const config = settings.mediaTypes[lib];
+const notes = snapshots(lib, q.get("demo") === "1").map((d) => parseNote(d.path, d.basename, d.fm, config)).filter((n): n is MediaNote => n !== null);
 const noop = async () => null;
 const host: any = {
 	app: { metadataCache: { getFirstLinkpathDest: () => null }, vault: { getResourcePath: () => "" }, workspace: { openLinkText: noop } },
-	settings: DEFAULT_SETTINGS,
-	index: { get: () => notes, onChanged: () => ({}) },
+	settings,
+	index: { ready: true, get: () => notes, onChanged: () => ({}) },
 	actions: { changeStatus: noop, start: noop, finish: noop, bump: noop, correct: noop },
 	openView: noop,
 	prefs: () => ({ sort: q.get("sort") ?? "library", density: q.get("density") ?? "medium", openPiles: (q.get("open") ?? "").split(",").filter(Boolean).map((x) => x.replace("|", "\u0000")), openCases: [] }),
@@ -36,7 +29,7 @@ view.dataset.appearance = config.appearance;
 const bar = view.createDiv({ cls: "stacks-toolbar" });
 bar.createDiv({ cls: "stacks-toolbar-title", text: config.label });
 const libs = bar.createDiv({ cls: "stacks-seg" });
-for (const [id, c] of Object.entries(DEFAULT_SETTINGS.mediaTypes)) {
+for (const [id, c] of Object.entries(settings.mediaTypes)) {
 	const b = libs.createEl("button", { cls: "stacks-seg-btn" + (id === lib ? " is-active" : "") });
 	setIcon(b.createSpan({ cls: "stacks-seg-icon" }), "x"); b.createSpan({ text: c.label });
 }
