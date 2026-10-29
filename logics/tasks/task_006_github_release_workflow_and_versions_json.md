@@ -1,10 +1,10 @@
 ## task_006_github_release_workflow_and_versions_json - GitHub release workflow and versions.json
 > From version: 0.1.0
 > Schema version: 1.0
-> Status: In progress
+> Status: Done
 > Understanding: 95%
 > Confidence: 90%
-> Progress: 95%
+> Progress: 100%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -18,10 +18,10 @@
 - Skip when: The work is about features or the README.
 
 # Definition of Done (DoD)
-- [ ] The backlog scope is implemented.
-- [ ] Acceptance criteria are covered.
-- [ ] Validation passes.
-- [ ] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
+- [x] The backlog scope is implemented.
+- [x] Acceptance criteria are covered.
+- [x] Validation passes.
+- [x] Meaningful waves followed ADR 009: affected docs updated and the repo left commit-ready without automatic commits.
 
 # Backlog
 - `item_006_github_release_workflow_and_versions_json`
@@ -36,12 +36,18 @@
 - [ ] Run `python3 -m logics_manager flow finish task task_006_github_release_workflow_and_versions_json.md` after implementation.
 
 # Validation
+- 2026-10-29: Release run on tag `0.1.0` and CI on master both succeed on GitHub (`gh run view`, `gh release view 0.1.0`).
 - 2026-10-20: `node scripts/check-release.mjs` passes on the repo and refuses a `v` prefix; `tests/release.test.ts` (5 tests); `npm test` and `npm run build` pass. The workflows have not run on GitHub yet.
+- Finish workflow executed on 2026-10-29.
+- Linked backlog/request close verification passed.
 
 # Report
 - 76dcb76 `.github/workflows/ci.yml` (tests and build on push to master and every pull request, AC3; lint added in b75aa29) and `.github/workflows/release.yml` (tag `x.y.z`: consistency check, tests, build, draft release with the three assets, AC1). `.npmrc` sets an empty tag prefix so `npm version` tags `x.y.z`; `version-bump.mjs` keeps `manifest.json` and `versions.json` in step; `scripts/check-release.mjs` and its tests fail when tag, package, manifest and last `versions.json` entry differ (AC2).
 - 3b2688d `npm run release:dry-run` rehearses the workflow locally (consistency check, build, the three assets present and non-empty); `tests/release.test.ts` now also pins the workflow files (bare tag trigger, exactly three assets, check then test then build then release order, CI lint/test/build on pull requests). Verified locally 2026-10-21: dry run ok, 212 tests pass.
-- Left, for the owner: AC1 needs a real tag push to see the draft release (publishing is a release action, not done); check the first CI run on GitHub.
+- 2026-10-29 check on GitHub: tag `0.1.0` (pushed 2026-10-22) ran the Release workflow (run 39751599717, success) and left a draft release with exactly main.js, manifest.json and styles.css (AC1). CI passes on master at 46e93bf (run 40919857739) (AC3). The draft release is not published.
+- Finished on 2026-10-29.
+- Linked backlog item(s): `item_006_github_release_workflow_and_versions_json`
+- Related request(s): `req_000_stacks_1_0_in_the_obsidian_community_plugin_directory`
 
 # Links
 - Request: `req_000_stacks_1_0_in_the_obsidian_community_plugin_directory`
