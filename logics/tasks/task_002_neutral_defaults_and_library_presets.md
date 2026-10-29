@@ -9,7 +9,7 @@
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
 > Owner: Corvus
-> Indicators reviewed: 2026-10-20 18:06:32
+> Indicators reviewed: 2026-10-29 18:16:37
 
 # AI Context
 - Summary: Ship neutral defaults and selectable library presets so any vault is configured from the settings tab, with pre-0.3 saved settings migrated unchanged.
@@ -38,6 +38,7 @@
 
 # Validation
 - 2026-10-20: `npm run build` and `npm test` pass (169 tests, 14 new in `tests/settings.test.ts`, `tests/hints.test.ts`, `tests/newNote-undo.test.ts`); no ESLint yet (item_004).
+- 2026-10-29: 91a466c `tests/liveIndex.test.ts` checks that a field remapped in settings reaches the index on the next rebuild without an edit to the note (AC3, index side); `npm test` (218) passes.
 - Manual check in Obsidian still needed for AC2 and AC3 (add Books from the preset in the settings tab, pick a folder, see shelf and board; rename a status and see views follow). No GUI in the implementing session.
 
 # Report

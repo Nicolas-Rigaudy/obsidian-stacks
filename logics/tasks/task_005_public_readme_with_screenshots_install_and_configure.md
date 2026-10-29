@@ -4,7 +4,7 @@
 > Status: In progress
 > Understanding: 90%
 > Confidence: 85%
-> Progress: 60%
+> Progress: 70%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -40,6 +40,7 @@
 
 # Report
 - cfa01e6 README rewritten (AC1): two-sentence description, views, install (directory and manual), first library from a preset, example frontmatter, `stacks` code block, new notes and templates, network table, develop and release steps. `scripts/deploy.sh` now requires `STACKS_VAULT` (no default). `sample-vault/` holds invented notes for books, games, films and series.
+- c30298b The preview harness (`tools/preview`) renders the sample vault with the Books, Video games and Films & series presets by default (`node sample.mts`, then the usual esbuild and electron steps); private snapshots need `data=vault`. It had stopped rendering since the neutral defaults (no library in `DEFAULT_SETTINGS`) and the loading state. Test renders of the shelf, board, list and series panel: fine; no screenshot committed.
 - Left, for the owner: AC3 screenshots (they must show the final look, so they wait for 0.4 and need a visual pass); AC2 hand check that a stranger can follow the README; `tools/preview` still reads snapshot files from a private vault (gitignored, never committed): a sample-vault based snapshot would let the screenshots be generated.
 
 # Links

@@ -3,8 +3,8 @@
 > Schema version: 1.0
 > Status: In progress
 > Understanding: 90%
-> Confidence: 85%
-> Progress: 90%
+> Confidence: 90%
+> Progress: 95%
 > Complexity: Medium
 > Theme: Implementation delivery
 > Reminder: Update status/understanding/confidence/progress and linked request/backlog references when you edit this doc.
@@ -40,6 +40,7 @@
 # Validation
 - 2026-10-19: `npm run build` (tsc + esbuild) and `npm test` pass (150 tests, 15 new); `logics-manager lint` OK. No ESLint is configured in the repo.
 - 2026-10-19 (after owner decisions): `npm run build` and `npm test` pass (155 tests, 5 new in `tests/correction.test.ts`); `logics-manager lint` OK. ESLint moved to item_004.
+- 2026-10-29: `npm test` (218), `npm run build` and `npm run lint` (0 errors) pass. `tests/liveIndex.test.ts` drives `LiveIndex` with a stubbed `obsidian` module; removing the rebuild on a metadata change fails 3 of its tests.
 - Manual checks in Obsidian still needed for AC1-AC4 (no GUI in the implementing session).
 
 # Report
@@ -51,6 +52,7 @@
 - 6c577d1 Progress clicks: one log line and one Undo per burst, restoring the value from before the first click (`Bursts`, tested) (AC3).
 - AC1: code review found no gap (metadata `changed`, vault `delete`/`rename` all mark libraries dirty; tabs, embeds and the series panel re-render on `changed`); needs the manual check.
 - fc665c2 Typed page correction: same toast and Undo as clicks; Undo restores the value from before the correction; settles any open click burst first, so each keeps its own Undo (tested).
+- 5ad4be9 `LiveIndex` tests (AC1, AC2): a metadata change in a library folder rebuilds that library with the new value; a burst rebuilds once; changes outside every folder are ignored; new notes, deletes and renames show up; `ready` stays false until the cache resolves.
 - Left: manual checks for AC1-AC4 in Obsidian by the owner, then closeout.
 
 # Decisions
