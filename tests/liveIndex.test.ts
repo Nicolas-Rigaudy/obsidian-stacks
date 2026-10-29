@@ -113,3 +113,25 @@ describe("live index: cold start", () => {
 		}
 	});
 });
+
+describe("live index: settings changes", () => {
+	test("a field remapped in settings shows on the next rebuild, without an edit to the note", () => {
+		mock.timers.enable({ apis: ["setTimeout"] });
+		try {
+			const v = fakeVault();
+			v.write("Books/Dracula.md", { ...book("reading"), page: 140, pages_total: 418 });
+			const books = { ...PRESETS.find((p) => p.id === "books")!.build(), folder: "Books" };
+			const own: StacksSettings = { ...DEFAULT_SETTINGS, mediaTypes: { books } };
+			const index = new LiveIndex(v.plugin as never, () => own);
+			index.start();
+			mock.timers.tick(200);
+			assert.notEqual(index.get("books")[0].progress?.current, 140);
+			books.progress = { ...books.progress!, currentField: "page" };
+			index.settingsChanged();
+			mock.timers.tick(200);
+			assert.equal(index.get("books")[0].progress?.current, 140);
+		} finally {
+			mock.timers.reset();
+		}
+	});
+});
